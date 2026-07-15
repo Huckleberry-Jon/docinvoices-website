@@ -21,44 +21,56 @@ class ReviewWorkScreen extends StatelessWidget {
   }
 
   Widget _infoItem({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-  }) {
-    return Expanded(
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 34),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white60,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+  required IconData icon,
+  required String label,
+  required String value,
+  required Color color,
+}) {
+  return Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        width: 46,
+        height: 46,
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.12),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          color: color,
+          size: 27,
+        ),
       ),
-    );
-  }
+      const SizedBox(width: 14),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white60,
+                fontSize: 14,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              softWrap: true,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                height: 1.35,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ],
+  );
+}
 
   Widget _sectionHeader({
     required BuildContext context,
@@ -306,32 +318,38 @@ class ReviewWorkScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _card(
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _infoItem(
-                          icon: Icons.person_outline,
-                          label: 'Customer',
-                          value: 'Mike Smith\n(555) 555-1212',
-                          color: Colors.blue,
-                        ),
-                        const SizedBox(width: 16),
-                        _infoItem(
-                          icon: Icons.local_shipping_outlined,
-                          label: 'Equipment',
-                          value: '2022 Peterbilt 579\nUnit 215',
-                          color: Colors.blue,
-                        ),
-                        const SizedBox(width: 16),
-                        _infoItem(
-                          icon: Icons.location_on_outlined,
-                          label: 'Location',
-                          value: 'Houston, TX',
-                          color: Colors.blue,
-                        ),
-                      ],
-                    ),
-                  ),
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _infoItem(
+        icon: Icons.person_outline,
+        label: 'Customer',
+        value: 'Mike Smith\n(555) 555-1212',
+        color: Colors.blue,
+      ),
+      const Divider(
+        color: Colors.white12,
+        height: 30,
+      ),
+      _infoItem(
+        icon: Icons.local_shipping_outlined,
+        label: 'Equipment',
+        value: '2022 Peterbilt 579\nUnit 215',
+        color: Colors.blue,
+      ),
+      const Divider(
+        color: Colors.white12,
+        height: 30,
+      ),
+      _infoItem(
+        icon: Icons.location_on_outlined,
+        label: 'Location',
+        value: 'Houston, TX',
+        color: Colors.blue,
+      ),
+    ],
+  ),
+),
                   const SizedBox(height: 16),
                   _card(
                     child: Column(
