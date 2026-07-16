@@ -276,12 +276,13 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
       return;
     }
 Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const WorkCompletedScreen(),
+  context,
+  MaterialPageRoute(
+    builder: (context) => WorkCompletedScreen(
+      transcription: widget.transcription,
     ),
-  );
-}
+  ),
+);
 
   @override
   Widget build(BuildContext context) {
