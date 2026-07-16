@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'payment_received_screen.dart';
 
 class CustomerInvoiceScreen extends StatefulWidget {
-  const CustomerInvoiceScreen({super.key});
+  const CustomerInvoiceScreen({
+  super.key,
+  required this.transcription,
+});
+
+final String transcription;
 
   @override
   State<CustomerInvoiceScreen> createState() =>
@@ -538,23 +543,9 @@ class _CustomerInvoiceScreenState
                             height: 30,
                           ),
                           _serviceItem(
-                            'Diagnosed failed starter.',
-                          ),
-                          _serviceItem(
-                            'Removed failed starter.',
-                          ),
-                          _serviceItem(
-                            'Installed new Delco starter.',
-                          ),
-                          _serviceItem(
-                            'Cleaned battery terminals.',
-                          ),
-                          _serviceItem(
-                            'Tested charging and starting systems.',
-                          ),
-                          _serviceItem(
-                            'Verified proper operation.',
-                          ),
+    widget.transcription,
+  ),
+                          
                         ],
                       ],
                     ),

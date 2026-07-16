@@ -283,7 +283,7 @@ Navigator.push(
     ),
   ),
 );
-
+  }
   @override
   Widget build(BuildContext context) {
     final bool customerApprovalSelected =

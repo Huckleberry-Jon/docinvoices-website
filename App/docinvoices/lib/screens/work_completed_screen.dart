@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'customer_invoice_screen.dart';
 class WorkCompletedScreen extends StatefulWidget {
-  const WorkCompletedScreen({super.key});
+  const WorkCompletedScreen({
+    super.key,
+    required this.transcription,
+  });
 
+  final String transcription;
   @override
   State<WorkCompletedScreen> createState() =>
       _WorkCompletedScreenState();
@@ -698,12 +702,14 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                     height: 72,
                     child: ElevatedButton(
                       onPressed: () {
-                        Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => const CustomerInvoiceScreen(),
+                       Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => CustomerInvoiceScreen(
+      transcription: widget.transcription,
     ),
-  );
+  ),
+);
 },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
