@@ -291,7 +291,7 @@ class _CustomerInvoiceScreenState
                         child: Column(
                           children: [
                             Text(
-                              'Work Completed',
+                              'Customer Invoice',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
@@ -352,7 +352,7 @@ class _CustomerInvoiceScreenState
                               ),
                               SizedBox(height: 7),
                               Text(
-                                'Thank you for choosing Huckleberry’s Diesel Services.',
+                                'Thank you for choosing your service provider.',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 17,
@@ -442,31 +442,31 @@ class _CustomerInvoiceScreenState
                         const SizedBox(height: 20),
                         _detailRow(
                           label: 'Customer',
-                          value: 'Mike Smith Trucking',
+                          value: 'Customer Name',
                         ),
                         _detailRow(
                           label: 'Equipment',
-                          value: '2022 Peterbilt 579',
+                          value: 'Equipment Description',
                         ),
                         _detailRow(
                           label: 'Unit #',
-                          value: '215',
+                          value: 'Unit Number',
                         ),
                         _detailRow(
                           label: 'VIN',
-                          value: '1XPBDP9X7ND123456',
+                          value: 'VIN Number',
                         ),
                         _detailRow(
                           label: 'Mileage',
-                          value: '542,811',
+                          value: 'Mileage',
                         ),
                         _detailRow(
                           label: 'PO Number',
-                          value: 'PO-45821',
+                          value: 'PO Number',
                         ),
                         _detailRow(
                           label: 'Completed',
-                          value: 'July 15, 2026',
+                          value: 'Completed',
                         ),
                       ],
                     ),
@@ -474,7 +474,7 @@ class _CustomerInvoiceScreenState
                   const SizedBox(height: 16),
                   _card(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAligO-45821nment: CrossAxisAlignment.stretch,
                       children: [
                         InkWell(
                           borderRadius: BorderRadius.circular(12),
@@ -707,15 +707,15 @@ class _CustomerInvoiceScreenState
                         ),
                         const SizedBox(height: 17),
                         _priceRow(
-                          label: 'Professional Service',
+                          label: 'Labor',
                           amount: '\$375.00',
                         ),
                         _priceRow(
-                          label: 'Quality Parts Installed',
+                          label: 'Parts',
                           amount: '\$462.00',
                         ),
                         _priceRow(
-                          label: 'Sales Tax (8.25%)',
+                          label: 'Sales Tax ',
                           amount: '\$38.12',
                         ),
                         const Divider(
@@ -762,9 +762,9 @@ class _CustomerInvoiceScreenState
                       ),
                       const SizedBox(width: 10),
                       _actionButton(
-                        icon: Icons.share_outlined,
-                        label: 'Share',
-                        color: Colors.purpleAccent,
+                        icon: Icons.link,
+  label: 'Secure Link',
+  color: Colors.purpleAccent,
                       ),
                     ],
                   ),
@@ -792,7 +792,7 @@ class _CustomerInvoiceScreenState
                           ),
                           SizedBox(height: 3),
                           Text(
-                            '\$875.12',
+                            'Invoice Total',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
