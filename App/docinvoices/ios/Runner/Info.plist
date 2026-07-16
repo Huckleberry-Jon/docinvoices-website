@@ -66,5 +66,10 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+<key>NSMicrophoneUsageDescription</key>
+<string>DocInvoices uses the microphone to record work details.</string>
+
+<key>NSSpeechRecognitionUsageDescription</key>
+<string>DocInvoices uses speech recognition to turn spoken work details into text.</string> 
 </dict>
 </plist>
