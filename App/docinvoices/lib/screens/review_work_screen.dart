@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'approval_screen.dart';
 
 class ReviewWorkScreen extends StatelessWidget {
-  const ReviewWorkScreen({super.key});
+  const ReviewWorkScreen({
+    super.key,
+    required this.transcription,
+  });
+
+  final String transcription;
 
   void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(

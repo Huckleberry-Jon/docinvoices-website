@@ -1,11 +1,23 @@
 import 'package:flutter/material.dart';
 import 'voice_capture_screen.dart';
 class CreateScreen extends StatefulWidget {
-  const CreateScreen({super.key});
+  const CreateScreen({
+    super.key,
+    this.customerName = '',
+    this.equipment = '',
+    this.unitNumber = '',
+    this.vin = '',
+  });
+
+  final String customerName;
+  final String equipment;
+  final String unitNumber;
+  final String vin;
 
   @override
   State<CreateScreen> createState() => _CreateScreenState();
-}
+} 
+  
 
 class _CreateScreenState extends State<CreateScreen> {
   bool isListening = false;
@@ -37,7 +49,9 @@ class _CreateScreenState extends State<CreateScreen> {
       padding: const EdgeInsets.only(bottom: 14),
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
-        onTap: () => _showComingSoon(title),
+        onTap: title == 'New Job'
+    ? _openVoiceCapture
+    : () => _showComingSoon(title),
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 18,

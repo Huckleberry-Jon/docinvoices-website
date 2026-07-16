@@ -82,14 +82,18 @@ class _VoiceCaptureScreenState extends State<VoiceCaptureScreen> {
         '${seconds.toString().padLeft(2, '0')}';
   }
 
-  void _reviewWork() {
-    _finishRecording();
-Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => const ReviewWorkScreen(),
-  ),
-);
+  
+void _reviewWork() {
+  _finishRecording();
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ReviewWorkScreen(
+        transcription: transcriptionController.text.trim(),
+      ),
+    ),
+  );
 }
     
 
