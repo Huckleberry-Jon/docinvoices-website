@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import 'work_completed_screen.dart';
 class ApprovalScreen extends StatefulWidget {
-  const ApprovalScreen({super.key});
+  const ApprovalScreen({
+    super.key,
+    required this.transcription,
+  });
+
+  final String transcription;
 
   @override
   State<ApprovalScreen> createState() => _ApprovalScreenState();

@@ -17,13 +17,15 @@ class ReviewWorkScreen extends StatelessWidget {
   }
 
   void _continueToApproval(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ApprovalScreen(),
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ApprovalScreen(
+        transcription: transcription,
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _infoItem({
   required IconData icon,
