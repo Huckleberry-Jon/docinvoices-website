@@ -474,7 +474,7 @@ class _CustomerInvoiceScreenState
                   const SizedBox(height: 16),
                   _card(
                     child: Column(
-                      crossAxisAligO-45821nment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         InkWell(
                           borderRadius: BorderRadius.circular(12),
