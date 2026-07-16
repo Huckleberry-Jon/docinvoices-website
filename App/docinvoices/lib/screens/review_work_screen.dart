@@ -367,22 +367,16 @@ class ReviewWorkScreen extends StatelessWidget {
                           color: Colors.blue,
                         ),
                         const SizedBox(height: 8),
-                        _bulletItem(
-                          'Replaced starter',
-                          Colors.blue,
-                        ),
-                        _bulletItem(
-                          'Cleaned battery terminals',
-                          Colors.blue,
-                        ),
-                        _bulletItem(
-                          'Tested charging system',
-                          Colors.blue,
-                        ),
-                        _bulletItem(
-                          'Verified proper starting',
-                          Colors.blue,
-                        ),
+                        if (transcription.isEmpty)
+  _bulletItem(
+    'No work entered.',
+    Colors.orange,
+  )
+else
+  _bulletItem(
+    transcription,
+    Colors.blue,
+  ),
                         const Divider(
                           color: Colors.white12,
                           height: 34,
