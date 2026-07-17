@@ -26,7 +26,15 @@ class _CreateScreenState extends State<CreateScreen> {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => const VoiceCaptureScreen(),
+      builder: (context) => VoiceCaptureScreen(
+        customerName: widget.customerName,
+        equipment: widget.equipment,
+        unitNumber: widget.unitNumber,
+        vin: widget.vin,
+        mileage: '542,811',
+poNumber: 'PO-45821',
+completedDate: 'July 14, 2026',
+      ),
     ),
   );
 }

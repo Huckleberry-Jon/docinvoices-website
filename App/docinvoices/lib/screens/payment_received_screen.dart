@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 
 class PaymentReceivedScreen extends StatefulWidget {
-  const PaymentReceivedScreen({super.key});
+  const PaymentReceivedScreen({
+    super.key,
+    required this.customerName,
+  });
 
+  final String customerName;
   @override
   State<PaymentReceivedScreen> createState() =>
       _PaymentReceivedScreenState();
@@ -325,7 +329,7 @@ class _PaymentReceivedScreenState
                         ),
                         _detailRow(
                           label: 'Customer',
-                          value: 'Mike Smith Trucking',
+                         value: widget.customerName,
                         ),
                         _detailRow(
                           label: 'Payment Date',

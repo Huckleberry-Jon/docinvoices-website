@@ -4,9 +4,23 @@ class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({
     super.key,
     required this.transcription,
+    required this.customerName,
+    required this.equipment,
+    required this.unitNumber,
+    required this.vin,
+    required this.mileage,
+required this.poNumber,
+required this.completedDate,
   });
 
   final String transcription;
+  final String customerName;
+  final String equipment;
+  final String unitNumber;
+  final String vin;
+  final String mileage;
+final String poNumber;
+final String completedDate;
 
   @override
   State<ApprovalScreen> createState() => _ApprovalScreenState();
@@ -278,12 +292,18 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
 Navigator.push(
   context,
   MaterialPageRoute(
-    builder: (context) => WorkCompletedScreen(
-      transcription: widget.transcription,
-    ),
+  builder: (context) => WorkCompletedScreen(
+  transcription: widget.transcription,
+  customerName: widget.customerName,
+  equipment: widget.equipment,
+  unitNumber: widget.unitNumber,
+  vin: widget.vin,
+  mileage: widget.mileage,
+poNumber: widget.poNumber,
+completedDate: widget.completedDate,
+),
   ),
-);
-  }
+);  }
   @override
   Widget build(BuildContext context) {
     final bool customerApprovalSelected =

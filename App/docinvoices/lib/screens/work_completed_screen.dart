@@ -4,9 +4,24 @@ class WorkCompletedScreen extends StatefulWidget {
   const WorkCompletedScreen({
     super.key,
     required this.transcription,
+    required this.customerName,
+    required this.equipment,
+    required this.unitNumber,
+    required this.vin,
+    required this.mileage,
+    required this.poNumber,
+    required this.completedDate,
   });
 
   final String transcription;
+  final String customerName;
+  final String equipment;
+  final String unitNumber;
+  final String vin;
+  final String mileage;
+  final String poNumber;
+  final String completedDate;
+
   @override
   State<WorkCompletedScreen> createState() =>
       _WorkCompletedScreenState();
@@ -362,19 +377,19 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                         const SizedBox(height: 20),
                         _detailRow(
                           label: 'Customer',
-                          value: 'Mike Smith Trucking',
+                          value: widget.customerName,
                         ),
                         _detailRow(
                           label: 'Equipment',
-                          value: '2022 Peterbilt 579',
+                          value: widget.equipment,
                         ),
                         _detailRow(
                           label: 'Unit #',
-                          value: '215',
+                          value: widget.unitNumber,
                         ),
                         _detailRow(
-                          label: 'VIN',
-                          value: '1XPBDP9X7ND123456',
+                          label: 'VIN / Serial Number',
+                          value: widget.vin,
                         ),
                         _detailRow(
                           label: 'Mileage',
@@ -706,8 +721,15 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
   context,
   MaterialPageRoute(
     builder: (context) => CustomerInvoiceScreen(
-      transcription: widget.transcription,
-    ),
+      customerName: widget.customerName,
+  transcription: widget.transcription,
+   equipment: widget.equipment,
+  unitNumber: widget.unitNumber,
+  vin: widget.vin,
+  mileage: widget.mileage,
+  poNumber: widget.poNumber,
+  completedDate: widget.completedDate,
+),
   ),
 );
 },

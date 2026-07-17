@@ -3,12 +3,26 @@ import 'package:flutter/material.dart';
 import 'approval_screen.dart';
 
 class ReviewWorkScreen extends StatelessWidget {
-  const ReviewWorkScreen({
-    super.key,
-    required this.transcription,
-  });
+ const ReviewWorkScreen({
+  super.key,
+  required this.transcription,
+  required this.customerName,
+  required this.equipment,
+  required this.unitNumber,
+  required this.vin,
+  required this.mileage,
+required this.poNumber,
+required this.completedDate,
+});
 
-  final String transcription;
+final String transcription;
+final String customerName;
+final String equipment;
+final String unitNumber;
+final String vin;
+final String mileage;
+final String poNumber;
+final String completedDate;
 
   void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -20,8 +34,16 @@ class ReviewWorkScreen extends StatelessWidget {
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => ApprovalScreen(
-        transcription: transcription,
+   builder: (context) => ApprovalScreen(
+  transcription: transcription,
+  customerName: customerName,
+  equipment: equipment,
+  unitNumber: unitNumber,
+  vin: vin,
+  mileage: mileage,
+poNumber: poNumber,
+completedDate: completedDate,
+  
       ),
     ),
   );

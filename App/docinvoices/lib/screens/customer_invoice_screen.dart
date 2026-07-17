@@ -6,10 +6,23 @@ class CustomerInvoiceScreen extends StatefulWidget {
   const CustomerInvoiceScreen({
   super.key,
   required this.transcription,
+   required this.customerName,
+   required this.equipment,
+   required this.unitNumber,
+   required this.vin,
+   required this.mileage,
+   required this.poNumber,
+   required this.completedDate,
 });
 
-final String transcription;
-
+   final String transcription;
+   final String customerName;
+   final String equipment;
+   final String unitNumber;
+   final String vin;
+   final String mileage;
+   final String poNumber;
+   final String completedDate;
   @override
   State<CustomerInvoiceScreen> createState() =>
       _CustomerInvoiceScreenState();
@@ -29,7 +42,9 @@ class _CustomerInvoiceScreenState
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const PaymentReceivedScreen(),
+        builder: (context) => PaymentReceivedScreen(
+  customerName: widget.customerName,
+)
       ),
     );
   }
@@ -447,35 +462,36 @@ class _CustomerInvoiceScreenState
                         const SizedBox(height: 20),
                         _detailRow(
                           label: 'Customer',
-                          value: 'Customer Name',
+                          value: widget.customerName,
                         ),
                         _detailRow(
                           label: 'Equipment',
-                          value: 'Equipment Description',
+                          value: widget.equipment,
                         ),
                         _detailRow(
                           label: 'Unit #',
-                          value: 'Unit Number',
+                          value: widget.unitNumber,
                         ),
                         _detailRow(
-                          label: 'VIN',
-                          value: 'VIN Number',
+                          label: 'VIN / Serial Number',
+                          value: widget.vin,
                         ),
                         _detailRow(
                           label: 'Mileage',
-                          value: 'Mileage',
+                          value: widget.mileage,
                         ),
                         _detailRow(
                           label: 'PO Number',
-                          value: 'PO Number',
+                          value:  widget.poNumber,
                         ),
                         _detailRow(
                           label: 'Completed',
-                          value: 'Completed',
-                        ),
+                          value: widget.completedDate,
+),
                       ],
                     ),
-                  ),
+                    ),
+                
                   const SizedBox(height: 16),
                   _card(
                     child: Column(

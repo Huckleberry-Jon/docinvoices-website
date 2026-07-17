@@ -1,9 +1,27 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 import 'review_work_screen.dart';
 class VoiceCaptureScreen extends StatefulWidget {
-  const VoiceCaptureScreen({super.key});
+  const VoiceCaptureScreen({
+    super.key,
+    required this.customerName,
+    required this.equipment,
+    required this.unitNumber,
+    required this.vin,
+    required this.mileage,
+required this.poNumber,
+required this.completedDate,
+  });
+
+  final String customerName;
+  final String equipment;
+  final String unitNumber;
+  final String vin;
+  final String mileage;
+final String poNumber;
+final String completedDate;
 
   @override
   State<VoiceCaptureScreen> createState() => _VoiceCaptureScreenState();
@@ -11,41 +29,96 @@ class VoiceCaptureScreen extends StatefulWidget {
 
 class _VoiceCaptureScreenState extends State<VoiceCaptureScreen> {
   Timer? recordingTimer;
+  late stt.SpeechToText speech;
+bool speechAvailable = false;
 
-  int elapsedSeconds = 0;
-  bool isRecording = false;
-  bool isPaused = false;
+int elapsedSeconds = 0;
+bool isRecording = false;
+bool isPaused = false;
+final TextEditingController transcriptionController =
+    TextEditingController();
+    String transcriptBeforeListening = '';
+@override
+void initState() {
+  super.initState();
+  speech = stt.SpeechToText();
+  _initializeSpeech();
+}
 
-  final TextEditingController transcriptionController =
-      TextEditingController();
+Future<void> _initializeSpeech() async {
+  speechAvailable = await speech.initialize(
+    onStatus: (status) {
+      debugPrint('Speech status: $status');
+    },
+    onError: (error) {
+      debugPrint('Speech error: $error');
+    },
+  );
 
-  @override
-  void dispose() {
-    recordingTimer?.cancel();
-    transcriptionController.dispose();
-    super.dispose();
+  if (mounted) {
+    setState(() {});
+  }
+}
+
+Future<void> _startListening() async {
+  if (!speechAvailable) {
+    await _initializeSpeech();
   }
 
-  void _startRecording() {
-    recordingTimer?.cancel();
-
-    setState(() {
-      isRecording = true;
-      isPaused = false;
-    });
-
-    recordingTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (!isPaused) {
-          setState(() {
-            elapsedSeconds++;
-          });
-        }
-      },
-    );
+  if (!speechAvailable) {
+    return;
   }
+ transcriptBeforeListening = transcriptionController.text.trim();
+  await speech.listen(
+    onResult: (result) {
+      if (!mounted) return;
 
+      setState(() {
+      final newWords = result.recognizedWords.trim();
+
+transcriptionController.text = transcriptBeforeListening.isEmpty
+    ? newWords
+    : '$transcriptBeforeListening\n$newWords';
+
+
+        transcriptionController.selection = TextSelection.fromPosition(
+          TextPosition(offset: transcriptionController.text.length),
+        );
+      });
+    },
+  );
+
+  if (!mounted) return;
+
+  recordingTimer?.cancel();
+  recordingTimer = Timer.periodic(
+    const Duration(seconds: 1),
+    (timer) {
+      if (mounted && !isPaused) {
+        setState(() {
+          elapsedSeconds++;
+        });
+      }
+    },
+  );
+
+  setState(() {
+    isRecording = true;
+    isPaused = false;
+  });
+}
+
+Future<void> _stopListening() async {
+  await speech.stop();
+  recordingTimer?.cancel();
+
+  if (!mounted) return;
+
+  setState(() {
+    isRecording = false;
+    isPaused = false;
+  });
+}
   void _pauseOrResume() {
     setState(() {
       isPaused = !isPaused;
@@ -90,12 +163,18 @@ void _reviewWork() {
     context,
     MaterialPageRoute(
       builder: (context) => ReviewWorkScreen(
-        transcription: transcriptionController.text.trim(),
-      ),
-    ),
-  );
+  transcription: transcriptionController.text,
+  customerName: 'Mike Smith Trucking',
+  equipment: '2022 Peterbilt 579',
+  unitNumber: '215',
+  vin: '1XPBDP9X7ND123456',
+  mileage: '542,811',
+poNumber: 'PO-45821',
+completedDate: 'July 14, 2026',
+  ),
+  ),
+);
 }
-    
 
   Widget _waveform() {
     final List<double> heights = [
@@ -234,9 +313,13 @@ void _reviewWork() {
                   const SizedBox(height: 24),
                   Center(
                     child: InkWell(
-                      onTap: isRecording
-                          ? _pauseOrResume
-                          : _startRecording,
+                      onTap: () {
+  if (isRecording) {
+    _stopListening();
+  } else {
+    _startListening();
+  }
+} ,   
                       borderRadius: BorderRadius.circular(80),
                       child: AnimatedContainer(
                         duration: const Duration(milliseconds: 250),
