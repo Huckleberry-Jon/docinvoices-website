@@ -13,6 +13,7 @@ class ReviewWorkScreen extends StatelessWidget {
   required this.mileage,
 required this.poNumber,
 required this.completedDate,
+required this.estimatedTotal,
 });
 
 final String transcription;
@@ -23,6 +24,7 @@ final String vin;
 final String mileage;
 final String poNumber;
 final String completedDate;
+final String estimatedTotal;
 
   void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -43,6 +45,7 @@ final String completedDate;
   mileage: mileage,
 poNumber: poNumber,
 completedDate: completedDate,
+estimatedTotal: estimatedTotal,
   
       ),
     ),

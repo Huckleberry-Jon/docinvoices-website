@@ -11,6 +11,7 @@ class ApprovalScreen extends StatefulWidget {
     required this.mileage,
 required this.poNumber,
 required this.completedDate,
+required this.estimatedTotal,
   });
 
   final String transcription;
@@ -21,6 +22,7 @@ required this.completedDate,
   final String mileage;
 final String poNumber;
 final String completedDate;
+final String estimatedTotal;
 
   @override
   State<ApprovalScreen> createState() => _ApprovalScreenState();
@@ -492,7 +494,7 @@ _jobDetail(
                               ),
                             ),
                             Text(
-                              '\$875.12',
+                              '\$0.00',
                               style: TextStyle(
                                 color: Colors.orange,
                                 fontSize: 26,

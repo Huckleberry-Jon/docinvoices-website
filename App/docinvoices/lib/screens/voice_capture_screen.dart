@@ -180,6 +180,7 @@ vin: widget.vin,
 mileage: widget.mileage,
 poNumber: widget.poNumber,
 completedDate: widget.completedDate,
+estimatedTotal: '0.00',
       ),
     ),
   );
