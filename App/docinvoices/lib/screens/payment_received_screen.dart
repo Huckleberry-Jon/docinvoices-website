@@ -6,9 +6,11 @@ class PaymentReceivedScreen extends StatefulWidget {
   const PaymentReceivedScreen({
     super.key,
     required this.customerName,
+    required this.estimatedTotal,
   });
 
   final String customerName;
+  final String estimatedTotal;
   @override
   State<PaymentReceivedScreen> createState() =>
       _PaymentReceivedScreenState();

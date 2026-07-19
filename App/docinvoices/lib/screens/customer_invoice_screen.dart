@@ -13,6 +13,8 @@ class CustomerInvoiceScreen extends StatefulWidget {
    required this.mileage,
    required this.poNumber,
    required this.completedDate,
+   required this.estimatedTotal,
+   
 });
 
    final String transcription;
@@ -23,6 +25,7 @@ class CustomerInvoiceScreen extends StatefulWidget {
    final String mileage;
    final String poNumber;
    final String completedDate;
+   final String estimatedTotal;
   @override
   State<CustomerInvoiceScreen> createState() =>
       _CustomerInvoiceScreenState();
@@ -44,6 +47,8 @@ class _CustomerInvoiceScreenState
       MaterialPageRoute(
         builder: (context) => PaymentReceivedScreen(
   customerName: widget.customerName,
+  estimatedTotal: widget.estimatedTotal,
+
 )
       ),
     );

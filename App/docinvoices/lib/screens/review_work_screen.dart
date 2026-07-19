@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'approval_screen.dart';
 
-class ReviewWorkScreen extends StatelessWidget {
+class ReviewWorkScreen extends StatefulWidget {
  const ReviewWorkScreen({
   super.key,
   required this.transcription,
@@ -25,6 +25,11 @@ final String mileage;
 final String poNumber;
 final String completedDate;
 final String estimatedTotal;
+@override
+State<ReviewWorkScreen> createState() => _ReviewWorkScreenState();
+}
+
+class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
 
   void _showMessage(BuildContext context, String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -37,15 +42,15 @@ final String estimatedTotal;
     context,
     MaterialPageRoute(
    builder: (context) => ApprovalScreen(
-  transcription: transcription,
-  customerName: customerName,
-  equipment: equipment,
-  unitNumber: unitNumber,
-  vin: vin,
-  mileage: mileage,
-poNumber: poNumber,
-completedDate: completedDate,
-estimatedTotal: estimatedTotal,
+  transcription: widget.transcription,
+  customerName: widget.customerName,
+ equipment: widget.equipment,
+  unitNumber: widget.unitNumber,
+  vin: widget.vin,
+ mileage: widget.mileage,
+poNumber: widget.poNumber,
+completedDate: widget.completedDate,
+estimatedTotal: widget.estimatedTotal,
   
       ),
     ),
@@ -356,7 +361,7 @@ estimatedTotal: estimatedTotal,
       _infoItem(
         icon: Icons.person_outline,
         label: 'Customer',
-        value: customerName,
+        value: widget.customerName,
         color: Colors.blue,
       ),
       const Divider(
@@ -366,7 +371,7 @@ estimatedTotal: estimatedTotal,
       _infoItem(
         icon: Icons.local_shipping_outlined,
         label: 'Equipment',
-        value: '$equipment\nUnit $unitNumber',
+        value: '${widget.equipment}\nUnit ${widget.unitNumber}',
         color: Colors.blue,
       ),
       const Divider(
@@ -394,14 +399,14 @@ estimatedTotal: estimatedTotal,
                           color: Colors.blue,
                         ),
                         const SizedBox(height: 8),
-                        if (transcription.isEmpty)
+                        if (widget.transcription.isEmpty)
   _bulletItem(
     'No work entered.',
     Colors.orange,
   )
 else
   _bulletItem(
-    transcription,
+    widget.transcription,
     Colors.blue,
   ),
                         const Divider(
@@ -440,7 +445,7 @@ else
                         ),
                         const SizedBox(height: 6),
                         Text(
-  transcription,
+  widget.transcription,
   style: const TextStyle(
     color: Colors.white,
     fontSize: 17,

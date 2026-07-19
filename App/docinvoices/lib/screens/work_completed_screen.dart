@@ -11,6 +11,7 @@ class WorkCompletedScreen extends StatefulWidget {
     required this.mileage,
     required this.poNumber,
     required this.completedDate,
+    required this.estimatedTotal,
   });
 
   final String transcription;
@@ -21,6 +22,7 @@ class WorkCompletedScreen extends StatefulWidget {
   final String mileage;
   final String poNumber;
   final String completedDate;
+  final String estimatedTotal;
 
   @override
   State<WorkCompletedScreen> createState() =>
@@ -723,6 +725,8 @@ _priceRow(
   mileage: widget.mileage,
   poNumber: widget.poNumber,
   completedDate: widget.completedDate,
+  estimatedTotal: widget.estimatedTotal,
+  
 ),
   ),
 );

@@ -12,6 +12,7 @@ class ApprovalScreen extends StatefulWidget {
 required this.poNumber,
 required this.completedDate,
 required this.estimatedTotal,
+
   });
 
   final String transcription;
@@ -23,6 +24,7 @@ required this.estimatedTotal,
 final String poNumber;
 final String completedDate;
 final String estimatedTotal;
+
 
   @override
   State<ApprovalScreen> createState() => _ApprovalScreenState();
@@ -303,6 +305,7 @@ Navigator.push(
   mileage: widget.mileage,
 poNumber: widget.poNumber,
 completedDate: widget.completedDate,
+estimatedTotal: widget.estimatedTotal,
 ),
   ),
 );  }
