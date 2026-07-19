@@ -308,7 +308,7 @@ class DashboardScreen extends StatelessWidget {
                                     ),
                                     child: const Center(
                                       child: Text(
-                                        '2',
+                                        '0',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 12,
@@ -324,7 +324,7 @@ class DashboardScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 34),
                         const Text(
-                          'Good Morning, Jon! 👋',
+                          'Welcome Back! 👋',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 31,
@@ -345,17 +345,17 @@ class DashboardScreen extends StatelessWidget {
                             _summaryCard(
                               context: context,
                               title: 'Jobs Today',
-                              value: '4',
-                              subtitle: 'In Progress',
+value: '0',
+subtitle: 'No Active Jobs',
                               icon: Icons.work_outline,
                               color: Colors.blue,
                             ),
                             const SizedBox(width: 16),
                             _summaryCard(
                               context: context,
-                              title: 'Invoices Waiting',
-                              value: '2',
-                              subtitle: '\$1,150.00',
+                             title: 'Invoices Waiting',
+value: '0',
+subtitle: '\$0.00',
                               icon: Icons.receipt_long_outlined,
                               color: Colors.orange,
                             ),

@@ -668,7 +668,7 @@ class _CustomerInvoiceScreenState
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Approved by Mike Smith',
+                                'Customer approval recorded',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -677,7 +677,7 @@ class _CustomerInvoiceScreenState
                               ),
                               SizedBox(height: 5),
                               Text(
-                                'July 15, 2026 at 8:42 PM • Text Message',
+                                 'Approval details will be available in a future update.', 
                                 style: TextStyle(
                                   color: Colors.white60,
                                   fontSize: 14,
@@ -714,26 +714,26 @@ class _CustomerInvoiceScreenState
                         ),
                         const SizedBox(height: 17),
                         _priceRow(
-                          label: 'Labor',
-                          amount: '\$375.00',
-                        ),
-                        _priceRow(
-                          label: 'Parts',
-                          amount: '\$462.00',
-                        ),
-                        _priceRow(
-                          label: 'Sales Tax ',
-                          amount: '\$38.12',
-                        ),
-                        const Divider(
-                          color: Colors.white24,
-                          height: 30,
-                        ),
-                        _priceRow(
-                          label: 'TOTAL',
-                          amount: '\$875.12',
-                          total: true,
-                        ),
+  label: 'Labor',
+  amount: 'Not entered',
+),
+_priceRow(
+  label: 'Parts',
+  amount: 'Not entered',
+),
+_priceRow(
+  label: 'Sales Tax',
+  amount: 'Calculated on invoice',
+),
+const Divider(
+  color: Colors.white24,
+  height: 30,
+),
+_priceRow(
+  label: 'TOTAL',
+  amount: 'Pending',
+  total: true,
+),
                         const SizedBox(height: 8),
                         const Text(
                           'The completed work, proof photos, and customer approval above support this total.',

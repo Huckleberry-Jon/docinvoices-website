@@ -2,17 +2,23 @@ import 'package:flutter/material.dart';
 import 'voice_capture_screen.dart';
 class CreateScreen extends StatefulWidget {
   const CreateScreen({
-    super.key,
-    this.customerName = '',
-    this.equipment = '',
-    this.unitNumber = '',
-    this.vin = '',
-  });
+  super.key,
+  this.customerName = '',
+  this.equipment = '',
+  this.unitNumber = '',
+  this.vin = '',
+  this.mileage = '',
+  this.poNumber = '',
+  this.completedDate = '',
+});
 
   final String customerName;
   final String equipment;
   final String unitNumber;
   final String vin;
+  final String mileage;
+final String poNumber;
+final String completedDate;
 
   @override
   State<CreateScreen> createState() => _CreateScreenState();
@@ -31,9 +37,9 @@ class _CreateScreenState extends State<CreateScreen> {
         equipment: widget.equipment,
         unitNumber: widget.unitNumber,
         vin: widget.vin,
-        mileage: '542,811',
-poNumber: 'PO-45821',
-completedDate: 'July 14, 2026',
+        mileage: widget.mileage,
+poNumber: widget.poNumber,
+completedDate: widget.completedDate,
       ),
     ),
   );

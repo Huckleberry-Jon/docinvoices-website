@@ -344,7 +344,7 @@ completedDate: widget.completedDate,
                             ),
                             SizedBox(height: 5),
                             Text(
-                              'Job #260714-001',
+                              'Job Number',
                               style: TextStyle(
                                 color: Colors.white54,
                                 fontSize: 14,
@@ -444,28 +444,38 @@ completedDate: widget.completedDate,
                         const SizedBox(height: 18),
                         _jobDetail(
                           label: 'Customer',
-                          value: 'Mike Smith Trucking',
-                        ),
+                          value:  widget.customerName,
+),
+                        
                         _jobDetail(
                           label: 'Equipment',
-                          value: '2022 Peterbilt 579',
+                          value:  widget.equipment,
                         ),
                         _jobDetail(
-                          label: 'Unit #',
-                          value: '215',
-                        ),
-                        _jobDetail(
-                          label: 'VIN',
-                          value: '1XPBDP9X7ND123456',
-                        ),
-                        _jobDetail(
-                          label: 'Mileage',
-                          value: '542,811',
-                        ),
-                        _jobDetail(
-                          label: 'PO Number',
-                          value: 'PO-45821',
-                        ),
+  label: 'Customer',
+  value: widget.customerName,
+),
+
+_jobDetail(
+  label: 'Equipment',
+  value: widget.equipment,
+),
+
+_jobDetail(
+  label: 'Unit #',
+  value: widget.unitNumber,
+),
+
+_jobDetail(
+  label: 'VIN',
+  value: widget.vin,
+),
+
+_jobDetail(
+  label: 'Mileage',
+  value: widget.mileage,
+),
+                        
                         const Divider(
                           color: Colors.white12,
                           height: 28,

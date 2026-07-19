@@ -263,7 +263,7 @@ class _PaymentReceivedScreenState
                   const SizedBox(height: 10),
 
                   const Text(
-                    'You’re all set.',
+                    'Invoice Complete',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.greenAccent,
@@ -275,8 +275,7 @@ class _PaymentReceivedScreenState
                   const SizedBox(height: 10),
 
                   const Text(
-                    'Thank you for trusting Huckleberry’s Diesel Services. '
-                    'Your payment was processed successfully.',
+                                        'Your payment was processed successfully.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
@@ -325,7 +324,7 @@ class _PaymentReceivedScreenState
                         const SizedBox(height: 18),
                         _detailRow(
                           label: 'Invoice',
-                          value: '#10518',
+                          value: 'Pending',
                         ),
                         _detailRow(
                           label: 'Customer',
@@ -333,15 +332,15 @@ class _PaymentReceivedScreenState
                         ),
                         _detailRow(
                           label: 'Payment Date',
-                          value: 'July 14, 2026',
+                          value: 'Not available',
                         ),
                         _detailRow(
                           label: 'Payment Time',
-                          value: '9:52 PM',
+                          value: 'Not available',
                         ),
                         _detailRow(
                           label: 'Payment Method',
-                          value: 'Visa •••• 4242',
+                          value: 'Payment integration not connected',
                         ),
                         const Divider(
                           color: Colors.white24,
@@ -349,7 +348,7 @@ class _PaymentReceivedScreenState
                         ),
                         _detailRow(
                           label: 'Amount Paid',
-                          value: '\$875.12',
+                          value: 'Not available',
                           emphasize: true,
                           valueColor: Colors.greenAccent,
                         ),
@@ -384,26 +383,22 @@ class _PaymentReceivedScreenState
                         ),
                         const SizedBox(height: 20),
                         _deliveryRow(
-                          icon: Icons.email_outlined,
-                          title: 'Email Receipt Sent',
-                          subtitle:
-                              'Sent to customer@example.com',
-                          color: Colors.blue,
-                        ),
+  icon: Icons.email_outlined,
+  title: 'Email Delivery',
+  subtitle: 'Available after email setup is connected.',
+  color: Colors.blue,
+),
+                       _deliveryRow(
+  icon: Icons.sms_outlined,
+  title: 'Text Delivery',
+  subtitle: 'Available after text messaging is connected.',
+  color: Colors.greenAccent,
+),
                         _deliveryRow(
-                          icon: Icons.sms_outlined,
-                          title: 'Text Confirmation Sent',
-                          subtitle:
-                              'Sent to (555) 555-1212',
-                          color: Colors.greenAccent,
-                        ),
-                        _deliveryRow(
-                          icon: Icons.picture_as_pdf_outlined,
-                          title: 'Invoice PDF Available',
-                          subtitle:
-                              'Available from the secure invoice link.',
-                          color: Colors.redAccent,
-                        ),
+  icon: Icons.picture_as_pdf_outlined,
+  title: 'Invoice PDF',
+  subtitle: 'PDF delivery will be connected before release.',
+  color: Colors.redAccent)
                       ],
                     ),
                   ),

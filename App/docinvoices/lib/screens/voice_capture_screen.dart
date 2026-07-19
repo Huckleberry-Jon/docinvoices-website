@@ -156,24 +156,33 @@ Future<void> _stopListening() async {
   }
 
   
-void _reviewWork() {
+Future<void> _reviewWork() async {
   _finishRecording();
+
+  if (speech.isListening) {
+    await speech.stop();
+  }
+
+  final String finalTranscription =
+      transcriptionController.text.trim();
+
+  if (!mounted) return;
 
   Navigator.push(
     context,
     MaterialPageRoute(
       builder: (context) => ReviewWorkScreen(
-  transcription: transcriptionController.text,
-  customerName: 'Mike Smith Trucking',
-  equipment: '2022 Peterbilt 579',
-  unitNumber: '215',
-  vin: '1XPBDP9X7ND123456',
-  mileage: '542,811',
-poNumber: 'PO-45821',
-completedDate: 'July 14, 2026',
-  ),
-  ),
-);
+        transcription: finalTranscription,
+        customerName: widget.customerName,
+equipment: widget.equipment,
+unitNumber: widget.unitNumber,
+vin: widget.vin,
+mileage: widget.mileage,
+poNumber: widget.poNumber,
+completedDate: widget.completedDate,
+      ),
+    ),
+  );
 }
 
   Widget _waveform() {
@@ -446,10 +455,16 @@ completedDate: 'July 14, 2026',
                           child: OutlinedButton.icon(
                             onPressed: _cancelRecording,
                             icon: const Icon(Icons.delete_outline),
-                            label: const Text(
-                              'Cancel',
-                              style: TextStyle(fontSize: 18),
-                            ),
+                            label: const FittedBox(
+  fit: BoxFit.scaleDown,
+  child: Text(
+    'Cancel',
+    maxLines: 1,
+    softWrap: false,
+    overflow: TextOverflow.fade,
+    style: TextStyle(fontSize: 18),
+  ),
+),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.redAccent,
                               side: const BorderSide(

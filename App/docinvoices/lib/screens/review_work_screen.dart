@@ -259,7 +259,7 @@ completedDate: completedDate,
                             ),
                             SizedBox(height: 5),
                             Text(
-                              'Job #260714-001',
+                              'widget.jobNumber',
                               style: TextStyle(
                                 color: Colors.white54,
                                 fontSize: 14,
@@ -353,7 +353,7 @@ completedDate: completedDate,
       _infoItem(
         icon: Icons.person_outline,
         label: 'Customer',
-        value: 'Mike Smith\n(555) 555-1212',
+        value: customerName,
         color: Colors.blue,
       ),
       const Divider(
@@ -363,7 +363,7 @@ completedDate: completedDate,
       _infoItem(
         icon: Icons.local_shipping_outlined,
         label: 'Equipment',
-        value: '2022 Peterbilt 579\nUnit 215',
+        value: '$equipment\nUnit $unitNumber',
         color: Colors.blue,
       ),
       const Divider(
@@ -373,7 +373,7 @@ completedDate: completedDate,
       _infoItem(
         icon: Icons.location_on_outlined,
         label: 'Location',
-        value: 'Houston, TX',
+        value: 'Not specified',
         color: Colors.blue,
       ),
     ],
@@ -412,47 +412,19 @@ else
                           color: Colors.greenAccent,
                         ),
                         const SizedBox(height: 8),
-                        const Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '1 × Delco Starter',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '\$412.00',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 13),
-                        const Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '2 × Battery Terminal Ends',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '\$50.00',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ],
-                        ),
+                       const Row(
+  children: [
+    Expanded(
+      child: Text(
+        'No parts entered',
+        style: TextStyle(
+          color: Colors.white70,
+          fontSize: 17,
+        ),
+      ),
+    ),
+  ],
+),
                         const Divider(
                           color: Colors.white12,
                           height: 34,
@@ -464,18 +436,15 @@ else
                           color: Colors.amber,
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Truck starts normally.\n'
-                          'No further issues found.',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 17,
-                            height: 1.55,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                        Text(
+  transcription,
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 17,
+    height: 1.55,
+  ),
+),
+          
                   const SizedBox(height: 16),
                   _card(
                     child: Column(
@@ -489,20 +458,21 @@ else
                         ),
                         const SizedBox(height: 4),
                         _priceRow(
-                          label: 'Labor',
-                          amount: '\$375.00',
-                        ),
-                        _priceRow(
-                          label: 'Parts',
-                          amount: '\$462.00',
-                        ),
+  label: 'Labor',
+  amount: 'Not entered',
+),
+
+_priceRow(
+  label: 'Parts',
+  amount: 'Not entered',
+),
                         Row(
                           children: [
                             Expanded(
                               child: Row(
                                 children: [
                                   const Text(
-                                    'Sales Tax (8.25%)',
+                                    'Sales Tax',
                                     style: TextStyle(
                                       color: Colors.white70,
                                       fontSize: 17,
@@ -526,7 +496,7 @@ else
                               ),
                             ),
                             const Text(
-                              '\$38.12',
+                              'Calculated on invoice',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
@@ -540,7 +510,7 @@ else
                         ),
                         _priceRow(
                           label: 'TOTAL',
-                          amount: '\$875.12',
+                          amount: 'Pending',
                           bold: true,
                           amountColor: Colors.purpleAccent,
                         ),
@@ -651,9 +621,12 @@ else
                 ],
               ),
             ),
-          ),
+          ],
         ),
       ),
-    );
+    ),
+  ),
+      )
+);
   }
 }

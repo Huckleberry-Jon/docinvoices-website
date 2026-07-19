@@ -283,7 +283,7 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Invoice #10518',
+                               'Invoice Number',
                               style: TextStyle(
                                 color: Colors.white54,
                                 fontSize: 14,
@@ -392,17 +392,18 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                           value: widget.vin,
                         ),
                         _detailRow(
-                          label: 'Mileage',
-                          value: '542,811',
+  label: 'Mileage',
+  value: widget.mileage,
                         ),
                         _detailRow(
-                          label: 'PO Number',
-                          value: 'PO-45821',
-                        ),
-                        _detailRow(
-                          label: 'Completed',
-                          value: 'July 14, 2026',
-                        ),
+  label: 'PO Number',
+  value: widget.poNumber,
+),
+
+_detailRow(
+  label: 'Completed',
+  value: widget.completedDate,
+),
                       ],
                     ),
                   ),
@@ -433,7 +434,7 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                                   size: 31,
                                 ),
                                 const SizedBox(width: 12),
-                                const Expanded(
+                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
@@ -449,7 +450,9 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        '5 completed services',
+                                        widget.transcription.isEmpty
+                                        ? 'No service details'
+                                        : 'Completed service details',
                                         style: TextStyle(
                                           color: Colors.white60,
                                           fontSize: 15,
@@ -475,19 +478,10 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                             height: 30,
                           ),
                           _serviceItem(
-                            'Diagnosed failed starter.',
-                          ),
-                          _serviceItem(
-                            'Removed and replaced starter.',
-                          ),
-                          _serviceItem(
-                            'Cleaned battery terminals.',
-                          ),
-                          _serviceItem(
-                            'Tested charging and starting systems.',
-                          ),
-                          _serviceItem(
-                            'Verified proper operation.',
+  widget.transcription.isEmpty
+      ? 'No work details entered.'
+      : widget.transcription,
+
                           ),
                         ],
                       ],
@@ -599,7 +593,7 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Approved by Mike Smith',
+                                'Customer approval recorded',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -608,7 +602,7 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                               ),
                               SizedBox(height: 5),
                               Text(
-                                'July 14, 2026 at 9:43 PM • Text Message',
+                                'Approval details will be available in a future update.',
                                 style: TextStyle(
                                   color: Colors.white60,
                                   fontSize: 14,
@@ -647,26 +641,26 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                         ),
                         const SizedBox(height: 17),
                         _priceRow(
-                          label: 'Labor',
-                          amount: '\$375.00',
-                        ),
-                        _priceRow(
-                          label: 'Parts',
-                          amount: '\$462.00',
-                        ),
-                        _priceRow(
-                          label: 'Sales Tax (8.25%)',
-                          amount: '\$38.12',
-                        ),
-                        const Divider(
-                          color: Colors.white24,
-                          height: 30,
-                        ),
-                        _priceRow(
-                          label: 'TOTAL',
-                          amount: '\$875.12',
-                          total: true,
-                        ),
+  label: 'Labor',
+  amount: 'Not entered',
+),
+_priceRow(
+  label: 'Parts',
+  amount: 'Not entered',
+),
+_priceRow(
+  label: 'Sales Tax',
+  amount: 'Calculated on invoice',
+),
+const Divider(
+  color: Colors.white24,
+  height: 30,
+),
+_priceRow(
+  label: 'TOTAL',
+  amount: 'Pending',
+  total: true,
+),
                         const SizedBox(height: 8),
                         const Text(
                           'The work, photos, and approval above provide documentation supporting this total.',
@@ -752,7 +746,7 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                           ),
                           SizedBox(height: 3),
                           Text(
-                            '\$875.12',
+                             'Invoice Total',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
