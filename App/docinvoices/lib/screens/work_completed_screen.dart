@@ -1,28 +1,15 @@
 import 'package:flutter/material.dart';
+
+import '../models/job.dart';
 import 'customer_invoice_screen.dart';
+
 class WorkCompletedScreen extends StatefulWidget {
   const WorkCompletedScreen({
     super.key,
-    required this.transcription,
-    required this.customerName,
-    required this.equipment,
-    required this.unitNumber,
-    required this.vin,
-    required this.mileage,
-    required this.poNumber,
-    required this.completedDate,
-    required this.estimatedTotal,
+    required this.job,
   });
 
-  final String transcription;
-  final String customerName;
-  final String equipment;
-  final String unitNumber;
-  final String vin;
-  final String mileage;
-  final String poNumber;
-  final String completedDate;
-  final String estimatedTotal;
+  final Job job;
 
   @override
   State<WorkCompletedScreen> createState() =>
@@ -379,32 +366,32 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
                         const SizedBox(height: 20),
                         _detailRow(
                           label: 'Customer',
-                          value: widget.customerName,
+                          value: widget.job.customerName,
                         ),
                         _detailRow(
                           label: 'Equipment',
-                          value: widget.equipment,
+                          value: widget.job.equipment,
                         ),
                         _detailRow(
                           label: 'Unit #',
-                          value: widget.unitNumber,
+                          value: widget.job.unitNumber,
                         ),
                         _detailRow(
                           label: 'VIN / Serial Number',
-                          value: widget.vin,
+                          value: widget.job.vin,
                         ),
                         _detailRow(
   label: 'Mileage',
-  value: widget.mileage,
+  value: widget.job.mileage,
                         ),
                         _detailRow(
   label: 'PO Number',
-  value: widget.poNumber,
+  value: widget.job.poNumber,
 ),
 
 _detailRow(
   label: 'Completed',
-  value: widget.completedDate,
+  value: widget.job.completedDate,
 ),
                       ],
                     ),
@@ -452,7 +439,7 @@ _detailRow(
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        widget.transcription.isEmpty
+                                        widget.job.transcription.isEmpty
                                         ? 'No service details'
                                         : 'Completed service details',
                                         style: TextStyle(
@@ -480,9 +467,9 @@ _detailRow(
                             height: 30,
                           ),
                           _serviceItem(
-  widget.transcription.isEmpty
+  widget.job.transcription.isEmpty
       ? 'No work details entered.'
-      : widget.transcription,
+      : widget.job.transcription,
 
                           ),
                         ],
@@ -717,15 +704,15 @@ _priceRow(
   context,
   MaterialPageRoute(
     builder: (context) => CustomerInvoiceScreen(
-      customerName: widget.customerName,
-  transcription: widget.transcription,
-   equipment: widget.equipment,
-  unitNumber: widget.unitNumber,
-  vin: widget.vin,
-  mileage: widget.mileage,
-  poNumber: widget.poNumber,
-  completedDate: widget.completedDate,
-  estimatedTotal: widget.estimatedTotal,
+   customerName: widget.job.customerName,
+transcription: widget.job.transcription,
+equipment: widget.job.equipment,
+unitNumber: widget.job.unitNumber,
+vin: widget.job.vin,
+mileage: widget.job.mileage,
+poNumber: widget.job.poNumber,
+completedDate: widget.job.completedDate,
+estimatedTotal: widget.job.estimatedTotal,
   
 ),
   ),

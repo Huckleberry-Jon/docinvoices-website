@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-
+import '../models/job.dart';
 import 'approval_screen.dart';
 
 class ReviewWorkScreen extends StatefulWidget {
  const ReviewWorkScreen({
   super.key,
+  required this.job,
   required this.transcription,
   required this.customerName,
   required this.equipment,
@@ -15,7 +16,7 @@ required this.poNumber,
 required this.completedDate,
 required this.estimatedTotal,
 });
-
+final Job job;
 final String transcription;
 final String customerName;
 final String equipment;
@@ -41,18 +42,9 @@ class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
   Navigator.push(
     context,
     MaterialPageRoute(
-   builder: (context) => ApprovalScreen(
-  transcription: widget.transcription,
-  customerName: widget.customerName,
- equipment: widget.equipment,
-  unitNumber: widget.unitNumber,
-  vin: widget.vin,
- mileage: widget.mileage,
-poNumber: widget.poNumber,
-completedDate: widget.completedDate,
-estimatedTotal: widget.estimatedTotal,
-  
-      ),
+      builder: (context) => ApprovalScreen(
+  job: widget.job,
+)
     ),
   );
 }
@@ -361,7 +353,7 @@ estimatedTotal: widget.estimatedTotal,
       _infoItem(
         icon: Icons.person_outline,
         label: 'Customer',
-        value: widget.customerName,
+        value: 'widget.job.customerName',
         color: Colors.blue,
       ),
       const Divider(

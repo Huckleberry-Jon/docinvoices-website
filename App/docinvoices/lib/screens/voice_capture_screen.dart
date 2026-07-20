@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
+import '../models/job.dart';
 
 import 'review_work_screen.dart';
 class VoiceCaptureScreen extends StatefulWidget {
@@ -71,8 +72,11 @@ Future<void> _startListening() async {
  transcriptBeforeListening = transcriptionController.text.trim();
   await speech.listen(
     onResult: (result) {
+      
       if (!mounted) return;
+     
 
+  
       setState(() {
       final newWords = result.recognizedWords.trim();
 
@@ -167,23 +171,44 @@ Future<void> _reviewWork() async {
       transcriptionController.text.trim();
 
   if (!mounted) return;
+  
 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => ReviewWorkScreen(
-        transcription: finalTranscription,
-        customerName: widget.customerName,
-equipment: widget.equipment,
-unitNumber: widget.unitNumber,
-vin: widget.vin,
-mileage: widget.mileage,
-poNumber: widget.poNumber,
-completedDate: widget.completedDate,
-estimatedTotal: '0.00',
-      ),
+ final job = Job(
+  customerName: widget.customerName,
+  equipment: widget.equipment,
+  unitNumber: widget.unitNumber,
+  vin: widget.vin,
+  transcription: finalTranscription,
+  mileage: widget.mileage,
+  poNumber: widget.poNumber,
+  completedDate: widget.completedDate,
+  estimatedTotal: '0.00',
+  laborHours: 0.0,
+  laborRate: 0.0,
+  partsCost: 0.0,
+  markupPercent: 0.0,
+  taxLabor: false,
+  taxParts: false,
+  isTaxExempt: false,
+  discountAmount: 0.0,
+ );
+ Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => ReviewWorkScreen(
+      job: job,
+      transcription: finalTranscription,
+      customerName: widget.customerName,
+      equipment: widget.equipment,
+      unitNumber: widget.unitNumber,
+      vin: widget.vin,
+      mileage: widget.mileage,
+      poNumber: widget.poNumber,
+      completedDate: widget.completedDate,
+      estimatedTotal: '0.00',
     ),
-  );
+  ),
+);
 }
 
   Widget _waveform() {

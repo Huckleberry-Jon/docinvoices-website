@@ -1,30 +1,13 @@
 import 'package:flutter/material.dart';
 import 'work_completed_screen.dart';
+import '../models/job.dart';
 class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({
     super.key,
-    required this.transcription,
-    required this.customerName,
-    required this.equipment,
-    required this.unitNumber,
-    required this.vin,
-    required this.mileage,
-required this.poNumber,
-required this.completedDate,
-required this.estimatedTotal,
-
+    required this.job,
   });
 
-  final String transcription;
-  final String customerName;
-  final String equipment;
-  final String unitNumber;
-  final String vin;
-  final String mileage;
-final String poNumber;
-final String completedDate;
-final String estimatedTotal;
-
+  final Job job;
 
   @override
   State<ApprovalScreen> createState() => _ApprovalScreenState();
@@ -296,16 +279,8 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
 Navigator.push(
   context,
   MaterialPageRoute(
-  builder: (context) => WorkCompletedScreen(
-  transcription: widget.transcription,
-  customerName: widget.customerName,
-  equipment: widget.equipment,
-  unitNumber: widget.unitNumber,
-  vin: widget.vin,
-  mileage: widget.mileage,
-poNumber: widget.poNumber,
-completedDate: widget.completedDate,
-estimatedTotal: widget.estimatedTotal,
+    builder: (context) => WorkCompletedScreen(
+      job: widget.job,
 ),
   ),
 );  }
@@ -449,36 +424,36 @@ estimatedTotal: widget.estimatedTotal,
                         const SizedBox(height: 18),
                         _jobDetail(
                           label: 'Customer',
-                          value:  widget.customerName,
+                          value:  widget.job.customerName,
 ),
                         
                         _jobDetail(
                           label: 'Equipment',
-                          value:  widget.equipment,
+                          value:  widget.job.equipment,
                         ),
                         _jobDetail(
   label: 'Customer',
-  value: widget.customerName,
+  value: widget.job.customerName,
 ),
 
 _jobDetail(
   label: 'Equipment',
-  value: widget.equipment,
+  value: widget.job.equipment,
 ),
 
 _jobDetail(
   label: 'Unit #',
-  value: widget.unitNumber,
+  value: widget.job.unitNumber,
 ),
 
 _jobDetail(
   label: 'VIN',
-  value: widget.vin,
+  value: widget.job.vin,
 ),
 
 _jobDetail(
   label: 'Mileage',
-  value: widget.mileage,
+  value: widget.job.mileage,
 ),
                         
                         const Divider(
