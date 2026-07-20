@@ -4,8 +4,8 @@ import 'part_item.dart';
 class Operation {
   const Operation({
     required this.title,
-    this.labor = const [],
-    this.parts = const [],
+    required this.labor,
+required this.parts,
     this.notes = '',
   });
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
 import 'approval_screen.dart';
+import '../models/operation.dart';
 
 class ReviewWorkScreen extends StatefulWidget {
  const ReviewWorkScreen({
@@ -43,12 +44,67 @@ class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
     context,
     MaterialPageRoute(
       builder: (context) => ApprovalScreen(
-  job: widget.job,
-)
+        job: widget.job,
+      ),
     ),
   );
 }
 
+Future<void> _addOperation() async {
+  final controller = TextEditingController();
+
+  final String? title = await showDialog<String>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Add Operation'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: const InputDecoration(
+            labelText: 'Operation title',
+            hintText: 'Example: Replace Water Pump',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final value = controller.text.trim();
+
+              if (value.isEmpty) {
+                return;
+              }
+
+              Navigator.pop(context, value);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      );
+    },
+  );
+
+  controller.dispose();
+
+  if (title == null || title.isEmpty) {
+    return;
+  }
+
+  setState(() {
+    widget.job.operations.add(
+      Operation(
+        title: title,
+        labor: [],
+        parts: [],
+      ),
+    );
+  });
+}
   Widget _infoItem({
   required IconData icon,
   required String label,
@@ -353,7 +409,7 @@ class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
       _infoItem(
         icon: Icons.person_outline,
         label: 'Customer',
-        value: 'widget.job.customerName',
+        value: widget.job.customerName,
         color: Colors.blue,
       ),
       const Divider(
@@ -596,6 +652,74 @@ _priceRow(
                       ),
                     ],
                   ),
+                  Column(
+  crossAxisAlignment: CrossAxisAlignment.start,
+  children: [
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        const Text(
+          'Operations',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        TextButton.icon(
+          onPressed: _addOperation,
+          icon: const Icon(Icons.add),
+          label: const Text('Add Operation'),
+        ),
+      ],
+    ),
+    const SizedBox(height: 12),
+    if (widget.job.operations.isEmpty)
+      const Text(
+        'No operations added yet.',
+        style: TextStyle(
+          color: Colors.white54,
+          fontSize: 15,
+        ),
+      )
+    else
+      ...widget.job.operations.map(
+        (operation) => Padding(
+          padding: const EdgeInsets.only(bottom: 10),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0B1624),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: Colors.white12,
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.build_circle_outlined,
+                  color: Colors.orange,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    operation.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+  ],
+),
                   const SizedBox(height: 16),
                   const Row(
                     mainAxisAlignment: MainAxisAlignment.center,

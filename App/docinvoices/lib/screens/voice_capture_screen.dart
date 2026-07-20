@@ -191,6 +191,8 @@ Future<void> _reviewWork() async {
   taxParts: false,
   isTaxExempt: false,
   discountAmount: 0.0,
+  operations: [],
+generalCharges: [],
  );
  Navigator.push(
   context,
