@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
 import '../models/operation.dart';
 
-class OperationDetailsScreen extends StatelessWidget {
+class OperationDetailsScreen extends StatefulWidget {
   const OperationDetailsScreen({
-    super.key,
-    required this.operation,
-  });
+  super.key,
+  required this.operation,
+});
 
-  final Operation operation;
+final Operation operation;
+
+@override
+State<OperationDetailsScreen> createState() =>
+    _OperationDetailsScreenState();
+}
+
+class _OperationDetailsScreenState
+    extends State<OperationDetailsScreen> {
+  
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +83,9 @@ class OperationDetailsScreen extends StatelessWidget {
             const SizedBox(height: 8),
 
             Text(
-              operation.notes.isEmpty
+              widget.operation.notes.isEmpty
                   ? 'No notes yet.'
-                  : operation.notes,
+                  : widget.operation.notes,
             ),
           ],
         ),
