@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../models/labor_item.dart';
 import '../models/job.dart';
 import 'customer_invoice_screen.dart';
 
@@ -10,6 +10,7 @@ class WorkCompletedScreen extends StatefulWidget {
   });
 
   final Job job;
+  
 
   @override
   State<WorkCompletedScreen> createState() =>
@@ -18,6 +19,109 @@ class WorkCompletedScreen extends StatefulWidget {
 
 class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
   bool showServiceDetails = false;
+ final List<LaborItem> laborItems = [];
+
+double get laborTotal {
+  return laborItems.fold(
+    0.0,
+    (total, item) => total + item.total,
+  );
+}
+ 
+ void _showAddLaborDialog() {
+  final descriptionController = TextEditingController();
+  final hoursController = TextEditingController();
+  final rateController = TextEditingController();
+  
+
+  showDialog(
+    context: context,
+    builder: (dialogContext) {
+      return AlertDialog(
+        title: const Text('Add Labor'),
+        content: SizedBox(
+          width: 420,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: descriptionController,
+                textCapitalization: TextCapitalization.sentences,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  hintText: 'Example: Brake repair',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: hoursController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Hours',
+                  hintText: 'Example: 2.5',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: rateController,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Hourly Rate',
+                  hintText: 'Example: 125.00',
+                  prefixText: '\$',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final description = descriptionController.text.trim();
+              final hours = double.tryParse(hoursController.text.trim());
+              final rate = double.tryParse(rateController.text.trim());
+
+              if (description.isEmpty || hours == null || rate == null) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text(
+                      'Enter a description, hours, and hourly rate.',
+                    ),
+                  ),
+                );
+                return;
+              }
+
+           setState(() {
+  laborItems.add(
+    LaborItem(
+      description: description,
+      hours: hours,
+      rate: rate,
+    ),
+  );
+});
+
+Navigator.pop(dialogContext);
+},
+child: const Text('Save Labor'),
+),
+],
+);
+},
+);
+}
 
   void _showMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -628,11 +732,46 @@ _detailRow(
                             ),
                           ],
                         ),
-                        const SizedBox(height: 17),
-                        _priceRow(
-  label: 'Labor',
-  amount: 'Not entered',
+                        SizedBox(
+  width: double.infinity,
+  child: OutlinedButton.icon(
+    onPressed: _showAddLaborDialog,
+    icon: const Icon(Icons.engineering),
+    label: const Text(
+      'Add Labor',
+      style: TextStyle(fontSize: 17),
+    ),
+  ),
 ),
+
+const SizedBox(height: 18),
+if (laborItems.isEmpty)
+  _priceRow(
+    label: 'Labor',
+    amount: 'Not entered',
+  )
+else ...[
+  for (final item in laborItems) ...[
+    _detailRow(
+      label: item.description,
+      value:
+          '${item.hours.toStringAsFixed(2)} hrs × '
+          '\$${item.rate.toStringAsFixed(2)}',
+    ),
+    _priceRow(
+      label: 'Line Total',
+      amount: '\$${item.total.toStringAsFixed(2)}',
+    ),
+    const Divider(
+      color: Colors.white12,
+      height: 20,
+    ),
+  ],
+  _priceRow(
+    label: 'Labor Total',
+    amount: '\$${laborTotal.toStringAsFixed(2)}',
+  ),
+],
 _priceRow(
   label: 'Parts',
   amount: 'Not entered',
@@ -647,7 +786,9 @@ const Divider(
 ),
 _priceRow(
   label: 'TOTAL',
-  amount: 'Pending',
+  amount: laborTotal > 0
+      ? '\$${laborTotal.toStringAsFixed(2)}'
+      : 'Pending',
   total: true,
 ),
                         const SizedBox(height: 8),
