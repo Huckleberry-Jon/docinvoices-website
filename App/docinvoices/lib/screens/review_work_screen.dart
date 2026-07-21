@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../models/job.dart';
 import 'approval_screen.dart';
 import '../models/operation.dart';
+import 'operation_details_screen.dart';
 
 class ReviewWorkScreen extends StatefulWidget {
  const ReviewWorkScreen({
@@ -684,40 +685,57 @@ _priceRow(
       )
     else
       ...widget.job.operations.map(
-        (operation) => Padding(
-          padding: const EdgeInsets.only(bottom: 10),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: const Color(0xFF0B1624),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white12,
-              ),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.build_circle_outlined,
-                  color: Colors.orange,
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    operation.title,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-            ),
+       (operation) => Padding(
+  padding: const EdgeInsets.only(bottom: 10),
+  child: InkWell(
+    borderRadius: BorderRadius.circular(16),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => OperationDetailsScreen(
+            operation: operation,
           ),
         ),
+      );
+    },
+    child: Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF0B1624),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white12,
+        ),
       ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.build_circle_outlined,
+            color: Colors.orange,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              operation.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right,
+            color: Colors.white54,
+          ),
+        ],
+      ),
+    ),
+  ),
+),
+      )
   ],
 ),
                   const SizedBox(height: 16),
