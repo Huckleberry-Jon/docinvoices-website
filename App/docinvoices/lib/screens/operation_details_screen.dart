@@ -20,13 +20,18 @@ class OperationDetailsScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              operation.title,
-              style: const TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
+ ElevatedButton.icon(
+  onPressed: () {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Add Labor coming next...'),
+      ),
+    );
+  },
+  icon: const Icon(Icons.add),
+  label: const Text('Add Labor'),
+),
+            
 
             const SizedBox(height: 30),
 
