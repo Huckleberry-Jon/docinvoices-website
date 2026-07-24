@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'choose_industry_screen.dart';
 
 class BusinessInfoScreen extends StatelessWidget {
-  const BusinessInfoScreen({super.key});
+  const BusinessInfoScreen({
+    super.key,
+    required this.languageCode,
+  });
+
+  final String languageCode;
 
   InputDecoration _fieldStyle(String label, IconData icon) {
     return InputDecoration(
@@ -30,6 +35,7 @@ class BusinessInfoScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = languageCode == 'es';
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -47,8 +53,10 @@ class BusinessInfoScreen extends StatelessWidget {
                     size: 70,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Business Information',
+                  Text(
+  isSpanish
+      ? 'Información de la empresa'
+      : 'Business Information',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -57,76 +65,78 @@ class BusinessInfoScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Tell us about your business.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 36),
-                  TextField(
-                    decoration: _fieldStyle(
-                      'Business Name',
-                      Icons.business_outlined,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  TextField(
-                    keyboardType: TextInputType.phone,
-                    decoration: _fieldStyle(
-                      'Business Phone',
-                      Icons.phone_outlined,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  TextField(
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: _fieldStyle(
-                      'Business Email',
-                      Icons.email_outlined,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  TextField(
-                    decoration: _fieldStyle(
-                      'Street Address',
-                      Icons.location_on_outlined,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: TextField(
-                          decoration: _fieldStyle(
-                            'City',
-                            Icons.location_city_outlined,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        child: TextField(
-                          textCapitalization:
-                              TextCapitalization.characters,
-                          decoration: _fieldStyle(
-                            'State',
-                            Icons.map_outlined,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 18),
-                  TextField(
-                    keyboardType: TextInputType.number,
-                    decoration: _fieldStyle(
-                      'ZIP Code',
-                      Icons.markunread_mailbox_outlined,
-                    ),
+Text(
+  isSpanish
+      ? 'Cuéntenos sobre su empresa.'
+      : 'Tell us about your business.',
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white70,
+    fontSize: 18,
+  ),
+),
+const SizedBox(height: 36),
+TextField(
+  decoration: _fieldStyle(
+    isSpanish ? 'Nombre de la empresa' : 'Business Name',
+    Icons.business_outlined,
+  ),
+),
+const SizedBox(height: 18),
+TextField(
+  keyboardType: TextInputType.phone,
+  decoration: _fieldStyle(
+    isSpanish ? 'Teléfono de la empresa' : 'Business Phone',
+    Icons.phone_outlined,
+  ),
+),
+const SizedBox(height: 18),
+TextField(
+  keyboardType: TextInputType.emailAddress,
+  decoration: _fieldStyle(
+    isSpanish ? 'Correo electrónico de la empresa' : 'Business Email',
+    Icons.email_outlined,
+  ),
+),
+const SizedBox(height: 18),
+TextField(
+  decoration: _fieldStyle(
+    isSpanish ? 'Dirección' : 'Street Address',
+    Icons.location_on_outlined,
+  ),
+),
+const SizedBox(height: 18),
+Row(
+  children: [
+    Expanded(
+      flex: 2,
+      child: TextField(
+        decoration: _fieldStyle(
+          isSpanish ? 'Ciudad' : 'City',
+          Icons.location_city_outlined,
+        ),
+      ),
+    ),
+    const SizedBox(width: 14),
+    Expanded(
+      child: TextField(
+        textCapitalization: TextCapitalization.characters,
+        decoration: _fieldStyle(
+          isSpanish ? 'Estado' : 'State',
+          Icons.map_outlined,
+        ),
+      ),
+    ),
+  ],
+),
+const SizedBox(height: 18),
+TextField(
+  keyboardType: TextInputType.number,
+  decoration: _fieldStyle(
+    isSpanish ? 'Código postal' : 'ZIP Code',
+    Icons.markunread_mailbox_outlined,
+  ),
+
                   ),
                   const SizedBox(height: 34),
                   SizedBox(
@@ -136,15 +146,16 @@ class BusinessInfoScreen extends StatelessWidget {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const ChooseIndustryScreen(),
+                            builder: (context) => ChooseIndustryScreen(
+                           languageCode: languageCode,
+),
                           ),
                         );
                       },
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(fontSize: 20),
-                      ),
+                      child: Text(
+  isSpanish ? 'Continuar' : 'Continue',
+  style: const TextStyle(fontSize: 20),
+),
                     ),
                   ),
                 ],

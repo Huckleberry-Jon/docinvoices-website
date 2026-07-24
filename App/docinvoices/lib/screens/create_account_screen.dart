@@ -3,7 +3,12 @@ import 'package:flutter/material.dart';
 import 'business_info_screen.dart';
 
 class CreateAccountScreen extends StatelessWidget {
-  const CreateAccountScreen({super.key});
+  const CreateAccountScreen({
+    super.key,
+    required this.languageCode,
+  });
+
+  final String languageCode;
 
   InputDecoration _fieldStyle(String label, IconData icon) {
     return InputDecoration(
@@ -30,6 +35,7 @@ class CreateAccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = languageCode == 'es';
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -46,9 +52,11 @@ class CreateAccountScreen extends StatelessWidget {
                     height: 110,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Create Your Account',
-                    textAlign: TextAlign.center,
+                  Text(
+  isSpanish
+      ? 'Cree su cuenta'
+      : 'Create Your Account',
+  textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 32,
@@ -56,52 +64,54 @@ class CreateAccountScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Enter your information to get started.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 18,
-                    ),
-                  ),
+                  Text(
+  isSpanish
+      ? 'Ingrese su información para comenzar.'
+      : 'Enter your information to get started.',
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white70,
+    fontSize: 18,
+  ),
+),
                   const SizedBox(height: 36),
                   TextField(
-                    decoration: _fieldStyle(
-                      'Your Name',
-                      Icons.person_outline,
-                    ),
+                    decoration:_fieldStyle(
+  isSpanish ? 'Su nombre' : 'Your Name',
+  Icons.person_outline,
+),
                   ),
                   const SizedBox(height: 18),
                   TextField(
                     keyboardType: TextInputType.emailAddress,
-                    decoration: _fieldStyle(
-                      'Email Address',
-                      Icons.email_outlined,
-                    ),
+                    decoration:_fieldStyle(
+  isSpanish ? 'Correo electrónico' : 'Email Address',
+  Icons.email_outlined,
+),
                   ),
                   const SizedBox(height: 18),
                   TextField(
                     keyboardType: TextInputType.phone,
-                    decoration: _fieldStyle(
-                      'Phone Number',
-                      Icons.phone_outlined,
-                    ),
+                    decoration:_fieldStyle(
+  isSpanish ? 'Número de teléfono' : 'Phone Number',
+  Icons.phone_outlined,
+),
+                  ),
+                  const SizedBox(height: 18),
+                  TextField(
+                    obscureText: true,
+                    decoration:_fieldStyle(
+  isSpanish ? 'Contraseña' : 'Password',
+  Icons.lock_outline,
+),
                   ),
                   const SizedBox(height: 18),
                   TextField(
                     obscureText: true,
                     decoration: _fieldStyle(
-                      'Password',
-                      Icons.lock_outline,
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  TextField(
-                    obscureText: true,
-                    decoration: _fieldStyle(
-                      'Confirm Password',
-                      Icons.lock_reset_outlined,
-                    ),
+  isSpanish ? 'Confirmar contraseña' : 'Confirm Password',
+  Icons.lock_reset_outlined,
+),
                   ),
                   const SizedBox(height: 36),
                   SizedBox(
@@ -111,15 +121,16 @@ class CreateAccountScreen extends StatelessWidget {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                            builder: (context) =>
-                                const BusinessInfoScreen(),
+                            builder: (context) => BusinessInfoScreen(
+                           languageCode: languageCode,
+),
                           ),
                         );
                       },
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(fontSize: 20),
-                      ),
+                      child: Text(
+  isSpanish ? 'Continuar' : 'Continue',
+  style: const TextStyle(fontSize: 20),
+),
                     ),
                   ),
                 ],

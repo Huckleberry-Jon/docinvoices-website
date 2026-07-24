@@ -3,7 +3,13 @@ import 'package:flutter/material.dart';
 import 'dashboard_screen.dart';
 
 class ConnectPaymentsScreen extends StatefulWidget {
-  const ConnectPaymentsScreen({super.key});
+  const ConnectPaymentsScreen({
+    
+    super.key,
+    required this.languageCode,
+  });
+
+  final String languageCode;
 
   @override
   State<ConnectPaymentsScreen> createState() =>
@@ -14,7 +20,7 @@ class _ConnectPaymentsScreenState extends State<ConnectPaymentsScreen> {
   String? selectedPayment;
 
   Widget _paymentCard(
-    String title,
+        String title,
     IconData icon,
   ) {
     final bool isSelected = selectedPayment == title;
@@ -72,13 +78,16 @@ class _ConnectPaymentsScreenState extends State<ConnectPaymentsScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const DashboardScreen(),
+        builder: (context) => DashboardScreen(
+  languageCode: widget.languageCode,
+),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = widget.languageCode == 'es';
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -97,8 +106,10 @@ class _ConnectPaymentsScreenState extends State<ConnectPaymentsScreen> {
                     size: 70,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'Connect Payments',
+                  Text(
+                     isSpanish
+                     ? 'Conectar pagos'
+                      : 'Connect Payments',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -107,39 +118,41 @@ class _ConnectPaymentsScreenState extends State<ConnectPaymentsScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Choose how you would like to receive payments.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 18,
-                    ),
-                  ),
-                  const SizedBox(height: 40),
-                  _paymentCard(
-                    'Stripe',
-                    Icons.credit_card_outlined,
-                  ),
-                  _paymentCard(
-                    'Square',
-                    Icons.point_of_sale_outlined,
-                  ),
-                  _paymentCard(
-                    'Skip For Now',
-                    Icons.arrow_forward_outlined,
-                  ),
-                  const SizedBox(height: 30),
-                  SizedBox(
-                    height: 60,
-                    child: ElevatedButton(
-                      onPressed:
-                          selectedPayment == null ? null : _continueToDashboard,
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(fontSize: 20),
-                      ),
-                    ),
-                  ),
+                  Text(
+  isSpanish
+      ? 'Elija cómo desea recibir los pagos.'
+      : 'Choose how you would like to receive payments.',
+  textAlign: TextAlign.center,
+  style: const TextStyle(
+    color: Colors.white70,
+    fontSize: 18,
+  ),
+),
+const SizedBox(height: 40),
+_paymentCard(
+  'Stripe',
+  Icons.credit_card_outlined,
+),
+_paymentCard(
+  'Square',
+  Icons.point_of_sale_outlined,
+),
+_paymentCard(
+  isSpanish ? 'Omitir por ahora' : 'Skip For Now',
+  Icons.arrow_forward_outlined,
+),
+const SizedBox(height: 30),
+SizedBox(
+  height: 60,
+  child: ElevatedButton(
+    onPressed:
+        selectedPayment == null ? null : _continueToDashboard,
+    child: Text(
+      isSpanish ? 'Continuar' : 'Continue',
+      style: const TextStyle(fontSize: 20),
+    ),
+  ),
+),
                 ],
               ),
             ),

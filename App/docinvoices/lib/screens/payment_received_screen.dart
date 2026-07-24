@@ -7,10 +7,13 @@ class PaymentReceivedScreen extends StatefulWidget {
     super.key,
     required this.customerName,
     required this.estimatedTotal,
+    required this.languageCode,
   });
 
   final String customerName;
   final String estimatedTotal;
+  final String languageCode;
+
   @override
   State<PaymentReceivedScreen> createState() =>
       _PaymentReceivedScreenState();
@@ -18,6 +21,7 @@ class PaymentReceivedScreen extends StatefulWidget {
 
 class _PaymentReceivedScreenState
     extends State<PaymentReceivedScreen> {
+      bool get isSpanish => widget.languageCode == 'es';
   int selectedRating = 0;
 
   void _showMessage(String message) {
@@ -29,10 +33,12 @@ class _PaymentReceivedScreenState
   }
 
   void _returnToDashboard() {
-    Navigator.pushAndRemoveUntil(
+        Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (context) => const DashboardScreen(),
+        builder: (context) => DashboardScreen(
+  languageCode: widget.languageCode,
+),
       ),
       (route) => false,
     );
@@ -190,6 +196,7 @@ class _PaymentReceivedScreenState
 
   Widget _ratingStar(int rating) {
     final bool selected = rating <= selectedRating;
+    
 
     return IconButton(
       onPressed: () {
@@ -198,7 +205,9 @@ class _PaymentReceivedScreenState
         });
 
         _showMessage(
-          'Thank you for your $rating-star rating.',
+          isSpanish
+    ? 'Gracias por su calificación de $rating estrellas.'
+    : 'Thank you for your $rating-star rating.',
         );
       },
       icon: Icon(
@@ -252,8 +261,8 @@ class _PaymentReceivedScreenState
 
                   const SizedBox(height: 28),
 
-                  const Text(
-                    'Payment Received',
+                   Text(
+                    isSpanish ? 'Pago recibido' : 'Payment Received',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -264,8 +273,8 @@ class _PaymentReceivedScreenState
 
                   const SizedBox(height: 10),
 
-                  const Text(
-                    'Invoice Complete',
+                   Text(
+                    isSpanish ? 'Factura completada' : 'Invoice Complete',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.greenAccent,
@@ -276,8 +285,10 @@ class _PaymentReceivedScreenState
 
                   const SizedBox(height: 10),
 
-                  const Text(
-                                        'Your payment was processed successfully.',
+                 Text(
+                                        isSpanish
+    ? 'Su pago fue procesado correctamente.'
+    : 'Your payment was processed successfully.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
@@ -295,7 +306,7 @@ class _PaymentReceivedScreenState
                       crossAxisAlignment:
                           CrossAxisAlignment.stretch,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.receipt_long_outlined,
@@ -305,7 +316,7 @@ class _PaymentReceivedScreenState
                             SizedBox(width: 12),
                             Expanded(
                               child: Text(
-                                'Payment Receipt',
+                                isSpanish ? 'Recibo de pago' : 'Payment Receipt',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 22,
@@ -314,7 +325,7 @@ class _PaymentReceivedScreenState
                               ),
                             ),
                             Text(
-                              'PAID',
+                              isSpanish ? 'PAGADO' : 'PAID',
                               style: TextStyle(
                                 color: Colors.greenAccent,
                                 fontSize: 18,
@@ -325,34 +336,36 @@ class _PaymentReceivedScreenState
                         ),
                         const SizedBox(height: 18),
                         _detailRow(
-                          label: 'Invoice',
-                          value: 'Pending',
+                          label: isSpanish ? 'Factura' : 'Invoice',
+  value: isSpanish ? 'Pendiente' : 'Pending',
                         ),
                         _detailRow(
-                          label: 'Customer',
-                         value: widget.customerName,
+                          label: isSpanish ? 'Cliente' : 'Customer',
+  value: widget.customerName,
                         ),
                         _detailRow(
-                          label: 'Payment Date',
-                          value: 'Not available',
+                          label: isSpanish ? 'Fecha de pago' : 'Payment Date',
+  value: isSpanish ? 'No disponible' : 'Not available',
                         ),
                         _detailRow(
-                          label: 'Payment Time',
-                          value: 'Not available',
+  label: isSpanish ? 'Hora de pago' : 'Payment Time',
+  value: isSpanish ? 'No disponible' : 'Not available',
                         ),
                         _detailRow(
-                          label: 'Payment Method',
-                          value: 'Payment integration not connected',
+  label: isSpanish ? 'Método de pago' : 'Payment Method',
+  value: isSpanish
+      ? 'La integración de pagos no está conectada'
+      : 'Payment integration not connected',
                         ),
                         const Divider(
                           color: Colors.white24,
                           height: 28,
                         ),
                         _detailRow(
-                          label: 'Amount Paid',
-                          value: 'Not available',
-                          emphasize: true,
-                          valueColor: Colors.greenAccent,
+  label: isSpanish ? 'Monto pagado' : 'Amount Paid',
+  value: '\$${widget.estimatedTotal}',
+  emphasize: true,
+  valueColor: Colors.greenAccent,
                         ),
                       ],
                     ),
@@ -365,7 +378,7 @@ class _PaymentReceivedScreenState
                       crossAxisAlignment:
                           CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.send_outlined,
@@ -374,7 +387,7 @@ class _PaymentReceivedScreenState
                             ),
                             SizedBox(width: 11),
                             Text(
-                              'Receipt Delivered',
+                              isSpanish ? 'Recibo entregado' : 'Receipt Delivered',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -386,20 +399,26 @@ class _PaymentReceivedScreenState
                         const SizedBox(height: 20),
                         _deliveryRow(
   icon: Icons.email_outlined,
-  title: 'Email Delivery',
-  subtitle: 'Available after email setup is connected.',
+  title: isSpanish ? 'Entrega por correo electrónico' : 'Email Delivery',
+subtitle: isSpanish
+    ? 'Disponible después de conectar la configuración del correo electrónico.'
+    : 'Available after email setup is connected.',
   color: Colors.blue,
 ),
                        _deliveryRow(
   icon: Icons.sms_outlined,
-  title: 'Text Delivery',
-  subtitle: 'Available after text messaging is connected.',
+  title: isSpanish ? 'Entrega por mensaje de texto' : 'Text Delivery',
+subtitle: isSpanish
+    ? 'Disponible después de conectar la mensajería de texto.'
+    : 'Available after text messaging is connected.',
   color: Colors.greenAccent,
 ),
                         _deliveryRow(
   icon: Icons.picture_as_pdf_outlined,
-  title: 'Invoice PDF',
-  subtitle: 'PDF delivery will be connected before release.',
+  title: isSpanish ? 'Factura PDF' : 'Invoice PDF',
+subtitle: isSpanish
+    ? 'La entrega del PDF estará conectada antes del lanzamiento.'
+    : 'PDF delivery will be connected before release.',
   color: Colors.redAccent)
                       ],
                     ),
@@ -412,8 +431,8 @@ class _PaymentReceivedScreenState
                       crossAxisAlignment:
                           CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Download a Copy',
+                         Text(
+                          isSpanish ? 'Descargar una copia' : 'Download a Copy',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 21,
@@ -429,7 +448,9 @@ class _PaymentReceivedScreenState
                               color: Colors.greenAccent,
                               onPressed: () {
                                 _showMessage(
-                                  'Receipt download will be connected later.',
+                                  isSpanish
+    ? 'La descarga del recibo se conectará más adelante.'
+    : 'Receipt download will be connected later.',
                                 );
                               },
                             ),
@@ -437,11 +458,13 @@ class _PaymentReceivedScreenState
                             _actionButton(
                               icon:
                                   Icons.picture_as_pdf_outlined,
-                              label: 'Invoice PDF',
+                              label: isSpanish ? 'Factura PDF' : 'Invoice PDF',
                               color: Colors.redAccent,
                               onPressed: () {
                                 _showMessage(
-                                  'Invoice PDF download will be connected later.',
+                                  isSpanish
+      ? 'La descarga del PDF de la factura se conectará más adelante.'
+      : 'Invoice PDF download will be connected later.',
                                 );
                               },
                             ),
@@ -458,8 +481,8 @@ class _PaymentReceivedScreenState
                       crossAxisAlignment:
                           CrossAxisAlignment.stretch,
                       children: [
-                        const Text(
-                          'Need another copy?',
+                         Text(
+                          isSpanish ? '¿Necesita otra copia?' : 'Need another copy?',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -472,22 +495,26 @@ class _PaymentReceivedScreenState
                           children: [
                             _actionButton(
                               icon: Icons.email_outlined,
-                              label: 'Email Again',
+                              label: isSpanish ? 'Enviar por correo nuevamente' : 'Email Again',
                               color: Colors.blue,
                               onPressed: () {
                                 _showMessage(
-                                  'Receipt email sent again.',
+                                  isSpanish
+    ? 'El recibo fue enviado nuevamente por correo electrónico.'
+    : 'Receipt email sent again.',
                                 );
                               },
                             ),
                             const SizedBox(width: 12),
                             _actionButton(
                               icon: Icons.sms_outlined,
-                              label: 'Text Again',
-                              color: Colors.greenAccent,
-                              onPressed: () {
-                                _showMessage(
-                                  'Receipt text sent again.',
+                              label: isSpanish ? 'Enviar por texto nuevamente' : 'Text Again',
+color: Colors.greenAccent,
+onPressed: () {
+  _showMessage(
+    isSpanish
+        ? 'El recibo fue enviado nuevamente por mensaje de texto.'
+        : 'Receipt text sent again.',
                                 );
                               },
                             ),
@@ -502,8 +529,8 @@ class _PaymentReceivedScreenState
                   _card(
                     child: Column(
                       children: [
-                        const Text(
-                          'How did we do?',
+                         Text(
+                          isSpanish ? '¿Cómo lo hicimos?' : 'How did we do?',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 22,
@@ -511,8 +538,10 @@ class _PaymentReceivedScreenState
                           ),
                         ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'Your feedback helps us provide better service.',
+                         Text(
+                          isSpanish
+    ? 'Sus comentarios nos ayudan a brindar un mejor servicio.'
+    : 'Your feedback helps us provide better service.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white60,
@@ -545,8 +574,8 @@ class _PaymentReceivedScreenState
                         Icons.dashboard_outlined,
                         size: 27,
                       ),
-                      label: const Text(
-                        'Return to Dashboard',
+                      label:  Text(
+                        isSpanish ? 'Volver al panel' : 'Return to Dashboard',
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -557,8 +586,10 @@ class _PaymentReceivedScreenState
 
                   const SizedBox(height: 16),
 
-                  const Text(
-                    'Your invoice remains available through the same secure link.',
+                   Text(
+                    isSpanish
+    ? 'Su factura seguirá disponible a través del mismo enlace seguro.'
+    : 'Your invoice remains available through the same secure link.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white54,
@@ -568,8 +599,10 @@ class _PaymentReceivedScreenState
 
                   const SizedBox(height: 18),
 
-                  const Text(
-                    'Created with DocInvoices',
+                   Text(
+                    isSpanish
+    ? 'Creado con DocInvoices'
+    : 'Created with DocInvoices',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white38,

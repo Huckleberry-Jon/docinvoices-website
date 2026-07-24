@@ -3,12 +3,18 @@ import 'package:flutter/material.dart';
 import 'connect_payments_screen.dart';
 
 class ChooseIndustryScreen extends StatefulWidget {
-  const ChooseIndustryScreen({super.key});
+  const ChooseIndustryScreen({
+    super.key,
+    required this.languageCode,
+  });
+
+  final String languageCode;
 
   @override
   State<ChooseIndustryScreen> createState() =>
       _ChooseIndustryScreenState();
 }
+
 
 class _ChooseIndustryScreenState extends State<ChooseIndustryScreen> {
   final List<String> industries = [
@@ -21,6 +27,30 @@ class _ChooseIndustryScreenState extends State<ChooseIndustryScreen> {
     'Construction',
     'Other',
   ];
+  String displayIndustry(String industry, bool isSpanish) {
+  if (!isSpanish) return industry;
+
+  switch (industry) {
+    case 'Mechanic Repair':
+      return 'Reparación Mecánica';
+    case 'Plumbing':
+      return 'Plomería';
+    case 'HVAC':
+      return 'HVAC';
+    case 'Electrical':
+      return 'Electricidad';
+    case 'Lawn Care':
+      return 'Jardinería';
+    case 'Handyman':
+      return 'Servicios Generales';
+    case 'Construction':
+      return 'Construcción';
+    case 'Other':
+      return 'Otro';
+    default:
+      return industry;
+  }
+}
 
   String? selectedIndustry;
   final TextEditingController otherController = TextEditingController();
@@ -35,13 +65,16 @@ class _ChooseIndustryScreenState extends State<ChooseIndustryScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => const ConnectPaymentsScreen(),
+        builder: (context) => ConnectPaymentsScreen(
+  languageCode: widget.languageCode,
+),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = widget.languageCode == 'es';
     final bool showOtherField = selectedIndustry == 'Other';
 
     return Scaffold(
@@ -62,8 +95,10 @@ class _ChooseIndustryScreenState extends State<ChooseIndustryScreen> {
                     size: 70,
                   ),
                   const SizedBox(height: 24),
-                  const Text(
-                    'What type of work do you do?',
+                  Text(
+                    isSpanish
+      ? '¿Qué tipo de trabajo realiza?'
+      : 'What type of work do you do?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white,
@@ -72,9 +107,10 @@ class _ChooseIndustryScreenState extends State<ChooseIndustryScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Select the option that best describes your business.',
-                    textAlign: TextAlign.center,
+                   Text(
+  isSpanish
+      ? 'Seleccione la opción que mejor describa su empresa.'
+      : 'Select the option that best describes your business.',
                     style: TextStyle(
                       color: Colors.white70,
                       fontSize: 18,
@@ -122,7 +158,8 @@ class _ChooseIndustryScreenState extends State<ChooseIndustryScreen> {
                               const SizedBox(width: 16),
                               Expanded(
                                 child: Text(
-                                  industry,
+                                  displayIndustry(industry, isSpanish),
+                                
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 18,
@@ -173,9 +210,10 @@ class _ChooseIndustryScreenState extends State<ChooseIndustryScreen> {
                       onPressed: selectedIndustry == null
                           ? null
                           : _continueToPayments,
-                      child: const Text(
-                        'Continue',
-                        style: TextStyle(fontSize: 20),
+                      child: Text(
+  isSpanish ? 'Continuar' : 'Continue',
+  style: const TextStyle(fontSize: 20),
+                        
                       ),
                     ),
                   ),

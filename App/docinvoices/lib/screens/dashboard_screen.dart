@@ -3,14 +3,21 @@ import 'package:flutter/material.dart';
 import 'create_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
+  const DashboardScreen({
+    super.key,
+    required this.languageCode,
+  });
+
+  final String languageCode;
 
   void _openCreate(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const CreateScreen(),
-      ),
+        builder: (context) => CreateScreen(
+  languageCode: languageCode,
+),
+               ),
     );
   }
 
@@ -218,6 +225,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = languageCode == 'es';
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -323,37 +331,43 @@ class DashboardScreen extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 34),
-                        const Text(
-                          'Welcome Back! 👋',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 31,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Let’s get some work done.',
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 19,
-                          ),
-                        ),
-                        const SizedBox(height: 28),
-                        Row(
-                          children: [
-                            _summaryCard(
-                              context: context,
-                              title: 'Jobs Today',
-value: '0',
-subtitle: 'No Active Jobs',
-                              icon: Icons.work_outline,
-                              color: Colors.blue,
-                            ),
-                            const SizedBox(width: 16),
-                            _summaryCard(
-                              context: context,
-                             title: 'Invoices Waiting',
+                        Text(
+  isSpanish ? '¡Bienvenido de nuevo! 👋' : 'Welcome Back! 👋',
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 31,
+    fontWeight: FontWeight.bold,
+  ),
+),
+const SizedBox(height: 8),
+Text(
+  isSpanish
+      ? 'Vamos a poner manos a la obra.'
+      : 'Let’s get some work done.',
+  style: const TextStyle(
+    color: Colors.white60,
+    fontSize: 19,
+  ),
+),
+const SizedBox(height: 28),
+Row(
+  children: [
+    _summaryCard(
+      context: context,
+      title: isSpanish ? 'Trabajos de hoy' : 'Jobs Today',
+      value: '0',
+      subtitle: isSpanish
+          ? 'No hay trabajos activos'
+          : 'No Active Jobs',
+      icon: Icons.work_outline,
+      color: Colors.blue,
+    ),
+    const SizedBox(width: 16),
+    _summaryCard(
+      context: context,
+      title: isSpanish
+          ? 'Facturas pendientes'
+          : 'Invoices Waiting',
 value: '0',
 subtitle: '\$0.00',
                               icon: Icons.receipt_long_outlined,
@@ -371,7 +385,7 @@ subtitle: '\$0.00',
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Padding(
+                               Padding(
                                 padding: EdgeInsets.fromLTRB(
                                   22,
                                   22,
@@ -392,7 +406,8 @@ subtitle: '\$0.00',
                                             CrossAxisAlignment.start,
                                         children: [
                                           Text(
-                                            'Workflow',
+                                          isSpanish ? 'Flujo de trabajo'
+                                                     : 'Workflow.',
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 28,
@@ -401,7 +416,8 @@ subtitle: '\$0.00',
                                           ),
                                           SizedBox(height: 4),
                                           Text(
-                                            'Everything you need to get the job done.',
+                                               isSpanish ? 'Todo lo que necesita para completar el trabajo.'
+    : 'Everything you need to get the job done.',
                                             style: TextStyle(
                                               color: Colors.white60,
                                               fontSize: 15,
@@ -419,9 +435,11 @@ subtitle: '\$0.00',
                               ),
                               _workflowItem(
                                 context: context,
-                                title: 'New Job',
+                                title: isSpanish?'Nuevo trabajo'
+    : 'New Job',
                                 subtitle:
-                                    'Create a new job or work order.',
+                                    isSpanish? 'Crear un nuevo trabajo u orden de trabajo.'
+    : 'Create a new job or work order.',
                                 icon: Icons.note_add_outlined,
                                 color: Colors.blue,
                                 onTap: () => _openCreate(context),
@@ -432,7 +450,8 @@ subtitle: '\$0.00',
                               ),
                               _workflowItem(
                                 context: context,
-                                title: 'Continue Current Job',
+                                title: isSpanish? 'Continuar trabajo'
+    : 'Continue Current Job',
                                 subtitle:
                                     '2021 Peterbilt 579 • Cooling System Repair',
                                 icon: Icons.update,
@@ -444,9 +463,13 @@ subtitle: '\$0.00',
                               ),
                               _workflowItem(
                                 context: context,
-                                title: 'Scheduled Jobs',
+                                title: isSpanish
+    ? 'Trabajos programados'
+    : 'Scheduled Jobs',
                                 subtitle:
-                                    'View your upcoming jobs.',
+                                    isSpanish
+    ? 'Ver sus próximos trabajos.'
+    : 'View your upcoming jobs.',
                                 icon: Icons.calendar_month_outlined,
                                 color: Colors.purpleAccent,
                               ),
@@ -456,9 +479,13 @@ subtitle: '\$0.00',
                               ),
                               _workflowItem(
                                 context: context,
-                                title: 'Tasks',
+                                title: isSpanish
+    ? 'Tareas'
+    : 'Tasks',
                                 subtitle:
-                                    'Tasks and follow-ups.',
+                                    isSpanish
+    ? 'Tareas y seguimientos.'
+    : 'Tasks and follow-ups.',
                                 icon: Icons.fact_check_outlined,
                                 color: Colors.lightBlueAccent,
                               ),
@@ -530,11 +557,11 @@ subtitle: '\$0.00',
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
-                                'Create',
-                                style: TextStyle(
-                                  color: Colors.blue,
-                                  fontSize: 14,
+                              Text(
+  isSpanish ? 'Crear' : 'Create',
+  style: const TextStyle(
+    color: Colors.blue,
+    fontSize: 14,
                                 ),
                               ),
                             ],

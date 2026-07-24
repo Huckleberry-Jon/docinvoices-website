@@ -5,15 +5,18 @@ class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({
     super.key,
     required this.job,
+    required this.languageCode,
   });
 
   final Job job;
+  final String languageCode;
 
   @override
   State<ApprovalScreen> createState() => _ApprovalScreenState();
 }
 
 class _ApprovalScreenState extends State<ApprovalScreen> {
+  bool get isSpanish => widget.languageCode == 'es';
   String? selectedApprovalMethod;
   String? selectedSendMethod;
 
@@ -270,22 +273,27 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   }
 
   void _continue() {
-    if (!_canContinue) {
-      _showMessage(
-        'Choose an approval method and send method first.',
-      );
+  if (!_canContinue) {
+    _showMessage(
+      isSpanish
+          ? 'Primero elija un método de aprobación y un método de envío.'
+          : 'Choose an approval method and send method first.',
+    );
       return;
+    
     }
 Navigator.push(
   context,
   MaterialPageRoute(
     builder: (context) => WorkCompletedScreen(
+      languageCode: widget.languageCode,
       job: widget.job,
 ),
   ),
 );  }
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = widget.languageCode == 'es';
     final bool customerApprovalSelected =
         selectedApprovalMethod == 'Customer Approval';
 
@@ -310,11 +318,11 @@ Navigator.push(
                           size: 27,
                         ),
                       ),
-                      const Expanded(
-                        child: Column(
-                          children: [
-                            Text(
-                              'Approve Work',
+                     Expanded(
+  child: Column(
+    children: [
+      Text(
+        isSpanish ? 'Aprobar trabajo' : 'Approve Work',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
@@ -324,7 +332,7 @@ Navigator.push(
                             ),
                             SizedBox(height: 5),
                             Text(
-                              'Job Number',
+  isSpanish ? 'Número de trabajo' : 'Job Number',
                               style: TextStyle(
                                 color: Colors.white54,
                                 fontSize: 14,
@@ -336,7 +344,9 @@ Navigator.push(
                       IconButton(
                         onPressed: () {
                           _showMessage(
-                            'Approval help will be connected later.',
+                            isSpanish
+    ? 'La ayuda de aprobación se conectará más adelante.'
+    : 'Approval help will be connected later.',
                           );
                         },
                         icon: const Icon(
@@ -357,7 +367,7 @@ Navigator.push(
                         color: Colors.orange.withValues(alpha: 0.45),
                       ),
                     ),
-                    child: const Row(
+                    child:  Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
@@ -371,7 +381,7 @@ Navigator.push(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Ready for Approval',
+                                isSpanish ? 'Listo para aprobación' : 'Ready for Approval',
                                 style: TextStyle(
                                   color: Colors.orange,
                                   fontSize: 21,
@@ -380,7 +390,9 @@ Navigator.push(
                               ),
                               SizedBox(height: 6),
                               Text(
-                                'Your work has been reviewed. Choose how you want to approve and continue.',
+                                isSpanish
+    ? 'Su trabajo ha sido revisado. Elija cómo desea aprobarlo y continuar.'
+    : 'Your work has been reviewed. Choose how you want to approve and continue.',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16,
@@ -404,7 +416,7 @@ Navigator.push(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.local_shipping_outlined,
@@ -412,7 +424,7 @@ Navigator.push(
                             ),
                             SizedBox(width: 10),
                             Text(
-                              'Job Information',
+                              isSpanish ? 'Información del trabajo' : 'Job Information',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 21,
@@ -423,48 +435,41 @@ Navigator.push(
                         ),
                         const SizedBox(height: 18),
                         _jobDetail(
-                          label: 'Customer',
-                          value:  widget.job.customerName,
-),
-                        
-                        _jobDetail(
-                          label: 'Equipment',
-                          value:  widget.job.equipment,
-                        ),
-                        _jobDetail(
-  label: 'Customer',
+  label: isSpanish ? 'Cliente' : 'Customer',
   value: widget.job.customerName,
 ),
 
 _jobDetail(
-  label: 'Equipment',
+  label: isSpanish ? 'Equipo' : 'Equipment',
   value: widget.job.equipment,
 ),
 
 _jobDetail(
-  label: 'Unit #',
+  label: isSpanish ? 'Unidad #' : 'Unit #',
   value: widget.job.unitNumber,
 ),
 
-_jobDetail(
-  label: 'VIN',
-  value: widget.job.vin,
-),
+if (widget.job.vin.isNotEmpty)
+  _jobDetail(
+    label: 'VIN',
+    value: widget.job.vin,
+  ),
 
-_jobDetail(
-  label: 'Mileage',
-  value: widget.job.mileage,
-),
+if (widget.job.mileage.isNotEmpty)
+  _jobDetail(
+    label: isSpanish ? 'Kilometraje' : 'Mileage',
+    value: widget.job.mileage,
+  ),
                         
                         const Divider(
                           color: Colors.white12,
                           height: 28,
                         ),
-                        const Row(
+                         Row(
                           children: [
                             Expanded(
                               child: Text(
-                                'Invoice Total',
+                                isSpanish ? 'Total de la factura' : 'Invoice Total',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 17,
@@ -485,8 +490,10 @@ _jobDetail(
                     ),
                   ),
                   const SizedBox(height: 22),
-                  const Text(
-                    'Who should approve this?',
+                  Text(
+                    isSpanish
+    ? '¿Quién debe aprobar esto?'
+    : 'Who should approve this?',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 23,
@@ -501,8 +508,12 @@ _jobDetail(
                     return _selectionCard(
                       title: method,
                       subtitle: method == 'Customer Approval'
-                          ? 'Send the work details to the customer for approval.'
-                          : 'Approve the work yourself and create the invoice now.',
+    ? (isSpanish
+        ? 'Envíe los detalles del trabajo al cliente para su aprobación.'
+        : 'Send the work details to the customer for approval.')
+    : (isSpanish
+        ? 'Apruebe el trabajo usted mismo y cree la factura ahora.'
+        : 'Approve the work yourself and create the invoice now.'),
                       icon: _approvalIcon(method),
                       selected: selected,
                       accentColor: method == 'Customer Approval'
@@ -521,8 +532,10 @@ _jobDetail(
                   }),
                   if (customerApprovalSelected) ...[
                     const SizedBox(height: 10),
-                    const Text(
-                      'How would you like to request approval?',
+                    Text(
+                      isSpanish
+    ? '¿Cómo le gustaría solicitar la aprobación?'
+    : 'How would you like to request approval?',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 23,
@@ -537,14 +550,24 @@ _jobDetail(
                       return _selectionCard(
                         title: method,
                         subtitle: method == 'Text Message'
-                            ? 'Send a secure approval link by text.'
-                            : method == 'Email'
-                                ? 'Send a secure approval link by email.'
-                                : method == 'Signature'
-                                    ? 'Have the customer sign directly on this device.'
-                                    : method == 'Phone Approval'
-                                        ? 'Record verbal approval and approval notes.'
-                                        : 'Create a printable approval PDF.',
+    ? (isSpanish
+        ? 'Envíe un enlace seguro de aprobación por mensaje de texto.'
+        : 'Send a secure approval link by text.')
+    : method == 'Email'
+        ? (isSpanish
+            ? 'Envíe un enlace seguro de aprobación por correo electrónico.'
+            : 'Send a secure approval link by email.')
+        : method == 'Signature'
+            ? (isSpanish
+                ? 'Haga que el cliente firme directamente en este dispositivo.'
+                : 'Have the customer sign directly on this device.')
+            : method == 'Phone Approval'
+                ? (isSpanish
+                    ? 'Registre la aprobación verbal y las notas de aprobación.'
+                    : 'Record verbal approval and approval notes.')
+                : (isSpanish
+                    ? 'Cree un PDF de aprobación para imprimir.'
+                    : 'Create a printable approval PDF.'),
                         icon: _sendIcon(method),
                         selected: selected,
                         accentColor: Colors.greenAccent,
@@ -567,7 +590,7 @@ _jobDetail(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.notes_outlined,
@@ -575,7 +598,7 @@ _jobDetail(
                             ),
                             SizedBox(width: 10),
                             Text(
-                              'Approval Notes',
+                              isSpanish ? 'Notas de aprobación' : 'Approval Notes',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 21,
@@ -595,7 +618,9 @@ _jobDetail(
                           ),
                           decoration: InputDecoration(
                             hintText:
-                                'Optional notes, approval contact, or special instructions.',
+                                isSpanish
+    ? 'Notas opcionales, contacto de aprobación o instrucciones especiales.'
+    : 'Optional notes, approval contact, or special instructions.',
                             hintStyle: const TextStyle(
                               color: Colors.white38,
                               height: 1.4,
@@ -633,7 +658,7 @@ _jobDetail(
                         color: Colors.greenAccent.withValues(alpha: 0.35),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
@@ -647,7 +672,9 @@ _jobDetail(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Secure Approval Record',
+                                isSpanish
+    ? 'Registro seguro de aprobación'
+    : 'Secure Approval Record',
                                 style: TextStyle(
                                   color: Colors.greenAccent,
                                   fontSize: 19,
@@ -656,7 +683,9 @@ _jobDetail(
                               ),
                               SizedBox(height: 6),
                               Text(
-                                'Approvals are time-stamped and stored with the job for your records.',
+                                isSpanish
+    ? 'Las aprobaciones se registran con fecha y hora y se guardan con el trabajo para sus registros.'
+    : 'Approvals are time-stamped and stored with the job for your records.',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 15,
@@ -680,7 +709,7 @@ _jobDetail(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.history,
@@ -688,7 +717,7 @@ _jobDetail(
                             ),
                             SizedBox(width: 10),
                             Text(
-                              'Approval History',
+                              isSpanish ? 'Historial de aprobaciones' : 'Approval History',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 21,
@@ -699,24 +728,24 @@ _jobDetail(
                         ),
                         const SizedBox(height: 20),
                         _timelineItem(
-                          title: 'Work Reviewed',
+                          title: isSpanish ? 'Trabajo revisado' : 'Work Reviewed',
                           time: 'Today at 9:42 PM',
                           color: Colors.blue,
                           completed: true,
                         ),
                         _timelineItem(
-                          title: 'Approval Requested',
+                          title: isSpanish ? 'Aprobación solicitada' : 'Approval Requested',
                           time: 'Waiting',
                           color: Colors.orange,
                         ),
                         _timelineItem(
-                          title: 'Approved',
-                          time: 'Waiting',
+                          title: isSpanish ? 'Aprobado' : 'Approved',
+                          time: isSpanish ? 'En espera' : 'Waiting',
                           color: Colors.greenAccent,
                         ),
                         _timelineItem(
-                          title: 'Invoice Sent',
-                          time: 'Waiting',
+                          title: isSpanish ? 'Factura enviada' : 'Invoice Sent',
+                          time: isSpanish ? 'En espera' : 'Waiting',
                           color: Colors.purpleAccent,
                         ),
                       ],
@@ -734,8 +763,12 @@ _jobDetail(
                       ),
                       label: Text(
                         selectedApprovalMethod == 'Self Approval'
-                            ? 'Approve & Create Invoice'
-                            : 'Request Approval',
+    ? (isSpanish
+        ? 'Aprobar y crear factura'
+        : 'Approve & Create Invoice')
+    : (isSpanish
+        ? 'Solicitar aprobación'
+        : 'Request Approval'),
                         style: const TextStyle(
                           fontSize: 20,
                         ),
@@ -743,8 +776,10 @@ _jobDetail(
                     ),
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    'Nothing will be sent until you press the button above.',
+                   Text(
+                    isSpanish
+    ? 'No se enviará nada hasta que presione el botón de arriba.'
+    : 'Nothing will be sent until you press the button above.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white54,

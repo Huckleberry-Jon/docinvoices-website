@@ -7,6 +7,7 @@ import 'operation_details_screen.dart';
 class ReviewWorkScreen extends StatefulWidget {
  const ReviewWorkScreen({
   super.key,
+  required this.languageCode,
   required this.job,
   required this.transcription,
   required this.customerName,
@@ -18,6 +19,7 @@ required this.poNumber,
 required this.completedDate,
 required this.estimatedTotal,
 });
+final String languageCode;
 final Job job;
 final String transcription;
 final String customerName;
@@ -45,6 +47,7 @@ class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
     context,
     MaterialPageRoute(
       builder: (context) => ApprovalScreen(
+        languageCode: widget.languageCode,
         job: widget.job,
       ),
     ),
@@ -52,26 +55,32 @@ class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
 }
 
 Future<void> _addOperation() async {
+  final bool isSpanish = widget.languageCode == 'es';
   final controller = TextEditingController();
 
   final String? title = await showDialog<String>(
     context: context,
     builder: (context) {
       return AlertDialog(
-        title: const Text('Add Operation'),
+        title: Text(
+  isSpanish ? 'Agregar operación' : 'Add Operation',),
         content: TextField(
           controller: controller,
           autofocus: true,
           textCapitalization: TextCapitalization.sentences,
-          decoration: const InputDecoration(
-            labelText: 'Operation title',
-            hintText: 'Example: Replace Water Pump',
+          decoration:  InputDecoration(
+            labelText: isSpanish ? 'Título de la operación' : 'Operation title',
+            hintText: isSpanish
+    ? 'Ejemplo: Reemplazar bomba de agua'
+    : 'Example: Replace Water Pump',
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+            child: Text(
+  isSpanish ? 'Cancelar' : 'Cancel',
+),
           ),
           ElevatedButton(
             onPressed: () {
@@ -83,7 +92,9 @@ Future<void> _addOperation() async {
 
               Navigator.pop(context, value);
             },
-            child: const Text('Save'),
+            child: Text(
+  isSpanish ? 'Guardar' : 'Save',
+),
           ),
         ],
       );
@@ -281,6 +292,7 @@ Future<void> _addOperation() async {
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = widget.languageCode == 'es';
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -302,11 +314,13 @@ Future<void> _addOperation() async {
                           size: 27,
                         ),
                       ),
-                      const Expanded(
+                       Expanded(
                         child: Column(
                           children: [
                             Text(
-                              'Review Your Work',
+  isSpanish
+      ? 'Revise su trabajo'
+      : 'Review Your Work',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
@@ -314,22 +328,19 @@ Future<void> _addOperation() async {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SizedBox(height: 5),
-                            Text(
-                              'widget.jobNumber',
-                              style: TextStyle(
-                                color: Colors.white54,
-                                fontSize: 14,
-                              ),
-                            ),
+
+
+
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () {
                           _showMessage(
-                            context,
-                            'Review help will be connected later.',
+  context,
+  isSpanish
+      ? 'La ayuda para esta pantalla estará disponible próximamente.'
+      : 'Review help will be connected later.',
                           );
                         },
                         icon: const Icon(
@@ -363,7 +374,7 @@ Future<void> _addOperation() async {
                   ),
                   const SizedBox(height: 18),
                   _card(
-                    child: const Row(
+                    child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
@@ -381,7 +392,9 @@ Future<void> _addOperation() async {
                                 CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Awaiting Review',
+                                isSpanish
+    ? 'Pendiente de revisión'
+    : 'Awaiting Review',
                                 style: TextStyle(
                                   color: Colors.amber,
                                   fontSize: 21,
@@ -390,7 +403,9 @@ Future<void> _addOperation() async {
                               ),
                               SizedBox(height: 6),
                               Text(
-                                'Review the details below before continuing.',
+                                isSpanish
+    ? 'Revise los detalles a continuación antes de continuar.'
+    : 'Review the details below before continuing.',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16,
@@ -409,8 +424,8 @@ Future<void> _addOperation() async {
     children: [
       _infoItem(
         icon: Icons.person_outline,
-        label: 'Customer',
-        value: widget.job.customerName,
+        label: isSpanish ? 'Cliente' : 'Customer',
+        value: widget.customerName,
         color: Colors.blue,
       ),
       const Divider(
@@ -419,8 +434,14 @@ Future<void> _addOperation() async {
       ),
       _infoItem(
         icon: Icons.local_shipping_outlined,
-        label: 'Equipment',
-        value: '${widget.equipment}\nUnit ${widget.unitNumber}',
+        label: isSpanish ? 'Equipo' : 'Equipment',
+        value: [
+  widget.equipment,
+  if (widget.unitNumber.isNotEmpty)
+    '${isSpanish ? 'Unidad' : 'Unit'} ${widget.unitNumber}',
+  if (widget.vin.isNotEmpty)
+    '${isSpanish ? 'VIN / Serie' : 'VIN / Serial'}: ${widget.vin}',
+].where((value) => value.isNotEmpty).join('\n'),
         color: Colors.blue,
       ),
       const Divider(
@@ -429,8 +450,8 @@ Future<void> _addOperation() async {
       ),
       _infoItem(
         icon: Icons.location_on_outlined,
-        label: 'Location',
-        value: 'Not specified',
+        label: isSpanish ? 'Ubicación' : 'Location',
+value: isSpanish ? 'No especificada' : 'Not specified',
         color: Colors.blue,
       ),
     ],
@@ -444,13 +465,15 @@ Future<void> _addOperation() async {
                         _sectionHeader(
                           context: context,
                           icon: Icons.build_outlined,
-                          title: 'Services Performed',
+                          title: isSpanish ? 'Servicios realizados' : 'Services Performed',
                           color: Colors.blue,
                         ),
                         const SizedBox(height: 8),
                         if (widget.transcription.isEmpty)
   _bulletItem(
-    'No work entered.',
+  isSpanish
+      ? 'No se ingresó ningún trabajo.'
+      : 'No work entered.',
     Colors.orange,
   )
 else
@@ -465,15 +488,17 @@ else
                         _sectionHeader(
                           context: context,
                           icon: Icons.inventory_2_outlined,
-                          title: 'Parts',
+                          title: isSpanish ? 'Piezas' : 'Parts',
                           color: Colors.greenAccent,
                         ),
                         const SizedBox(height: 8),
-                       const Row(
+                        Row(
   children: [
     Expanded(
       child: Text(
-        'No parts entered',
+  isSpanish
+      ? 'No se ingresaron piezas'
+      : 'No parts entered',
         style: TextStyle(
           color: Colors.white70,
           fontSize: 17,
@@ -489,7 +514,7 @@ else
                         _sectionHeader(
                           context: context,
                           icon: Icons.notes_outlined,
-                          title: 'Notes',
+                          title: isSpanish ? 'Notas' : 'Notes',
                           color: Colors.amber,
                         ),
                         const SizedBox(height: 6),
@@ -510,26 +535,26 @@ else
                         _sectionHeader(
                           context: context,
                           icon: Icons.calculate_outlined,
-                          title: 'Estimated Total',
+                          title: isSpanish ? 'Total estimado' : 'Estimated Total',
                           color: Colors.purpleAccent,
                         ),
                         const SizedBox(height: 4),
                         _priceRow(
-  label: 'Labor',
-  amount: 'Not entered',
+  label: isSpanish ? 'Mano de obra' : 'Labor',
+amount: isSpanish ? 'No ingresado' : 'Not entered',
 ),
 
 _priceRow(
-  label: 'Parts',
-  amount: 'Not entered',
+  label: isSpanish ? 'Piezas' : 'Parts',
+amount: isSpanish ? 'No ingresado' : 'Not entered',
 ),
                         Row(
                           children: [
                             Expanded(
                               child: Row(
                                 children: [
-                                  const Text(
-                                    'Sales Tax',
+                                  Text(
+  isSpanish ? 'Impuesto sobre ventas' : 'Sales Tax',
                                     style: TextStyle(
                                       color: Colors.white70,
                                       fontSize: 17,
@@ -540,7 +565,9 @@ _priceRow(
                                     onTap: () {
                                       _showMessage(
                                         context,
-                                        'Sales tax is based on your saved tax settings.',
+isSpanish
+    ? 'El impuesto sobre ventas se basa en la configuración de impuestos guardada.'
+    : 'Sales tax is based on your saved tax settings.',
                                       );
                                     },
                                     child: const Icon(
@@ -552,8 +579,10 @@ _priceRow(
                                 ],
                               ),
                             ),
-                            const Text(
-                              'Calculated on invoice',
+                            Text(
+  isSpanish
+      ? 'Calculado en la factura'
+      : 'Calculated on invoice',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 17,
@@ -566,8 +595,8 @@ _priceRow(
                           height: 28,
                         ),
                         _priceRow(
-                          label: 'TOTAL',
-                          amount: 'Pending',
+                          label: isSpanish ? 'TOTAL' : 'TOTAL',
+amount: isSpanish ? 'Pendiente' : 'Pending',
                           bold: true,
                           amountColor: Colors.purpleAccent,
                         ),
@@ -577,9 +606,11 @@ _priceRow(
                         ),
                         Row(
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Sales tax is calculated from your business settings.',
+                                isSpanish
+    ? 'El impuesto sobre ventas se calcula según la configuración de su negocio.'
+    : 'Sales tax is calculated from your business settings.',
                                 style: TextStyle(
                                   color: Colors.white54,
                                   fontSize: 13,
@@ -590,11 +621,15 @@ _priceRow(
                               onPressed: () {
                                 _showMessage(
                                   context,
-                                  'Tax Settings will be connected later.',
+                                  isSpanish
+    ? 'La configuración de impuestos estará disponible próximamente.'
+    : 'Tax Settings will be connected later.',
                                 );
                               },
-                              child: const Text(
-                                'View Tax Settings',
+                              child: Text(
+                               isSpanish
+    ? 'Ver configuración de impuestos'
+    : 'View Tax Settings',
                               ),
                             ),
                           ],
@@ -611,15 +646,16 @@ _priceRow(
                           child: OutlinedButton.icon(
                             onPressed: () {
                               _showMessage(
-                                context,
-                                'Edit All will be connected later.',
-                              );
+  context,
+  isSpanish
+      ? 'Editar todo estará disponible próximamente.'
+      : 'Edit All will be connected later.',
+);
                             },
                             icon: const Icon(Icons.edit_outlined),
-                            label: const Text(
-                              'Edit All',
-                              style: TextStyle(fontSize: 18),
-                            ),
+                            label: Text(
+  isSpanish ? 'Editar todo' : 'Edit All',
+),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: Colors.blue,
                               side: const BorderSide(
@@ -644,8 +680,10 @@ _priceRow(
                               Icons.arrow_forward,
                               size: 28,
                             ),
-                            label: const Text(
-                              'Continue',
+                            label: Text(
+                              isSpanish
+    ? 'Continuar'
+    : 'Continue',
                               style: TextStyle(fontSize: 20),
                             ),
                           ),
@@ -659,8 +697,8 @@ _priceRow(
     Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        const Text(
-          'Operations',
+        Text(
+  isSpanish ? 'Operaciones' : 'Operations',
           style: TextStyle(
             color: Colors.white,
             fontSize: 20,
@@ -669,15 +707,19 @@ _priceRow(
         ),
         TextButton.icon(
           onPressed: _addOperation,
-          icon: const Icon(Icons.add),
-          label: const Text('Add Operation'),
+          icon:  Icon(Icons.add),
+          label: Text(
+  isSpanish ? 'Agregar operación' : 'Add Operation',
+          )
         ),
       ],
     ),
     const SizedBox(height: 12),
     if (widget.job.operations.isEmpty)
-      const Text(
-        'No operations added yet.',
+      Text(
+        isSpanish
+    ? 'Aún no se han agregado operaciones.'
+    : 'No operations added yet.',
         style: TextStyle(
           color: Colors.white54,
           fontSize: 15,
@@ -739,7 +781,7 @@ _priceRow(
   ],
 ),
                   const SizedBox(height: 16),
-                  const Row(
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
@@ -750,7 +792,9 @@ _priceRow(
                       SizedBox(width: 7),
                       Flexible(
                         child: Text(
-                          'Nothing is sent or charged until you continue.',
+                          isSpanish
+    ? 'No se enviará ni se cobrará nada hasta que continúe.'
+    : 'Nothing is sent or charged until you continue.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white54,

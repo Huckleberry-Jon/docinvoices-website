@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'voice_capture_screen.dart';
+
+import 'new_job_screen.dart';
 class CreateScreen extends StatefulWidget {
   const CreateScreen({
-  super.key,
+     super.key,
+  required this.languageCode,
   this.customerName = '',
   this.equipment = '',
   this.unitNumber = '',
@@ -11,7 +13,7 @@ class CreateScreen extends StatefulWidget {
   this.poNumber = '',
   this.completedDate = '',
 });
-
+final String languageCode;
   final String customerName;
   final String equipment;
   final String unitNumber;
@@ -22,28 +24,17 @@ final String completedDate;
 
   @override
   State<CreateScreen> createState() => _CreateScreenState();
+  
 } 
   
 
 class _CreateScreenState extends State<CreateScreen> {
   bool isListening = false;
+ 
 
-  void _openVoiceCapture() {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => VoiceCaptureScreen(
-        customerName: widget.customerName,
-        equipment: widget.equipment,
-        unitNumber: widget.unitNumber,
-        vin: widget.vin,
-        mileage: widget.mileage,
-poNumber: widget.poNumber,
-completedDate: widget.completedDate,
-      ),
-    ),
-  );
-}
+
+
+  
 
   void _showComingSoon(String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -54,19 +45,18 @@ completedDate: widget.completedDate,
   }
 
   Widget _createOption({
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required Color accentColor,
-  }) {
+  required String title,
+  required String subtitle,
+  required IconData icon,
+  required Color accentColor,
+  VoidCallback? onTap,
+}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: InkWell(
+        onTap: onTap ?? () => _showComingSoon(title),
         borderRadius: BorderRadius.circular(18),
-        onTap: title == 'New Job'
-    ? _openVoiceCapture
-    : () => _showComingSoon(title),
-        child: Container(
+               child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 18,
             vertical: 18,
@@ -278,6 +268,7 @@ completedDate: widget.completedDate,
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = widget.languageCode == 'es';
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -332,18 +323,20 @@ completedDate: widget.completedDate,
                             ],
                           ),
                         ),
-                        const SizedBox(height: 5),
-                        const Text(
-                          'Create',
+                         SizedBox(height: 5),
+                        Text(
+  isSpanish ? 'Crear' : 'Create',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 30,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 30),
-                        const Text(
-                          'What would you like to create?',
+                        SizedBox(height: 30),
+                        Text(
+  isSpanish
+      ? '¿Qué le gustaría crear?'
+      : 'What would you like to create?',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -351,9 +344,11 @@ completedDate: widget.completedDate,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          'Choose an option below or just tap the microphone.',
+                         SizedBox(height: 8),
+                        Text(
+  isSpanish
+      ? 'Elija una opción a continuación o simplemente toque el micrófono.'
+      : 'Choose an option below or just tap the microphone.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white70,
@@ -361,30 +356,58 @@ completedDate: widget.completedDate,
                           ),
                         ),
                         const SizedBox(height: 28),
-                        _createOption(
-                          title: 'New Job',
-                          subtitle: 'Create a new job or work order.',
-                          icon: Icons.local_shipping_outlined,
-                          accentColor: Colors.blue,
-                        ),
-                        _createOption(
-                          title: 'Estimate',
-                          subtitle: 'Create an estimate for a customer.',
-                          icon: Icons.request_quote_outlined,
-                          accentColor: Colors.orange,
-                        ),
-                        _createOption(
-                          title: 'Customer',
-                          subtitle: 'Add a new customer to your list.',
-                          icon: Icons.person_outline,
-                          accentColor: Colors.lightGreen,
-                        ),
-                        _createOption(
-                          title: 'Reminder',
-                          subtitle: 'Create a reminder or follow-up task.',
-                          icon: Icons.calendar_month_outlined,
-                          accentColor: Colors.purpleAccent,
-                        ),
+                        
+const SizedBox(height: 28),
+                       _createOption(
+                          title: isSpanish
+    ? 'Nuevo trabajo'
+    : 'New Job',
+  subtitle: isSpanish
+    ? 'Crear un nuevo trabajo u orden de trabajo.'
+    : 'Create a new job or work order.',
+  icon: Icons.local_shipping_outlined,
+  accentColor: Colors.blue,
+  onTap: () {
+   Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => NewJobScreen(
+      languageCode: widget.languageCode,
+    ),
+  ),
+);
+  },
+),
+                       _createOption(
+  title:  isSpanish
+    ? 'Nueva cotización'
+    : 'New Estimate',
+  subtitle: isSpanish
+    ? 'Crear una nueva cotización para un cliente.'
+    : 'Create a new estimate for a customer.',
+  icon: Icons.request_quote_outlined,
+  accentColor: Colors.orange,
+),
+_createOption(
+  title:  isSpanish
+    ? 'Nuevo cliente'
+    : 'New Customer',
+  subtitle: isSpanish
+    ? 'Agregar un nuevo cliente a su lista.'
+    : 'Add a new customer to your list.',
+  icon: Icons.person_outline,
+  accentColor: Colors.lightGreen,
+),
+_createOption(
+  title: isSpanish
+    ? 'Continuar un trabajo'
+    : 'Continue a Job',
+  subtitle:  isSpanish
+    ? 'Abrir un trabajo existente y continuar trabajando.'
+    : 'Open an existing job and continue working.',
+  icon: Icons.calendar_month_outlined,
+  accentColor: Colors.purpleAccent,
+),
                         const SizedBox(height: 8),
                         const Row(
                           children: [
@@ -414,8 +437,10 @@ completedDate: widget.completedDate,
                           ),
                           child: Column(
                             children: [
-                              const Text(
-                                '✨ Tell me what you need.',
+                               Text(
+                               isSpanish
+    ? '✨ Dígame lo que necesita.'
+    : '✨ Tell me what you need.',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: Colors.white,
@@ -426,8 +451,12 @@ completedDate: widget.completedDate,
                               const SizedBox(height: 6),
                               Text(
                                 isListening
-                                    ? 'Listening... Speak naturally.'
-                                    : 'Just tap the microphone and start talking.',
+    ? (isSpanish
+        ? 'Escuchando... Hable con naturalidad.'
+        : 'Listening... Speak naturally.')
+    : (isSpanish
+        ? 'Solo toque el micrófono y comience a hablar.'
+        : 'Just tap the microphone and start talking.'),
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
                                   color: isListening
@@ -443,7 +472,16 @@ completedDate: widget.completedDate,
                                   _waveform(),
                                   InkWell(
                                     borderRadius: BorderRadius.circular(60),
-                                    onTap: _openVoiceCapture,
+                                    onTap: () {
+ Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (_) => NewJobScreen(
+      languageCode: widget.languageCode,
+    ),
+  ),
+);
+},
                                     child: AnimatedContainer(
                                       duration:
                                           const Duration(milliseconds: 250),
@@ -480,9 +518,13 @@ completedDate: widget.completedDate,
                               ),
                               const SizedBox(height: 10),
                               Text(
-                                isListening
-                                    ? 'Tap to finish'
-                                    : 'Tap the microphone to begin',
+  isListening
+      ? (isSpanish
+          ? 'Toque para finalizar'
+          : 'Tap to finish')
+      : (isSpanish
+          ? 'Toque el micrófono para comenzar'
+          : 'Tap the microphone to begin'),
                                 style: TextStyle(
                                   color: isListening
                                       ? Colors.redAccent
@@ -496,26 +538,42 @@ completedDate: widget.completedDate,
                                 children: [
                                   _benefit(
                                     icon: Icons.bolt,
-                                    title: 'Fast',
-                                    subtitle: 'Create in seconds',
+                                    title: isSpanish
+    ? 'Rápido'
+    : 'Fast',
+                                    subtitle:  isSpanish
+    ? 'Cree en segundos'
+    : 'Create in seconds',
                                     color: Colors.blue,
                                   ),
                                   _benefit(
                                     icon: Icons.track_changes,
-                                    title: 'Smart',
-                                    subtitle: 'Captures key details',
+                                    title: isSpanish
+    ? 'Inteligente'
+    : 'Smart',
+                                    subtitle: isSpanish
+    ? 'Captura los detalles importantes'
+    : 'Captures key details',
                                     color: Colors.orange,
                                   ),
                                   _benefit(
                                     icon: Icons.shield_outlined,
-                                    title: 'Secure',
-                                    subtitle: 'Your data is protected',
+                                    title: isSpanish
+    ? 'Seguro'
+    : 'Secure',
+                                    subtitle: isSpanish
+    ? 'Sus datos están protegidos'
+    : 'Your data is protected',
                                     color: Colors.lightGreen,
                                   ),
                                   _benefit(
                                     icon: Icons.check_circle_outline,
-                                    title: 'Simple',
-                                    subtitle: 'Just talk naturally',
+                                    title: isSpanish
+    ? 'Sencillo'
+    : 'Simple',
+                                    subtitle: isSpanish
+    ? 'Simplemente hable con naturalidad'
+    : 'Just talk naturally',
                                     color: Colors.purpleAccent,
                                   ),
                                 ],
@@ -532,11 +590,13 @@ completedDate: widget.completedDate,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(color: Colors.white12),
                           ),
-                          child: const Column(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '💡 Try saying...',
+  isSpanish
+      ? '💡 Intente decir...'
+      : '💡 Try saying...',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 19,
@@ -545,10 +605,15 @@ completedDate: widget.completedDate,
                               ),
                               SizedBox(height: 12),
                               Text(
-                                '• “Oil change on Unit 42”\n'
-                                '• “Create estimate for fence repair”\n'
-                                '• “Add customer Mike Smith”\n'
-                                '• “Remind me to call John Friday”',
+  isSpanish
+      ? '• "Cambio de aceite en la Unidad 42"\n'
+        '• "Crear una cotización para reparar una cerca"\n'
+        '• "Agregar cliente Juan Pérez"\n'
+        '• "Recuérdame llamar a Juan el viernes"'
+      : '• "Oil change on Unit 42"\n'
+        '• "Create estimate for fence repair"\n'
+        '• "Add customer Mike Smith"\n'
+        '• "Remind me to call John Friday"',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 15,
@@ -576,15 +641,15 @@ completedDate: widget.completedDate,
                 child: Row(
                   children: [
                     _bottomItem(
-                      icon: Icons.attach_money,
-                      label: 'Payments',
-                      color: Colors.lightGreen,
-                    ),
+  icon: Icons.attach_money,
+  label: isSpanish ? 'Pagos' : 'Payments',
+  color: Colors.lightGreen,
+),
                     _bottomItem(
-                      icon: Icons.description_outlined,
-                      label: 'Estimates',
-                      color: Colors.orange,
-                    ),
+  icon: Icons.description_outlined,
+  label: isSpanish ? 'Cotizaciones' : 'Estimates',
+  color: Colors.orange,
+),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -621,15 +686,15 @@ completedDate: widget.completedDate,
                       ),
                     ),
                     _bottomItem(
-                      icon: Icons.receipt_long_outlined,
-                      label: 'Invoices',
-                      color: Colors.purpleAccent,
-                    ),
+  icon: Icons.receipt_long_outlined,
+  label: isSpanish ? 'Facturas' : 'Invoices',
+  color: Colors.purpleAccent,
+),
                     _bottomItem(
-                      icon: Icons.bar_chart,
-                      label: 'Reports',
-                      color: Colors.lightGreen,
-                    ),
+  icon: Icons.bar_chart,
+  label: isSpanish ? 'Informes' : 'Reports',
+  color: Colors.lightGreen,
+),
                   ],
                 ),
               ),

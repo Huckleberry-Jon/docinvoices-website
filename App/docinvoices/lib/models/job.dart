@@ -20,8 +20,8 @@ required this.taxParts,
 required this.isTaxExempt,
 required this.discountAmount,
 
-this.operations = const [],
-this.generalCharges = const [],
+required this.operations,
+required this.generalCharges,
   });
 
   String customerName;

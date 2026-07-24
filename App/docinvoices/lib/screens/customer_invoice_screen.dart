@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
-
+import '../models/labor_item.dart';
+import '../models/part_item.dart';
 import 'payment_received_screen.dart';
 
 class CustomerInvoiceScreen extends StatefulWidget {
+  
   const CustomerInvoiceScreen({
-  super.key,
+      super.key,
+      
+  required this.languageCode,
   required this.transcription,
    required this.customerName,
    required this.equipment,
@@ -14,9 +18,13 @@ class CustomerInvoiceScreen extends StatefulWidget {
    required this.poNumber,
    required this.completedDate,
    required this.estimatedTotal,
+   required this.laborItems,
+required this.partItems,
+required this.salesTax,
+required this.invoiceTotal,
    
 });
-
+final String languageCode;
    final String transcription;
    final String customerName;
    final String equipment;
@@ -26,6 +34,10 @@ class CustomerInvoiceScreen extends StatefulWidget {
    final String poNumber;
    final String completedDate;
    final String estimatedTotal;
+   final List<LaborItem> laborItems;
+final List<PartItem> partItems;
+final double salesTax;
+final double invoiceTotal;
   @override
   State<CustomerInvoiceScreen> createState() =>
       _CustomerInvoiceScreenState();
@@ -33,6 +45,7 @@ class CustomerInvoiceScreen extends StatefulWidget {
 
 class _CustomerInvoiceScreenState
     extends State<CustomerInvoiceScreen> {
+      bool get isSpanish => widget.languageCode == 'es';
   bool showServiceDetails = false;
 
   void _showMessage(String message) {
@@ -46,8 +59,9 @@ class _CustomerInvoiceScreenState
       context,
       MaterialPageRoute(
         builder: (context) => PaymentReceivedScreen(
+          languageCode: widget.languageCode,
   customerName: widget.customerName,
-  estimatedTotal: widget.estimatedTotal,
+  estimatedTotal: widget.invoiceTotal.toStringAsFixed(2),
 
 )
       ),
@@ -176,7 +190,11 @@ class _CustomerInvoiceScreenState
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
         onTap: () {
-          _showMessage('$label will be connected later.');
+          _showMessage(
+  isSpanish
+      ? '$label se conectará más adelante.'
+      : '$label will be connected later.',
+);
         },
         child: Container(
           padding: const EdgeInsets.symmetric(
@@ -248,7 +266,11 @@ class _CustomerInvoiceScreenState
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
         onTap: () {
-          _showMessage('$label photo viewer will be connected later.');
+          _showMessage(
+  isSpanish
+      ? 'El visor de fotos de $label se conectará más adelante.'
+      : '$label photo viewer will be connected later.',
+);
         },
         child: Container(
           height: 145,
@@ -275,8 +297,8 @@ class _CustomerInvoiceScreenState
                 ),
               ),
               const SizedBox(height: 5),
-              const Text(
-                'Tap to view',
+               Text(
+                isSpanish ? 'Toque para ver' : 'Tap to view',
                 style: TextStyle(
                   color: Colors.white54,
                   fontSize: 13,
@@ -312,11 +334,11 @@ class _CustomerInvoiceScreenState
                           size: 27,
                         ),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Column(
                           children: [
                             Text(
-                              'Customer Invoice',
+                              isSpanish ? 'Factura del cliente' : 'Customer Invoice',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
@@ -338,7 +360,9 @@ class _CustomerInvoiceScreenState
                       IconButton(
                         onPressed: () {
                           _showMessage(
-                            'Customer help will be connected later.',
+                            isSpanish
+    ? 'La ayuda para clientes se conectará más adelante.'
+    : 'Customer help will be connected later.',
                           );
                         },
                         icon: const Icon(
@@ -353,7 +377,7 @@ class _CustomerInvoiceScreenState
                   _card(
                     borderColor:
                         Colors.greenAccent.withValues(alpha: 0.40),
-                    child: const Row(
+                    child:  Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
@@ -368,7 +392,9 @@ class _CustomerInvoiceScreenState
                                 CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Your repair is complete',
+                                isSpanish
+    ? 'Su reparación está completa'
+    : 'Your repair is complete',
                                 style: TextStyle(
                                   color: Colors.greenAccent,
                                   fontSize: 22,
@@ -377,7 +403,9 @@ class _CustomerInvoiceScreenState
                               ),
                               SizedBox(height: 7),
                               Text(
-                                'Thank you for choosing your service provider.',
+                                isSpanish
+    ? 'Gracias por elegir nuestros servicios.'
+    : 'Thank you for choosing our services.',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 17,
@@ -386,7 +414,9 @@ class _CustomerInvoiceScreenState
                               ),
                               SizedBox(height: 7),
                               Text(
-                                'Review the completed work and supporting details before completing payment.',
+                                isSpanish
+    ? 'Revise el trabajo completado y los detalles de respaldo antes de completar el pago.'
+    : 'Review the completed work and supporting details before completing payment.',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16,
@@ -404,7 +434,7 @@ class _CustomerInvoiceScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.task_alt,
@@ -413,7 +443,7 @@ class _CustomerInvoiceScreenState
                             ),
                             SizedBox(width: 11),
                             Text(
-                              'Job Progress',
+                              isSpanish ? 'Progreso del trabajo' : 'Job Progress',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -424,19 +454,21 @@ class _CustomerInvoiceScreenState
                         ),
                         const SizedBox(height: 18),
                         _progressItem(
-                          text: 'Diagnosis completed',
+                          text: isSpanish ? 'Diagnóstico completado' : 'Diagnosis completed',
                         ),
                         _progressItem(
-                          text: 'Repair completed',
+                           text: isSpanish ? 'Reparación completada' : 'Repair completed',
                         ),
                         _progressItem(
-                          text: 'Quality check passed',
+                          text: isSpanish ? 'Control de calidad aprobado' : 'Quality check passed',
                         ),
                         _progressItem(
-                          text: 'Customer approval received',
+                           text: isSpanish
+      ? 'Aprobación del cliente recibida'
+      : 'Customer approval received',
                         ),
                         _progressItem(
-                          text: 'Ready for payment',
+                          text: isSpanish ? 'Listo para el pago' : 'Ready for payment',
                         ),
                       ],
                     ),
@@ -446,7 +478,7 @@ class _CustomerInvoiceScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.local_shipping_outlined,
@@ -455,7 +487,7 @@ class _CustomerInvoiceScreenState
                             ),
                             SizedBox(width: 11),
                             Text(
-                              'Job Information',
+                              isSpanish ? 'Información del trabajo' : 'Job Information',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -466,31 +498,31 @@ class _CustomerInvoiceScreenState
                         ),
                         const SizedBox(height: 20),
                         _detailRow(
-                          label: 'Customer',
+                          label: isSpanish ? 'Cliente' : 'Customer',
                           value: widget.customerName,
                         ),
                         _detailRow(
-                          label: 'Equipment',
+                          label: isSpanish ? 'Equipo' : 'Equipment',
                           value: widget.equipment,
                         ),
                         _detailRow(
-                          label: 'Unit #',
+                          label: isSpanish ? 'Unidad #' : 'Unit #',
                           value: widget.unitNumber,
                         ),
                         _detailRow(
-                          label: 'VIN / Serial Number',
+                          label: isSpanish ? 'VIN / Número de serie' : 'VIN / Serial Number',
                           value: widget.vin,
                         ),
                         _detailRow(
-                          label: 'Mileage',
+                          label: isSpanish ? 'Kilometraje' : 'Mileage',
                           value: widget.mileage,
                         ),
                         _detailRow(
-                          label: 'PO Number',
+                          label: isSpanish ? 'Número de OC' : 'PO Number',
                           value:  widget.poNumber,
                         ),
                         _detailRow(
-                          label: 'Completed',
+                          label: isSpanish ? 'Completado' : 'Completed',
                           value: widget.completedDate,
 ),
                       ],
@@ -522,13 +554,13 @@ class _CustomerInvoiceScreenState
                                   size: 31,
                                 ),
                                 const SizedBox(width: 12),
-                                const Expanded(
+                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        'Services Completed',
+                                        isSpanish ? 'Servicios completados' : 'Services Completed',
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 22,
@@ -538,7 +570,7 @@ class _CustomerInvoiceScreenState
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        '5 completed services',
+                                        isSpanish ? '5 servicios completados' : '5 completed services',
                                         style: TextStyle(
                                           color: Colors.white60,
                                           fontSize: 15,
@@ -576,7 +608,7 @@ class _CustomerInvoiceScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.photo_camera_outlined,
@@ -590,7 +622,7 @@ class _CustomerInvoiceScreenState
                                     CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Proof of Work',
+                                    isSpanish ? 'Prueba del trabajo' : 'Proof of Work',
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 22,
@@ -599,7 +631,7 @@ class _CustomerInvoiceScreenState
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    '3 photos included',
+                                    isSpanish ? '3 fotos incluidas' : '3 photos included',
                                     style: TextStyle(
                                       color: Colors.white60,
                                       fontSize: 15,
@@ -614,12 +646,12 @@ class _CustomerInvoiceScreenState
                         Row(
                           children: [
                             _photoBox(
-                              label: 'Before',
+                              label: isSpanish ? 'Antes' : 'Before',
                               icon: Icons.image_outlined,
                             ),
                             const SizedBox(width: 14),
                             _photoBox(
-                              label: 'After',
+                              label: isSpanish ? 'Después' : 'After',
                               icon: Icons.auto_awesome,
                             ),
                           ],
@@ -630,14 +662,16 @@ class _CustomerInvoiceScreenState
                           child: OutlinedButton.icon(
                             onPressed: () {
                               _showMessage(
-                                'Photo gallery will be connected later.',
+                                isSpanish
+    ? 'La galería de fotos se conectará más adelante.'
+    : 'Photo gallery will be connected later.',
                               );
                             },
                             icon: const Icon(
                               Icons.collections_outlined,
                             ),
-                            label: const Text(
-                              'View All Photos',
+                            label: Text(
+                              isSpanish ? 'Ver todas las fotos' : 'View All Photos',
                               style: TextStyle(fontSize: 16),
                             ),
                           ),
@@ -649,7 +683,7 @@ class _CustomerInvoiceScreenState
                   _card(
                     borderColor:
                         Colors.greenAccent.withValues(alpha: 0.30),
-                    child: const Row(
+                    child:  Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Icon(
@@ -664,7 +698,7 @@ class _CustomerInvoiceScreenState
                                 CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Customer Approval',
+                                isSpanish ? 'Aprobación del cliente' : 'Customer Approval',
                                 style: TextStyle(
                                   color: Colors.greenAccent,
                                   fontSize: 21,
@@ -673,7 +707,9 @@ class _CustomerInvoiceScreenState
                               ),
                               SizedBox(height: 8),
                               Text(
-                                'Customer approval recorded',
+                                isSpanish
+    ? 'Aprobación del cliente registrada'
+    : 'Customer approval recorded',
                                 style: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
@@ -682,7 +718,9 @@ class _CustomerInvoiceScreenState
                               ),
                               SizedBox(height: 5),
                               Text(
-                                 'Approval details will be available in a future update.', 
+                                 isSpanish
+    ? 'Los detalles de la aprobación estarán disponibles en una actualización futura.'
+    : 'Approval details will be available in a future update.',
                                 style: TextStyle(
                                   color: Colors.white60,
                                   fontSize: 14,
@@ -699,7 +737,7 @@ class _CustomerInvoiceScreenState
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const Row(
+                       Row(
                           children: [
                             Icon(
                               Icons.receipt_long_outlined,
@@ -708,7 +746,7 @@ class _CustomerInvoiceScreenState
                             ),
                             SizedBox(width: 11),
                             Text(
-                              'Invoice Summary',
+                              isSpanish ? 'Resumen de la factura' : 'Invoice Summary',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -718,17 +756,78 @@ class _CustomerInvoiceScreenState
                           ],
                         ),
                         const SizedBox(height: 17),
-                        _priceRow(
-  label: 'Labor',
-  amount: 'Not entered',
+ if (widget.laborItems.isEmpty)
+  _priceRow(
+  label: isSpanish ? 'Total de mano de obra' : 'Labor Total',
+  amount: '\$${widget.laborItems.fold(
+    0.0,
+    (total, item) => total + item.total,
+  ).toStringAsFixed(2)}',
+)
+else ...[
+  _priceRow(
+  label: isSpanish ? 'Total de mano de obra' : 'Labor Total',
+  amount: '\$${widget.laborItems.fold(
+    0.0,
+    (total, item) => total + item.total,
+  ).toStringAsFixed(2)}',
 ),
+  for (final item in widget.laborItems) ...[
+    _detailRow(
+      label: item.description,
+      value:
+          '${item.hours.toStringAsFixed(2)} hrs × '
+          '\$${item.rate.toStringAsFixed(2)}',
+    ),
+    _priceRow(
+      label: 'Line Total',
+      amount: '\$${item.total.toStringAsFixed(2)}',
+    ),
+    const Divider(
+      color: Colors.white12,
+      height: 20,
+    ),
+  ],
+],
+
+if (widget.partItems.isEmpty)
+ _priceRow(
+  label: isSpanish ? 'Total de piezas' : 'Parts Total',
+  amount: '\$${widget.partItems.fold(
+    0.0,
+    (total, item) => total + item.total,
+  ).toStringAsFixed(2)}',
+)
+else ...[
+  for (final item in widget.partItems) ...[
+    _detailRow(
+      label: item.description,
+      value:
+          '${item.quantity.toStringAsFixed(2)} × '
+          '\$${item.unitPrice.toStringAsFixed(2)}',
+    ),
+    _priceRow(
+      label: isSpanish ? 'Total de la línea' : 'Line Total',
+      amount: '\$${item.total.toStringAsFixed(2)}',
+    ),
+    const Divider(
+      color: Colors.white12,
+      height: 20,
+    ),
+  ],
+
+  _priceRow(
+    label: isSpanish ? 'Total de piezas' : 'Parts Total',
+    amount: '\$${widget.partItems.fold(
+      0.0,
+      (total, item) => total + item.total,
+    ).toStringAsFixed(2)}',
+  ),
+],
+
 _priceRow(
-  label: 'Parts',
-  amount: 'Not entered',
-),
-_priceRow(
-  label: 'Sales Tax',
-  amount: 'Calculated on invoice',
+  label: isSpanish ? 'Impuesto sobre ventas' : 'Sales Tax',
+  amount: '\$${widget.salesTax.toStringAsFixed(2)}',
 ),
 const Divider(
   color: Colors.white24,
@@ -736,12 +835,14 @@ const Divider(
 ),
 _priceRow(
   label: 'TOTAL',
-  amount: 'Pending',
+  amount: '\$${widget.invoiceTotal.toStringAsFixed(2)}',
   total: true,
 ),
                         const SizedBox(height: 8),
-                        const Text(
-                          'The completed work, proof photos, and customer approval above support this total.',
+                        Text(
+                          isSpanish
+    ? 'El trabajo completado, las fotos de evidencia y la aprobación del cliente mostrados arriba respaldan este total.'
+    : 'The completed work, proof photos, and customer approval above support this total.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white54,
@@ -757,13 +858,13 @@ _priceRow(
                     children: [
                       _actionButton(
                         icon: Icons.email_outlined,
-                        label: 'Email',
+                        label: isSpanish ? 'Correo electrónico' : 'Email',
                         color: Colors.blue,
                       ),
                       const SizedBox(width: 10),
                       _actionButton(
                         icon: Icons.sms_outlined,
-                        label: 'Text',
+                        label: isSpanish ? 'Mensaje de texto' : 'Text',
                         color: Colors.greenAccent,
                       ),
                       const SizedBox(width: 10),
@@ -775,12 +876,12 @@ _priceRow(
                       const SizedBox(width: 10),
                       _actionButton(
                         icon: Icons.link,
-  label: 'Secure Link',
+  label: isSpanish ? 'Enlace seguro' : 'Secure Link',
   color: Colors.purpleAccent,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 20),
+                   SizedBox(height: 20),
                   SizedBox(
                     height: 76,
                     child: ElevatedButton(
@@ -792,11 +893,11 @@ _priceRow(
                           borderRadius: BorderRadius.circular(18),
                         ),
                       ),
-                      child: const Column(
+                      child:  Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'Complete Payment',
+                            isSpanish ? 'Completar pago' : 'Complete Payment',
                             style: TextStyle(
                               fontSize: 21,
                               fontWeight: FontWeight.bold,
@@ -804,7 +905,7 @@ _priceRow(
                           ),
                           SizedBox(height: 3),
                           Text(
-                            'Invoice Total',
+                            isSpanish ? 'Total de la factura' : 'Invoice Total',
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w600,
@@ -818,8 +919,10 @@ _priceRow(
                   _card(
                     child: Column(
                       children: [
-                        const Text(
-                          'Questions or need service again?',
+                         Text(
+                          isSpanish
+    ? '¿Tiene preguntas o necesita servicio nuevamente?'
+    : 'Questions or need service again?',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -834,13 +937,15 @@ _priceRow(
                               child: OutlinedButton.icon(
                                 onPressed: () {
                                   _showMessage(
-                                    'Calling the business will be connected later.',
+                                    isSpanish
+    ? 'La llamada al negocio se conectará más adelante.'
+    : 'Calling the business will be connected later.',
                                   );
                                 },
                                 icon: const Icon(
                                   Icons.phone_outlined,
                                 ),
-                                label: const Text('Call Business'),
+                                label:  Text(isSpanish ? 'Llamar al negocio' : 'Call Business',),
                               ),
                             ),
                             const SizedBox(width: 12),
@@ -848,13 +953,15 @@ _priceRow(
                               child: OutlinedButton.icon(
                                 onPressed: () {
                                   _showMessage(
-                                    'Scheduling service will be connected later.',
+                                    isSpanish
+    ? 'La programación del servicio se conectará más adelante.'
+    : 'Scheduling service will be connected later.',
                                   );
                                 },
                                 icon: const Icon(
                                   Icons.calendar_month_outlined,
                                 ),
-                                label: const Text('Schedule Again'),
+                                label:  Text(isSpanish ? 'Programar de nuevo' : 'Schedule Again',),
                               ),
                             ),
                           ],
@@ -863,8 +970,10 @@ _priceRow(
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
-                    'Thank you for your business.',
+                   Text(
+                    isSpanish
+    ? 'Gracias por su preferencia.'
+    : 'Thank you for your business.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
@@ -873,8 +982,10 @@ _priceRow(
                     ),
                   ),
                   const SizedBox(height: 9),
-                  const Text(
-                    'Created with DocInvoices',
+                   Text(
+                    isSpanish
+    ? 'Creado con DocInvoices'
+    : 'Created with DocInvoices',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white38,

@@ -7,6 +7,7 @@ import 'review_work_screen.dart';
 class VoiceCaptureScreen extends StatefulWidget {
   const VoiceCaptureScreen({
     super.key,
+    required this.languageCode,
     required this.customerName,
     required this.equipment,
     required this.unitNumber,
@@ -15,7 +16,8 @@ class VoiceCaptureScreen extends StatefulWidget {
 required this.poNumber,
 required this.completedDate,
   });
-
+  
+final String languageCode;
   final String customerName;
   final String equipment;
   final String unitNumber;
@@ -171,6 +173,7 @@ Future<void> _reviewWork() async {
       transcriptionController.text.trim();
 
   if (!mounted) return;
+ 
   
 
  final job = Job(
@@ -198,6 +201,7 @@ generalCharges: [],
   context,
   MaterialPageRoute(
     builder: (context) => ReviewWorkScreen(
+      languageCode: widget.languageCode,
       job: job,
       transcription: finalTranscription,
       customerName: widget.customerName,
@@ -277,11 +281,18 @@ generalCharges: [],
 
   @override
   Widget build(BuildContext context) {
+    final bool isSpanish = widget.languageCode == 'es';
     final String statusText = !isRecording
-        ? 'Ready to listen'
-        : isPaused
-            ? 'Recording paused'
-            : 'Listening...';
+    ? (isSpanish
+        ? 'Listo para escuchar'
+        : 'Ready to listen')
+    : isPaused
+        ? (isSpanish
+            ? 'Grabación pausada'
+            : 'Recording paused')
+        : (isSpanish
+            ? 'Escuchando...'
+            : 'Listening...');
 
     final Color statusColor = !isRecording
         ? Colors.white70
@@ -310,9 +321,11 @@ generalCharges: [],
                           size: 32,
                         ),
                       ),
-                      const Expanded(
-                        child: Text(
-                          'Tell Me What You Did',
+                      Expanded(
+  child: Text(
+    isSpanish
+        ? 'Cuénteme qué hizo'
+        : 'Tell Me What You Did',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             color: Colors.white,
@@ -394,12 +407,18 @@ generalCharges: [],
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    !isRecording
-                        ? 'Tap to start speaking'
-                        : isPaused
-                            ? 'Tap to resume'
-                            : 'Tap to pause',
+Text(
+  !isRecording
+      ? (isSpanish
+          ? 'Toque para comenzar a hablar'
+          : 'Tap to start speaking')
+      : isPaused
+          ? (isSpanish
+              ? 'Toque para continuar'
+              : 'Tap to resume')
+          : (isSpanish
+              ? 'Toque para pausar'
+              : 'Tap to pause'),
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white70,
@@ -417,21 +436,23 @@ generalCharges: [],
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Row(
+                         Row(
                           children: [
                             Icon(
                               Icons.notes,
                               color: Colors.orange,
                             ),
                             SizedBox(width: 10),
-                            Text(
-                              'Live Transcription',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+Text(
+  isSpanish
+      ? 'Transcripción en vivo'
+      : 'Live Transcription',
+  style: TextStyle(
+    color: Colors.white,
+    fontSize: 20,
+    fontWeight: FontWeight.bold,
+  ),
+),
                           ],
                         ),
                         const SizedBox(height: 14),
@@ -445,8 +466,9 @@ generalCharges: [],
                             height: 1.5,
                           ),
                           decoration: InputDecoration(
-                            hintText:
-                                'What you say will appear here. You can also type or make corrections.',
+  hintText: isSpanish
+      ? 'Lo que diga aparecerá aquí. También puede escribir o hacer correcciones.'
+      : 'What you say will appear here. You can also type or make corrections.',
                             hintStyle: const TextStyle(
                               color: Colors.white38,
                               height: 1.5,
@@ -483,10 +505,12 @@ generalCharges: [],
                           child: OutlinedButton.icon(
                             onPressed: _cancelRecording,
                             icon: const Icon(Icons.delete_outline),
-                            label: const FittedBox(
+                            label:  FittedBox(
   fit: BoxFit.scaleDown,
   child: Text(
-    'Cancel',
+  isSpanish
+      ? 'Cancelar'
+      : 'Cancel',
     maxLines: 1,
     softWrap: false,
     overflow: TextOverflow.fade,
@@ -515,8 +539,11 @@ generalCharges: [],
                                 ? null
                                 : _reviewWork,
                             icon: const Icon(Icons.fact_check_outlined),
-                            label: const Text(
-                              'Review My Work',
+                            label: Text(
+  isSpanish
+      ? 'Revisar mi trabajo'
+      : 'Review My Work',
+
                               style: TextStyle(fontSize: 18),
                             ),
                           ),
@@ -525,8 +552,10 @@ generalCharges: [],
                     ],
                   ),
                   const SizedBox(height: 14),
-                  const Text(
-                    'Nothing will be sent to a customer until you review and approve it.',
+                  Text(
+  isSpanish
+      ? 'No se enviará nada al cliente hasta que lo revise y lo apruebe.'
+      : 'Nothing will be sent to a customer until you review and approve it.',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white54,
