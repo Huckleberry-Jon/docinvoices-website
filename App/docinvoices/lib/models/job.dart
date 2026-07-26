@@ -1,7 +1,10 @@
 import 'general_charge.dart';
 import 'operation.dart';
+
 class Job {
   Job({
+    
+    required this.location,
     required this.customerName,
     required this.equipment,
     required this.unitNumber,
@@ -12,17 +15,62 @@ class Job {
     required this.completedDate,
     required this.estimatedTotal,
     required this.laborHours,
-required this.laborRate,
-required this.partsCost,
-required this.markupPercent,
-required this.taxLabor,
-required this.taxParts,
-required this.isTaxExempt,
-required this.discountAmount,
-
-required this.operations,
-required this.generalCharges,
+    required this.laborRate,
+    required this.partsCost,
+    required this.markupPercent,
+    required this.taxLabor,
+    required this.taxParts,
+    required this.isTaxExempt,
+    required this.discountAmount,
+    required this.operations,
+    required this.generalCharges,
+    this.estimateNumber = '',
+    this.repairOrderNumber = '',
+    this.invoiceNumber = '',
+    this.jobStatus = 'Estimate',
+    this.scheduledDateTime,
+this.reminderDateTime,
+this.reminderEnabled = false,
+this.notes = '',
   });
+
+  factory Job.createEstimate({
+    required String location,
+    required String customerName,
+    required String equipment,
+    required String unitNumber,
+    required String vin,
+    required String mileage,
+    
+  }) {
+    return Job(
+      location: location,
+      customerName: customerName,
+      equipment: equipment,
+      unitNumber: unitNumber,
+      vin: vin,
+      transcription: '',
+      mileage: mileage,
+      poNumber: '',
+      completedDate: '',
+      estimatedTotal: '0.00',
+      laborHours: 0,
+      laborRate: 0,
+      partsCost: 0,
+      markupPercent: 0,
+      taxLabor: false,
+      taxParts: false,
+      isTaxExempt: false,
+      discountAmount: 0,
+      operations: [],
+      generalCharges: [],
+      estimateNumber: '',
+      repairOrderNumber: '',
+      invoiceNumber: '',
+      jobStatus: 'Estimate',
+      
+    );
+  }
 
   String customerName;
   String equipment;
@@ -33,14 +81,27 @@ required this.generalCharges,
   String poNumber;
   String completedDate;
   String estimatedTotal;
+
   double laborHours;
-double laborRate;
-double partsCost;
-double markupPercent;
-bool taxLabor;
-bool taxParts;
-bool isTaxExempt;
-double discountAmount;
-final List<Operation> operations;
-final List<GeneralCharge> generalCharges;
+  double laborRate;
+  double partsCost;
+  double markupPercent;
+  double discountAmount;
+
+  bool taxLabor;
+  bool taxParts;
+  bool isTaxExempt;
+
+  String estimateNumber;
+  String repairOrderNumber;
+  String invoiceNumber;
+  String jobStatus;
+  String notes;
+  DateTime? scheduledDateTime;
+DateTime? reminderDateTime;
+bool reminderEnabled;
+
+  final List<Operation> operations;
+  final List<GeneralCharge> generalCharges;
+  String location;
 }

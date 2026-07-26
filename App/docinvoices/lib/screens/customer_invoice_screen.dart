@@ -2,42 +2,66 @@ import 'package:flutter/material.dart';
 import '../models/labor_item.dart';
 import '../models/part_item.dart';
 import 'payment_received_screen.dart';
-
+import '../models/job.dart';
+import 'package:printing/printing.dart';
+import 'pdf_preview_screen.dart';
 class CustomerInvoiceScreen extends StatefulWidget {
-  
   const CustomerInvoiceScreen({
-      super.key,
-      
-  required this.languageCode,
-  required this.transcription,
-   required this.customerName,
-   required this.equipment,
-   required this.unitNumber,
-   required this.vin,
-   required this.mileage,
-   required this.poNumber,
-   required this.completedDate,
-   required this.estimatedTotal,
-   required this.laborItems,
-required this.partItems,
-required this.salesTax,
-required this.invoiceTotal,
-   
-});
-final String languageCode;
-   final String transcription;
-   final String customerName;
-   final String equipment;
-   final String unitNumber;
-   final String vin;
-   final String mileage;
-   final String poNumber;
-   final String completedDate;
-   final String estimatedTotal;
-   final List<LaborItem> laborItems;
-final List<PartItem> partItems;
-final double salesTax;
-final double invoiceTotal;
+    super.key,
+    required this.languageCode,
+    required this.job,
+  });
+
+  final String languageCode;
+  final Job job;
+  String get transcription => job.transcription;
+String get customerName => job.customerName;
+String get equipment => job.equipment;
+String get unitNumber => job.unitNumber;
+String get vin => job.vin;
+String get mileage => job.mileage;
+String get poNumber => job.poNumber;
+String get completedDate => job.completedDate;
+String get estimatedTotal => job.estimatedTotal;
+
+List<LaborItem> get laborItems =>
+    job.operations.expand((operation) => operation.labor).toList();
+
+List<PartItem> get partItems =>
+    job.operations.expand((operation) => operation.parts).toList();
+
+double get laborTotal =>
+    job.operations.fold(0.0, (sum, operation) => sum + operation.laborTotal);
+
+double get partsTotal =>
+    job.operations.fold(0.0, (sum, operation) => sum + operation.partsTotal);
+
+double get generalChargesTotal =>
+    job.generalCharges.fold(0.0, (sum, charge) => sum + charge.amount);
+
+double get taxablePartsTotal =>
+    partItems
+        .where((item) => item.taxable)
+        .fold(0.0, (sum, item) => sum + item.total);
+
+double get taxableGeneralChargesTotal =>
+    job.generalCharges
+        .where((charge) => charge.taxable)
+        .fold(0.0, (sum, charge) => sum + charge.amount);
+
+double get salesTax {
+  const double salesTaxRate = 0.0825;
+
+  return (taxablePartsTotal + taxableGeneralChargesTotal) *
+      salesTaxRate;
+}
+double get invoiceTotal =>
+    laborTotal +
+    partsTotal +
+    generalChargesTotal +
+    salesTax -
+    job.discountAmount;
+
   @override
   State<CustomerInvoiceScreen> createState() =>
       _CustomerInvoiceScreenState();
@@ -45,27 +69,38 @@ final double invoiceTotal;
 
 class _CustomerInvoiceScreenState
     extends State<CustomerInvoiceScreen> {
-      bool get isSpanish => widget.languageCode == 'es';
+  bool get isSpanish => widget.languageCode == 'es';
   bool showServiceDetails = false;
-
+  
   void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(message)),
+  );
+}
+  Job get job => widget.job;
+
+String get transcription => job.transcription;
+String get customerName => job.customerName;
+String get equipment => job.equipment;
+String get unitNumber => job.unitNumber;
+String get vin => job.vin;
+String get mileage => job.mileage;
+String get poNumber => job.poNumber;
+String get completedDate => job.completedDate;
+String get estimatedTotal => job.estimatedTotal;
+
+  
 
   void _completePayment() {
     Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PaymentReceivedScreen(
-          languageCode: widget.languageCode,
-  customerName: widget.customerName,
-  estimatedTotal: widget.invoiceTotal.toStringAsFixed(2),
-
-)
-      ),
-    );
+  context,
+  MaterialPageRoute(
+    builder: (context) => PaymentReceivedScreen(
+      languageCode: widget.languageCode,
+      job: widget.job,
+    ),
+  ),
+);
   }
 
   Widget _card({
@@ -181,11 +216,12 @@ class _CustomerInvoiceScreenState
     );
   }
 
-  Widget _actionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
+ Widget _actionButton({
+  required IconData icon,
+  required String label,
+  required Color color,
+  VoidCallback? onTap,
+}) {
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
@@ -869,9 +905,19 @@ _priceRow(
                       ),
                       const SizedBox(width: 10),
                       _actionButton(
-                        icon: Icons.picture_as_pdf_outlined,
-                        label: 'PDF',
-                        color: Colors.redAccent,
+  icon: Icons.picture_as_pdf_outlined,
+  label: 'PDF',
+  color: Colors.redAccent,
+  onTap: () {
+    Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PdfPreviewScreen(
+        job: widget.job,
+      ),
+    ),
+  );
+},
                       ),
                       const SizedBox(width: 10),
                       _actionButton(
@@ -905,12 +951,14 @@ _priceRow(
                           ),
                           SizedBox(height: 3),
                           Text(
-                            isSpanish ? 'Total de la factura' : 'Invoice Total',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+  isSpanish
+      ? 'Total: \$${widget.invoiceTotal.toStringAsFixed(2)}'
+      : 'Invoice Total: \$${widget.invoiceTotal.toStringAsFixed(2)}',
+  style: const TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+  ),
+),
                         ],
                       ),
                     ),

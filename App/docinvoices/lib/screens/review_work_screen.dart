@@ -3,45 +3,65 @@ import '../models/job.dart';
 import 'approval_screen.dart';
 import '../models/operation.dart';
 import 'operation_details_screen.dart';
-
+import 'new_job_screen.dart';
+import 'voice_capture_screen.dart';
+import 'schedule_job_screen.dart';
+import 'package:docinvoices/services/job_repository.dart';
 class ReviewWorkScreen extends StatefulWidget {
- const ReviewWorkScreen({
-  super.key,
-  required this.languageCode,
-  required this.job,
-  required this.transcription,
-  required this.customerName,
-  required this.equipment,
-  required this.unitNumber,
-  required this.vin,
-  required this.mileage,
-required this.poNumber,
-required this.completedDate,
-required this.estimatedTotal,
-});
-final String languageCode;
-final Job job;
-final String transcription;
-final String customerName;
-final String equipment;
-final String unitNumber;
-final String vin;
-final String mileage;
-final String poNumber;
-final String completedDate;
-final String estimatedTotal;
-@override
-State<ReviewWorkScreen> createState() => _ReviewWorkScreenState();
+  const ReviewWorkScreen({
+    super.key,
+    required this.languageCode,
+    required this.job,
+  });
+
+  final String languageCode;
+  final Job job;
+
+  String get transcription => job.transcription;
+  String get customerName => job.customerName;
+  String get equipment => job.equipment;
+  String get unitNumber => job.unitNumber;
+  String get vin => job.vin;
+  String get mileage => job.mileage;
+  String get poNumber => job.poNumber;
+  String get completedDate => job.completedDate;
+  String get estimatedTotal => job.estimatedTotal;
+String get location => job.location;
+  @override
+  State<ReviewWorkScreen> createState() =>
+      _ReviewWorkScreenState();
 }
 
 class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
 
   void _showMessage(BuildContext context, String message) {
+    
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(message)),
     );
   }
 
+double get laborTotal {
+  return widget.job.operations.fold(
+    0.0,
+    (sum, operation) => sum + operation.laborTotal,
+  );
+}
+
+double get partsTotal {
+  return widget.job.operations.fold(
+    0.0,
+    (sum, operation) => sum + operation.partsTotal,
+  );
+}
+
+double get estimatedTotal {
+  return laborTotal + partsTotal;
+}
+
+String _money(double amount) {
+  return '\$${amount.toStringAsFixed(2)}';
+}
   void _continueToApproval(BuildContext context) {
   Navigator.push(
     context,
@@ -53,7 +73,21 @@ class _ReviewWorkScreenState extends State<ReviewWorkScreen> {
     ),
   );
 }
+Future<void> _scheduleJob() async {
+  await Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ScheduleJobScreen(
+        languageCode: widget.languageCode,
+        job: widget.job,
+      ),
+    ),
+  );
 
+  if (mounted) {
+    setState(() {});
+  }
+}
 Future<void> _addOperation() async {
   final bool isSpanish = widget.languageCode == 'es';
   final controller = TextEditingController();
@@ -170,19 +204,20 @@ Future<void> _addOperation() async {
 }
 
   Widget _sectionHeader({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required Color color,
-  }) {
+  required BuildContext context,
+  required IconData icon,
+  required String title,
+  required Color color,
+  VoidCallback? onEdit,
+}) {
     return Row(
       children: [
         Icon(icon, color: color, size: 28),
-        const SizedBox(width: 12),
+         SizedBox(width: 12),
         Expanded(
           child: Text(
             title,
-            style: const TextStyle(
+            style:  TextStyle(
               color: Colors.white,
               fontSize: 23,
               fontWeight: FontWeight.bold,
@@ -190,20 +225,21 @@ Future<void> _addOperation() async {
           ),
         ),
         TextButton.icon(
-          onPressed: () {
-            _showMessage(
-              context,
-              '$title editing will be connected later.',
-            );
-          },
+  onPressed: onEdit ??
+    () {
+      _showMessage(
+        context,
+        '$title editing will be connected later.',
+      );
+    },
           icon: Icon(Icons.edit_outlined, color: color),
           label: Text(
-            'Edit',
-            style: TextStyle(
-              color: color,
-              fontSize: 16,
-            ),
-          ),
+  widget.languageCode == 'es' ? 'Editar' : 'Edit',
+  style: TextStyle(
+    color: color,
+    fontSize: 16,
+  ),
+),
         ),
       ],
     );
@@ -289,7 +325,72 @@ Future<void> _addOperation() async {
       child: child,
     );
   }
+Future<void> _editNotes() async {
+  final controller = TextEditingController(
+    text: widget.job.notes,
+  );
 
+  final savedNotes = await showDialog<String>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: Text(
+          widget.languageCode == 'es'
+              ? 'Editar notas'
+              : 'Edit Notes',
+        ),
+        content: TextField(
+          controller: controller,
+          minLines: 4,
+          maxLines: 8,
+          textCapitalization: TextCapitalization.sentences,
+          decoration: InputDecoration(
+            hintText: widget.languageCode == 'es'
+                ? 'Ingrese notas...'
+                : 'Enter notes...',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: Text(
+              widget.languageCode == 'es'
+                  ? 'Cancelar'
+                  : 'Cancel',
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(
+                context,
+                controller.text.trim(),
+              );
+            },
+            child: Text(
+              widget.languageCode == 'es'
+                  ? 'Guardar'
+                  : 'Save',
+            ),
+          ),
+        ],
+      );
+    },
+  );
+
+  controller.dispose();
+
+  if (savedNotes == null) {
+    return;
+  }
+
+  setState(() {
+    widget.job.notes = savedNotes;
+  });
+
+  JobRepository.instance.updateJob(widget.job);
+}
   @override
   Widget build(BuildContext context) {
     final bool isSpanish = widget.languageCode == 'es';
@@ -422,6 +523,28 @@ Future<void> _addOperation() async {
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
     children: [
+      _sectionHeader(
+  context: context,
+  icon: Icons.assignment_outlined,
+  title: isSpanish ? 'Información del trabajo' : 'Job Information',
+  color: Colors.blue,
+  onEdit: () async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => NewJobScreen(
+          languageCode: widget.languageCode,
+          job: widget.job,
+        ),
+      ),
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  },
+),
+const SizedBox(height: 16),
       _infoItem(
         icon: Icons.person_outline,
         label: isSpanish ? 'Cliente' : 'Customer',
@@ -437,10 +560,12 @@ Future<void> _addOperation() async {
         label: isSpanish ? 'Equipo' : 'Equipment',
         value: [
   widget.equipment,
-  if (widget.unitNumber.isNotEmpty)
-    '${isSpanish ? 'Unidad' : 'Unit'} ${widget.unitNumber}',
-  if (widget.vin.isNotEmpty)
-    '${isSpanish ? 'VIN / Serie' : 'VIN / Serial'}: ${widget.vin}',
+if (widget.unitNumber.isNotEmpty)
+  '${isSpanish ? 'Unidad' : 'Unit'} ${widget.unitNumber}',
+if (widget.mileage.isNotEmpty)
+  '${isSpanish ? 'Millaje' : 'Mileage'}: ${widget.mileage}',
+if (widget.vin.isNotEmpty)
+  'VIN / Serial: ${widget.vin}',
 ].where((value) => value.isNotEmpty).join('\n'),
         color: Colors.blue,
       ),
@@ -448,14 +573,13 @@ Future<void> _addOperation() async {
         color: Colors.white12,
         height: 30,
       ),
-      _infoItem(
-        icon: Icons.location_on_outlined,
-        label: isSpanish ? 'Ubicación' : 'Location',
-value: isSpanish ? 'No especificada' : 'Not specified',
-        color: Colors.blue,
-      ),
-    ],
-  ),
+ _infoItem(
+  icon: Icons.location_on_outlined,
+  label: isSpanish ? 'Ubicación' : 'Location',
+  value: widget.location.trim().isEmpty
+      ? (isSpanish ? 'No especificada' : 'Not specified')
+      : widget.location,
+  color: Colors.blue,
 ),
                   const SizedBox(height: 16),
                   _card(
@@ -463,20 +587,48 @@ value: isSpanish ? 'No especificada' : 'Not specified',
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _sectionHeader(
-                          context: context,
-                          icon: Icons.build_outlined,
-                          title: isSpanish ? 'Servicios realizados' : 'Services Performed',
-                          color: Colors.blue,
-                        ),
-                        const SizedBox(height: 8),
-                        if (widget.transcription.isEmpty)
+  context: context,
+  icon: Icons.build_outlined,
+  title: isSpanish ? 'Servicios realizados' : 'Services Performed',
+  color: Colors.blue,
+  onEdit: () async {
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => VoiceCaptureScreen(
+          languageCode: widget.languageCode,
+          job: widget.job,
+        ),
+      ),
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  },
+),
+                       if (widget.transcription.isEmpty)
   _bulletItem(
-  isSpanish
-      ? 'No se ingresó ningún trabajo.'
-      : 'No work entered.',
+    isSpanish
+        ? 'No se ingresó ningún trabajo.'
+        : 'No work entered.',
     Colors.orange,
   )
 else
+
+
+const SizedBox(height: 8),
+
+Align(
+  alignment: Alignment.centerLeft,
+  child: TextButton.icon(
+    onPressed: _addOperation,
+    icon: const Icon(Icons.add),
+    label: Text(
+      isSpanish ? 'Agregar más trabajo' : 'Add More Work',
+    ),
+  ),
+),
   _bulletItem(
     widget.transcription,
     Colors.blue,
@@ -485,12 +637,20 @@ else
                           color: Colors.white12,
                           height: 34,
                         ),
-                        _sectionHeader(
-                          context: context,
-                          icon: Icons.inventory_2_outlined,
-                          title: isSpanish ? 'Piezas' : 'Parts',
-                          color: Colors.greenAccent,
-                        ),
+                       _sectionHeader(
+  context: context,
+  icon: Icons.inventory_2_outlined,
+  title: isSpanish ? 'Piezas' : 'Parts',
+  color: Colors.greenAccent,
+  onEdit: () {
+    if (widget.job.operations.isEmpty) {
+      _addOperation();
+      return;
+    }
+
+    _addOperation();
+  },
+),
                         const SizedBox(height: 8),
                         Row(
   children: [
@@ -512,11 +672,12 @@ else
                           height: 34,
                         ),
                         _sectionHeader(
-                          context: context,
-                          icon: Icons.notes_outlined,
-                          title: isSpanish ? 'Notas' : 'Notes',
-                          color: Colors.amber,
-                        ),
+  context: context,
+  icon: Icons.notes_outlined,
+  title: isSpanish ? 'Notas' : 'Notes',
+  color: Colors.amber,
+  onEdit: _editNotes,
+),
                         const SizedBox(height: 6),
                         Text(
   widget.transcription,
@@ -526,27 +687,73 @@ else
     height: 1.55,
   ),
 ),
-          
+ ],
+                    ),
+                  ),         
                   const SizedBox(height: 16),
                   _card(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         _sectionHeader(
-                          context: context,
-                          icon: Icons.calculate_outlined,
-                          title: isSpanish ? 'Total estimado' : 'Estimated Total',
-                          color: Colors.purpleAccent,
-                        ),
+  context: context,
+  icon: Icons.calculate_outlined,
+  title: isSpanish ? 'Total estimado' : 'Estimated Total',
+  color: Colors.purpleAccent,
+  onEdit: () async {
+    if (widget.job.operations.isEmpty) {
+      _addOperation();
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OperationDetailsScreen(
+          operation: widget.job.operations.first,
+        ),
+      ),
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  },
+),
                         const SizedBox(height: 4),
                         _priceRow(
   label: isSpanish ? 'Mano de obra' : 'Labor',
-amount: isSpanish ? 'No ingresado' : 'Not entered',
+  amount: laborTotal > 0
+      ? _money(laborTotal)
+      : isSpanish
+          ? 'No ingresado'
+          : 'Not entered',
 ),
 
-_priceRow(
-  label: isSpanish ? 'Piezas' : 'Parts',
-amount: isSpanish ? 'No ingresado' : 'Not entered',
+_sectionHeader(
+  context: context,
+  icon: Icons.inventory_2_outlined,
+  title: isSpanish ? 'Piezas' : 'Parts',
+  color: Colors.greenAccent,
+  onEdit: () async {
+    if (widget.job.operations.isEmpty) {
+      _addOperation();
+      return;
+    }
+
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => OperationDetailsScreen(
+          operation: widget.job.operations.first,
+        ),
+      ),
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  },
 ),
                         Row(
                           children: [
@@ -595,11 +802,15 @@ isSpanish
                           height: 28,
                         ),
                         _priceRow(
-                          label: isSpanish ? 'TOTAL' : 'TOTAL',
-amount: isSpanish ? 'Pendiente' : 'Pending',
-                          bold: true,
-                          amountColor: Colors.purpleAccent,
-                        ),
+  label: 'TOTAL',
+  amount: estimatedTotal > 0
+      ? _money(estimatedTotal)
+      : isSpanish
+          ? 'Pendiente'
+          : 'Pending',
+  bold: true,
+  amountColor: Colors.purpleAccent,
+),
                         const Divider(
                           color: Colors.white12,
                           height: 24,
@@ -638,83 +849,106 @@ amount: isSpanish ? 'Pendiente' : 'Pending',
                     ),
                   ),
                   const SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SizedBox(
-                          height: 60,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              _showMessage(
-  context,
-  isSpanish
-      ? 'Editar todo estará disponible próximamente.'
-      : 'Edit All will be connected later.',
-);
-                            },
-                            icon: const Icon(Icons.edit_outlined),
-                            label: Text(
-  isSpanish ? 'Editar todo' : 'Edit All',
+
+Row(
+  children: [
+    Expanded(
+      child: SizedBox(
+        height: 60,
+        child: OutlinedButton.icon(
+          onPressed: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => NewJobScreen(
+                  languageCode: widget.languageCode,
+                  job: widget.job,
+                ),
+              ),
+            );
+
+            if (mounted) {
+              setState(() {});
+            }
+          },
+          icon: const Icon(Icons.edit_outlined),
+          label: Text(
+            isSpanish ? 'Editar todo' : 'Edit All',
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.blue,
+            side: const BorderSide(
+              color: Colors.blue,
+              width: 2,
+            ),
+          ),
+        ),
+      ),
+    ),
+
+    const SizedBox(width: 10),
+
+    Expanded(
+      child: SizedBox(
+        height: 60,
+        child: OutlinedButton.icon(
+          onPressed: _scheduleJob,
+          icon: const Icon(Icons.calendar_month_outlined),
+          label: Text(
+            isSpanish ? 'Programar' : 'Schedule',
+          ),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: Colors.orange,
+            side: const BorderSide(
+              color: Colors.orange,
+              width: 2,
+            ),
+          ),
+        ),
+      ),
+    ),
+
+    const SizedBox(width: 10),
+
+    Expanded(
+      flex: 2,
+      child: SizedBox(
+        height: 60,
+        child: ElevatedButton.icon(
+          onPressed: () {
+            _continueToApproval(context);
+          },
+          iconAlignment: IconAlignment.end,
+          icon: const Icon(
+            Icons.arrow_forward,
+            size: 28,
+          ),
+          label: Text(
+            isSpanish ? 'Continuar' : 'Continue',
+            style: const TextStyle(fontSize: 20),
+          ),
+        ),
+      ),
+    ),
+  ],
 ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.blue,
-                              side: const BorderSide(
-                                color: Colors.blue,
-                                width: 2,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 14),
-                      Expanded(
-                        flex: 2,
-                        child: SizedBox(
-                          height: 60,
-                          child: ElevatedButton.icon(
-                            onPressed: () {
-                              _continueToApproval(context);
-                            },
-                            iconAlignment: IconAlignment.end,
-                            icon: const Icon(
-                              Icons.arrow_forward,
-                              size: 28,
-                            ),
-                            label: Text(
-                              isSpanish
-    ? 'Continuar'
-    : 'Continue',
-                              style: TextStyle(fontSize: 20),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                   Column(
   crossAxisAlignment: CrossAxisAlignment.start,
   children: [
-    Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-  isSpanish ? 'Operaciones' : 'Operations',
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        TextButton.icon(
-          onPressed: _addOperation,
-          icon:  Icon(Icons.add),
-          label: Text(
-  isSpanish ? 'Agregar operación' : 'Add Operation',
-          )
-        ),
-      ],
+   Row(
+  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  children: [
+    Text(
+      isSpanish ? 'Operaciones' : 'Operations',
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
     ),
-    const SizedBox(height: 12),
+  ],
+),
+const SizedBox(height: 12),
     if (widget.job.operations.isEmpty)
       Text(
         isSpanish
@@ -777,7 +1011,7 @@ amount: isSpanish ? 'Pendiente' : 'Pending',
     ),
   ),
 ),
-      )
+      ),
   ],
 ),
                   const SizedBox(height: 16),
@@ -806,13 +1040,13 @@ amount: isSpanish ? 'Pendiente' : 'Pending',
                   ),
                 ],
               ),
-            ),
+                  )
           ],
         ),
       ),
     ),
   ),
-      )
+      ),
 );
   }
 }

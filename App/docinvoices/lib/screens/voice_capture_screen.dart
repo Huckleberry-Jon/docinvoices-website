@@ -8,26 +8,24 @@ class VoiceCaptureScreen extends StatefulWidget {
   const VoiceCaptureScreen({
     super.key,
     required this.languageCode,
-    required this.customerName,
-    required this.equipment,
-    required this.unitNumber,
-    required this.vin,
-    required this.mileage,
-required this.poNumber,
-required this.completedDate,
+    required this.job,
   });
+
+  final String languageCode;
+  final Job job;
+
+  String get customerName => job.customerName;
+  String get equipment => job.equipment;
+  String get unitNumber => job.unitNumber;
+  String get vin => job.vin;
+  String get mileage => job.mileage;
+  String get poNumber => job.poNumber;
+  String get completedDate => job.completedDate;
   
-final String languageCode;
-  final String customerName;
-  final String equipment;
-  final String unitNumber;
-  final String vin;
-  final String mileage;
-final String poNumber;
-final String completedDate;
 
   @override
-  State<VoiceCaptureScreen> createState() => _VoiceCaptureScreenState();
+  State<VoiceCaptureScreen> createState() =>
+      _VoiceCaptureScreenState();
 }
 
 class _VoiceCaptureScreenState extends State<VoiceCaptureScreen> {
@@ -125,11 +123,7 @@ Future<void> _stopListening() async {
     isPaused = false;
   });
 }
-  void _pauseOrResume() {
-    setState(() {
-      isPaused = !isPaused;
-    });
-  }
+
 
   void _finishRecording() {
     recordingTimer?.cancel();
@@ -176,43 +170,14 @@ Future<void> _reviewWork() async {
  
   
 
- final job = Job(
-  customerName: widget.customerName,
-  equipment: widget.equipment,
-  unitNumber: widget.unitNumber,
-  vin: widget.vin,
-  transcription: finalTranscription,
-  mileage: widget.mileage,
-  poNumber: widget.poNumber,
-  completedDate: widget.completedDate,
-  estimatedTotal: '0.00',
-  laborHours: 0.0,
-  laborRate: 0.0,
-  partsCost: 0.0,
-  markupPercent: 0.0,
-  taxLabor: false,
-  taxParts: false,
-  isTaxExempt: false,
-  discountAmount: 0.0,
-  operations: [],
-generalCharges: [],
- );
+ widget.job.transcription = finalTranscription;
  Navigator.push(
   context,
   MaterialPageRoute(
     builder: (context) => ReviewWorkScreen(
-      languageCode: widget.languageCode,
-      job: job,
-      transcription: finalTranscription,
-      customerName: widget.customerName,
-      equipment: widget.equipment,
-      unitNumber: widget.unitNumber,
-      vin: widget.vin,
-      mileage: widget.mileage,
-      poNumber: widget.poNumber,
-      completedDate: widget.completedDate,
-      estimatedTotal: '0.00',
-    ),
+  languageCode: widget.languageCode,
+  job: widget.job,
+),
   ),
 );
 }

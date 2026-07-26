@@ -13,6 +13,9 @@ dependencies:
 
   cupertino_icons: ^1.0.8
   speech_to_text: ^7.4.0
+  share_plus: ^11.1.0
+  pdf: ^3.11.3
+  printing: ^5.14.2
   
 dev_dependencies:
   flutter_test:
@@ -23,5 +26,6 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  
   assets:
     - assets/images/docinvoices_logo.png

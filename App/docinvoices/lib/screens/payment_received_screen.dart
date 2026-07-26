@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 
+import '../models/job.dart';
 import 'dashboard_screen.dart';
 
 class PaymentReceivedScreen extends StatefulWidget {
   const PaymentReceivedScreen({
     super.key,
-    required this.customerName,
-    required this.estimatedTotal,
     required this.languageCode,
+    required this.job,
   });
 
-  final String customerName;
-  final String estimatedTotal;
   final String languageCode;
+  final Job job;
+
+  String get customerName => job.customerName;
+  String get estimatedTotal => job.estimatedTotal;
+  String get estimateNumber => job.estimateNumber;
+  String get repairOrderNumber => job.repairOrderNumber;
+  String get invoiceNumber => job.invoiceNumber;
+  String get jobStatus => job.jobStatus;
 
   @override
   State<PaymentReceivedScreen> createState() =>
@@ -21,7 +27,7 @@ class PaymentReceivedScreen extends StatefulWidget {
 
 class _PaymentReceivedScreenState
     extends State<PaymentReceivedScreen> {
-      bool get isSpanish => widget.languageCode == 'es';
+  bool get isSpanish => widget.languageCode == 'es';
   int selectedRating = 0;
 
   void _showMessage(String message) {
@@ -335,10 +341,12 @@ class _PaymentReceivedScreenState
                           ],
                         ),
                         const SizedBox(height: 18),
-                        _detailRow(
-                          label: isSpanish ? 'Factura' : 'Invoice',
-  value: isSpanish ? 'Pendiente' : 'Pending',
-                        ),
+                       _detailRow(
+  label: isSpanish ? 'Factura' : 'Invoice',
+  value: widget.invoiceNumber.isEmpty
+      ? (isSpanish ? 'Pendiente' : 'Pending')
+      : widget.invoiceNumber,
+),
                         _detailRow(
                           label: isSpanish ? 'Cliente' : 'Customer',
   value: widget.customerName,

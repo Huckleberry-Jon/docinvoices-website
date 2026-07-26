@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'work_completed_screen.dart';
 import '../models/job.dart';
+import '../services/job_repository.dart';
 class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({
     super.key,
@@ -279,18 +280,45 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
           ? 'Primero elija un método de aprobación y un método de envío.'
           : 'Choose an approval method and send method first.',
     );
-      return;
-    
-    }
+    return;
+  }
+if (selectedApprovalMethod == 'Customer Approval') {
+  widget.job.jobStatus = 'Awaiting Approval';
+
+  JobRepository.instance.updateJob(widget.job);
+
+  Navigator.popUntil(
+    context,
+    (route) => route.isFirst,
+  );
+
+  return;
+}
+
+widget.job.jobStatus = 'Approved';
+
+JobRepository.instance.updateJob(widget.job);
+
 Navigator.push(
   context,
   MaterialPageRoute(
     builder: (context) => WorkCompletedScreen(
       languageCode: widget.languageCode,
       job: widget.job,
-),
+    ),
   ),
-);  }
+);
+ 
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => WorkCompletedScreen(
+        languageCode: widget.languageCode,
+        job: widget.job,
+      ),
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     final bool isSpanish = widget.languageCode == 'es';
@@ -423,14 +451,34 @@ Navigator.push(
                               color: Colors.blue,
                             ),
                             SizedBox(width: 10),
-                            Text(
-                              isSpanish ? 'Información del trabajo' : 'Job Information',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 21,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
+                        
+Expanded(
+  child: Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Text(
+        isSpanish ? 'Información del trabajo' : 'Job Information',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 21,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      IconButton(
+        icon: const Icon(
+          Icons.edit,
+          color: Colors.white,
+        ),
+        tooltip: isSpanish ? 'Editar' : 'Edit',
+       onPressed: () {
+  Navigator.pop(context);
+
+          // We'll connect this next.
+        },
+      ),
+    ],
+  ),
+),
                           ],
                         ),
                         const SizedBox(height: 18),

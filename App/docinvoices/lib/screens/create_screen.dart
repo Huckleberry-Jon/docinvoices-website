@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'invoices_screen.dart';
 import 'new_job_screen.dart';
+import 'customer_screen.dart';
 class CreateScreen extends StatefulWidget {
   const CreateScreen({
      super.key,
@@ -234,37 +235,38 @@ class _CreateScreenState extends State<CreateScreen> {
   }
 
   Widget _bottomItem({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
-    return Expanded(
-      child: InkWell(
-        onTap: () => _showComingSoon(label),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                icon,
-                color: color,
-                size: 30,
+  required IconData icon,
+  required String label,
+  required Color color,
+  VoidCallback? onTap,
+}) {
+  return Expanded(
+    child: InkWell(
+      onTap: onTap ?? () => _showComingSoon(label),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 30,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 13,
               ),
-              const SizedBox(height: 6),
-              Text(
-                label,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 13,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -387,24 +389,42 @@ const SizedBox(height: 28),
     : 'Create a new estimate for a customer.',
   icon: Icons.request_quote_outlined,
   accentColor: Colors.orange,
-),
-_createOption(
-  title:  isSpanish
-    ? 'Nuevo cliente'
-    : 'New Customer',
-  subtitle: isSpanish
-    ? 'Agregar un nuevo cliente a su lista.'
-    : 'Add a new customer to your list.',
-  icon: Icons.person_outline,
-  accentColor: Colors.lightGreen,
+  onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => NewJobScreen(
+        languageCode: widget.languageCode,
+      ),
+    ),
+  );
+},
 ),
 _createOption(
   title: isSpanish
-    ? 'Continuar un trabajo'
-    : 'Continue a Job',
-  subtitle:  isSpanish
-    ? 'Abrir un trabajo existente y continuar trabajando.'
-    : 'Open an existing job and continue working.',
+      ? 'Nuevo cliente'
+      : 'New Customer',
+  subtitle: isSpanish
+      ? 'Agregar un nuevo cliente a su lista.'
+      : 'Add a new customer to your list.',
+  icon: Icons.person_outline,
+  accentColor: Colors.lightGreen,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CustomerScreen(),
+      ),
+    );
+  },
+),
+    _createOption(
+  title: isSpanish
+      ? 'Solicitud de piezas'
+      : 'Parts Request',
+  subtitle: isSpanish
+    ? 'Solicita piezas a tus proveedores.'
+    : 'Request parts from your providers.',
   icon: Icons.calendar_month_outlined,
   accentColor: Colors.purpleAccent,
 ),
@@ -645,10 +665,20 @@ _createOption(
   label: isSpanish ? 'Pagos' : 'Payments',
   color: Colors.lightGreen,
 ),
-                    _bottomItem(
+                   _bottomItem(
   icon: Icons.description_outlined,
   label: isSpanish ? 'Cotizaciones' : 'Estimates',
   color: Colors.orange,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NewJobScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
 ),
                     Expanded(
                       child: Padding(
@@ -689,6 +719,16 @@ _createOption(
   icon: Icons.receipt_long_outlined,
   label: isSpanish ? 'Facturas' : 'Invoices',
   color: Colors.purpleAccent,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InvoicesScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
 ),
                     _bottomItem(
   icon: Icons.bar_chart,

@@ -1,14 +1,27 @@
 import 'package:flutter/material.dart';
-
+import 'new_job_screen.dart';
 import 'create_screen.dart';
-
-class DashboardScreen extends StatelessWidget {
+import 'invoices_screen.dart';
+import 'active_jobs_screen.dart';
+import 'scheduled_jobs_screen.dart';
+import '../models/job.dart';
+import 'reports_screen.dart';
+class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
     required this.languageCode,
   });
 
   final String languageCode;
+
+  @override
+  State<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends State<DashboardScreen> {
+  final List<Job> jobs = [];
+
+  String get languageCode => widget.languageCode;
 
   void _openCreate(BuildContext context) {
     Navigator.push(
@@ -449,30 +462,51 @@ subtitle: '\$0.00',
                                 height: 1,
                               ),
                               _workflowItem(
-                                context: context,
-                                title: isSpanish? 'Continuar trabajo'
-    : 'Continue Current Job',
-                                subtitle:
-                                    '2021 Peterbilt 579 • Cooling System Repair',
-                                icon: Icons.update,
-                                color: Colors.lightGreen,
-                              ),
+  context: context,
+  title: isSpanish
+    ? 'Continuar trabajo'
+    : 'Continue Job',
+  subtitle: isSpanish
+    ? 'Ver trabajos activos'
+    : 'View active jobs',
+  icon: Icons.update,
+  color: Colors.lightGreen,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+       builder: (context) => ActiveJobsScreen(
+  languageCode: languageCode,
+),
+      ),
+    );
+  },
+),
                               const Divider(
                                 color: Colors.white12,
                                 height: 1,
                               ),
-                              _workflowItem(
-                                context: context,
-                                title: isSpanish
-    ? 'Trabajos programados'
-    : 'Scheduled Jobs',
-                                subtitle:
-                                    isSpanish
-    ? 'Ver sus próximos trabajos.'
-    : 'View your upcoming jobs.',
-                                icon: Icons.calendar_month_outlined,
-                                color: Colors.purpleAccent,
-                              ),
+                             _workflowItem(
+  context: context,
+  title: isSpanish
+      ? 'Trabajos programados'
+      : 'Scheduled Jobs',
+  subtitle: isSpanish
+      ? 'Ver sus próximos trabajos.'
+      : 'View your upcoming jobs.',
+  icon: Icons.calendar_month_outlined,
+  color: Colors.purpleAccent,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+       builder: (_) => ScheduledJobsScreen(
+  languageCode: languageCode,
+),
+      ),
+    );
+  },
+),
                               const Divider(
                                 color: Colors.white12,
                                 height: 1,
@@ -516,11 +550,21 @@ subtitle: '\$0.00',
                       color: Colors.lightGreen,
                     ),
                     _bottomItem(
-                      context: context,
-                      label: 'Estimates',
-                      icon: Icons.description_outlined,
-                      color: Colors.orange,
-                    ),
+  context: context,
+  label: languageCode == 'es' ? 'Cotizaciones' : 'Estimates',
+  icon: Icons.description_outlined,
+  color: Colors.orange,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NewJobScreen(
+          languageCode: languageCode,
+        ),
+      ),
+    );
+  },
+),
                     Expanded(
                       child: InkWell(
                         onTap: () => _openCreate(context),
@@ -570,17 +614,37 @@ subtitle: '\$0.00',
                       ),
                     ),
                     _bottomItem(
-                      context: context,
-                      label: 'Invoices',
-                      icon: Icons.receipt_long_outlined,
-                      color: Colors.purpleAccent,
-                    ),
+  context: context,
+  label: languageCode == 'es' ? 'Facturas' : 'Invoices',
+  icon: Icons.receipt_long_outlined,
+  color: Colors.purpleAccent,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InvoicesScreen(
+          languageCode: languageCode,
+        ),
+      ),
+    );
+  },
+),
                     _bottomItem(
-                      context: context,
-                      label: 'Reports',
-                      icon: Icons.bar_chart,
-                      color: Colors.lightGreen,
-                    ),
+  context: context,
+  label: 'Reports',
+  icon: Icons.bar_chart,
+  color: Colors.lightGreen,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ReportsScreen(
+          languageCode: languageCode,
+        ),
+      ),
+    );
+  },
+),
                   ],
                 ),
               ),

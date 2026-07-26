@@ -3,7 +3,8 @@ import '../models/labor_item.dart';
 import '../models/part_item.dart';
 import '../models/job.dart';
 import 'customer_invoice_screen.dart';
-
+import '../models/operation.dart';
+import 'pdf_preview_screen.dart';
 
 class WorkCompletedScreen extends StatefulWidget {
   const WorkCompletedScreen({
@@ -269,20 +270,29 @@ hintText: isSpanish
   }
 
   setState(() {
-    partItems.add(
-     PartItem(
-  description: description,
-  quantity: quantity,
-  unitPrice: unitPrice,
-  taxable: taxable,
-),
+  final newPart = PartItem(
+    description: description,
+    quantity: quantity,
+    unitPrice: unitPrice,
+    taxable: taxable,
+  );
+
+  if (widget.job.operations.isEmpty) {
+    widget.job.operations.add(
+      Operation(
+        title: isSpanish ? 'Trabajo revisado' : 'Reviewed Work',
+        labor: [],
+        parts: [newPart],
+        notes: widget.job.transcription,
+      ),
     );
-  });
+  } else {
+    widget.job.operations.first.parts.add(newPart);
+  }
+});
 
   Navigator.pop(dialogContext);
-
-      // We'll add the save code next.
-    },
+         },
     child: Text(
   isSpanish ? 'Guardar pieza' : 'Save Part',
 ),
@@ -415,21 +425,23 @@ hintText: isSpanish
     );
   }
 
-  Widget _actionButton({
-    required IconData icon,
-    required String label,
-    required Color color,
-  }) {
+ Widget _actionButton({
+  required IconData icon,
+  required String label,
+  required Color color,
+  VoidCallback? onTap,
+}) {
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
-        onTap: () {
-         _showMessage(
-  isSpanish
-      ? '$label se conectará más adelante.'
-      : '$label will be connected later.',
-);
-        },
+        onTap: onTap ??
+    () {
+      _showMessage(
+        isSpanish
+            ? '$label se conectará más adelante.'
+            : '$label will be connected later.',
+      );
+    },
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
@@ -1057,16 +1069,33 @@ _priceRow(
                       ),
                       const SizedBox(width: 10),
                       _actionButton(
-                        icon: Icons.picture_as_pdf_outlined,
-                        label: 'PDF',
-                        color: Colors.redAccent,
-                      ),
+  icon: Icons.picture_as_pdf_outlined,
+  label: 'PDF',
+  color: Colors.redAccent,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PdfPreviewScreen(
+          job: widget.job,
+        ),
+      ),
+    );
+  },
+),
                       const SizedBox(width: 10),
                       _actionButton(
-                        icon: Icons.share_outlined,
-                        label: isSpanish ? 'Compartir' : 'Share',
-                        color: Colors.purpleAccent,
-                      ),
+  icon: Icons.share_outlined,
+  label: isSpanish ? 'Compartir' : 'Share',
+  color: Colors.purpleAccent,
+  onTap: () {
+    _showMessage(
+      isSpanish
+          ? 'La función Compartir llegará pronto.'
+          : 'Share feature coming soon.',
+    );
+  },
+),
                     ],
                   ),
 
@@ -1076,24 +1105,30 @@ _priceRow(
                     height: 72,
                     child: ElevatedButton(
                       onPressed: () {
+                       widget.job.operations.clear();
+
+widget.job.operations.add(
+  Operation(
+    title: isSpanish ? 'Trabajo completado' : 'Completed Work',
+    labor: List<LaborItem>.from(laborItems),
+    parts: List<PartItem>.from(partItems),
+    notes: widget.job.transcription,
+  ),
+);
+
+widget.job.estimatedTotal = (
+  laborTotal +
+  partsTotal +
+  salesTax
+).toStringAsFixed(2);
                        Navigator.push(
   context,
   MaterialPageRoute(
-    builder: (context) => CustomerInvoiceScreen(
-      languageCode: widget.languageCode,
-   customerName: widget.job.customerName,
-transcription: widget.job.transcription,
-equipment: widget.job.equipment,
-unitNumber: widget.job.unitNumber,
-vin: widget.job.vin,
-mileage: widget.job.mileage,
-poNumber: widget.job.poNumber,
-completedDate: widget.job.completedDate,
-estimatedTotal: widget.job.estimatedTotal,
-laborItems: laborItems,
-partItems: partItems,
-salesTax: salesTax,
-invoiceTotal: laborTotal + partsTotal + salesTax,
+    builder: (context) => 
+    CustomerInvoiceScreen(
+  languageCode: widget.languageCode,
+  job: widget.job,
+
   
 ),
   ),
