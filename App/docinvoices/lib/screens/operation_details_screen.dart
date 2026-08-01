@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import '../models/labor_item.dart';
 import '../models/operation.dart';
 import '../models/part_item.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
 
 class OperationDetailsScreen extends StatefulWidget {
-  const OperationDetailsScreen({
-    super.key,
-    required this.operation,
-  });
+ const OperationDetailsScreen({
+  super.key,
+  required this.operation,
+  required this.languageCode,
+});
 
   final Operation operation;
+  final String languageCode;
+
 
   @override
   State<OperationDetailsScreen> createState() =>
@@ -19,6 +23,31 @@ class OperationDetailsScreen extends StatefulWidget {
 
 class _OperationDetailsScreenState
     extends State<OperationDetailsScreen> {
+      late final TextEditingController complaintController;
+late final TextEditingController repairController;
+late final stt.SpeechToText speech;
+bool isListening = false;
+
+@override
+void initState() {
+  super.initState();
+  speech = stt.SpeechToText();
+
+  complaintController = TextEditingController(
+    text: widget.operation.title,
+  );
+
+  repairController = TextEditingController(
+  text: widget.operation.repairDescription,
+);
+}
+
+@override
+void dispose() {
+  complaintController.dispose();
+  repairController.dispose();
+  super.dispose();
+}
   String _money(double amount) {
     return '\$${amount.toStringAsFixed(2)}';
   }
@@ -38,6 +67,58 @@ class _OperationDetailsScreenState
       ),
     );
   }
+  Future<void> _toggleListening() async {
+  if (isListening) {
+    await speech.stop();
+
+    if (!mounted) return;
+
+    setState(() {
+      isListening = false;
+    });
+
+    return;
+  }
+
+  final bool available = await speech.initialize();
+
+  if (!available) {
+    _showMessage('Voice recognition is not available.');
+    return;
+  }
+
+  if (!mounted) return;
+
+  setState(() {
+    isListening = true;
+  });
+
+  final String existingText = repairController.text.trim();
+
+  await speech.listen(
+    onResult: (result) {
+      if (!mounted) return;
+
+      final String newWords = result.recognizedWords.trim();
+
+      setState(() {
+        repairController.text = existingText.isEmpty
+            ? newWords
+            : '$existingText\n$newWords';
+
+        repairController.selection = TextSelection.fromPosition(
+          TextPosition(
+            offset: repairController.text.length,
+          ),
+        );
+
+        if (result.finalResult) {
+          isListening = false;
+        }
+      });
+    },
+  );
+}
 
   Future<void> _showAddLaborDialog() async {
     final descriptionController = TextEditingController();
@@ -635,13 +716,19 @@ class _OperationDetailsScreenState
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
+Widget build(BuildContext context) {
+  final bool isSpanish = widget.languageCode == 'es';
+
+  return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       appBar: AppBar(
         backgroundColor: const Color(0xFF050B14),
         foregroundColor: Colors.white,
-        title: const Text('Operation Details'),
+        title: Text(
+  isSpanish
+      ? 'Detalles de la operación'
+      : 'Operation Details',
+),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -667,14 +754,40 @@ class _OperationDetailsScreenState
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      widget.operation.title,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 25,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+
+TextField(
+  controller: complaintController,
+  textCapitalization: TextCapitalization.sentences,
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 22,
+    fontWeight: FontWeight.bold,
+  ),
+  decoration: const InputDecoration(
+    labelText: 'Complaint',
+    border: OutlineInputBorder(),
+  ),
+),
+
+const SizedBox(height: 16),
+
+TextField(
+  controller: repairController,
+  minLines: 5,
+  maxLines: 10,
+  textCapitalization: TextCapitalization.sentences,
+  decoration: InputDecoration(
+    labelText: 'Repair Description',
+    hintText: 'Describe how you repaired the complaint...',
+    border: const OutlineInputBorder(),
+   suffixIcon: IconButton(
+  icon: Icon(
+    isListening ? Icons.stop : Icons.mic,
+  ),
+  onPressed: _toggleListening,
+),
+  ),
+),
                   ],
                 ),
               ),
@@ -840,8 +953,14 @@ class _OperationDetailsScreenState
                 height: 56,
                 child: ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.pop(context);
-                  },
+  widget.operation.title =
+      complaintController.text.trim();
+
+  widget.operation.repairDescription =
+      repairController.text.trim();
+
+  Navigator.pop(context);
+},
                   icon: const Icon(
                     Icons.check,
                   ),

@@ -53,6 +53,33 @@ double get laborTotal {
     (total, item) => total + item.total,
   );
 }
+double get jobLaborTotal {
+  return widget.job.operations.fold(
+    0.0,
+    (total, operation) => total + operation.laborTotal,
+  );
+}
+
+double get jobPartsTotal {
+  return widget.job.operations.fold(
+    0.0,
+    (total, operation) => total + operation.partsTotal,
+  );
+}
+
+double get generalChargesTotal {
+  return widget.job.generalCharges.fold(
+    0.0,
+    (total, charge) => total + charge.amount,
+  );
+}
+
+double get finalJobTotal {
+  return jobLaborTotal +
+      jobPartsTotal +
+      generalChargesTotal +
+      salesTax;
+}
  
  void _showAddLaborDialog() {
   final descriptionController = TextEditingController();
@@ -991,7 +1018,7 @@ else ...[
   ],
   _priceRow(
     label: isSpanish ? 'Total de mano de obra' : 'Labor Total',
-    amount: '\$${laborTotal.toStringAsFixed(2)}',
+    amount: '\$${jobLaborTotal.toStringAsFixed(2)}',
   ),
 ],
 if (partItems.isEmpty)
@@ -1018,8 +1045,15 @@ else ...[
   ],
   _priceRow(
     label:isSpanish ? 'Total de piezas' : 'Parts Total',
-    amount: '\$${partsTotal.toStringAsFixed(2)}',
+    amount: '\$${jobPartsTotal.toStringAsFixed(2)}',
+    
   ),
+  _priceRow(
+  label: isSpanish
+      ? 'Cargos adicionales'
+      : 'Other Charges',
+  amount: '\$${generalChargesTotal.toStringAsFixed(2)}',
+),
 ],
 _priceRow(
   label: isSpanish ? 'Impuesto sobre ventas' : 'Sales Tax',
@@ -1030,11 +1064,13 @@ const Divider(
   height: 30,
 ),
 _priceRow(
-  label:isSpanish ? 'TOTAL' : 'TOTAL',
-  amount: (laborTotal + partsTotal + salesTax) > 0
-    ? '\$${(laborTotal + partsTotal + salesTax).toStringAsFixed(2)}'
-    : isSpanish ? 'Pendiente' : 'Pending',
-      total: true,
+  label: 'TOTAL',
+  amount: finalJobTotal > 0
+      ? '\$${finalJobTotal.toStringAsFixed(2)}'
+      : isSpanish
+          ? 'Pendiente'
+          : 'Pending',
+  total: true,
 ),
                         const SizedBox(height: 8),
                          Text(
@@ -1101,68 +1137,56 @@ _priceRow(
 
                   const SizedBox(height: 20),
 
-                  SizedBox(
-                    height: 72,
-                    child: ElevatedButton(
-                      onPressed: () {
-                       widget.job.operations.clear();
+                 SizedBox(
+  height: 72,
+  child: ElevatedButton(
+    onPressed: () {
+      widget.job.estimatedTotal =
+          finalJobTotal.toStringAsFixed(2);
 
-widget.job.operations.add(
-  Operation(
-    title: isSpanish ? 'Trabajo completado' : 'Completed Work',
-    labor: List<LaborItem>.from(laborItems),
-    parts: List<PartItem>.from(partItems),
-    notes: widget.job.transcription,
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => CustomerInvoiceScreen(
+            languageCode: widget.languageCode,
+            job: widget.job,
+          ),
+        ),
+      );
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.orange,
+      foregroundColor: Colors.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          isSpanish
+              ? 'Continuar a la factura'
+              : 'Continue to Invoice',
+          style: const TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          isSpanish
+              ? 'Total de la factura'
+              : 'Invoice Total',
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
   ),
-);
-
-widget.job.estimatedTotal = (
-  laborTotal +
-  partsTotal +
-  salesTax
-).toStringAsFixed(2);
-                       Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => 
-    CustomerInvoiceScreen(
-  languageCode: widget.languageCode,
-  job: widget.job,
-
-  
 ),
-  ),
-);
-},
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child:  Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            isSpanish ? 'Completar pago' : 'Complete Payment',
-                            style: TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 3),
-                          Text(
-                             isSpanish ? 'Total de la factura' : 'Invoice Total',
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
 
                   const SizedBox(height: 18),
 

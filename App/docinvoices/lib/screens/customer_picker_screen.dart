@@ -79,7 +79,7 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.person_add),
-                  label: const Text('Search Customer'),
+                  label: const Text('Search for Customer'),
                   onPressed: () async {
                     final Customer? customer =
                         await Navigator.push(

@@ -367,11 +367,11 @@ Row(
   children: [
     _summaryCard(
       context: context,
-      title: isSpanish ? 'Trabajos de hoy' : 'Jobs Today',
+      title: isSpanish ? 'Trabajos de hoy' : 'Active Work Orders',
       value: '0',
       subtitle: isSpanish
           ? 'No hay trabajos activos'
-          : 'No Active Jobs',
+          : 'Nothing in progress',
       icon: Icons.work_outline,
       color: Colors.blue,
     ),
@@ -420,7 +420,7 @@ subtitle: '\$0.00',
                                         children: [
                                           Text(
                                           isSpanish ? 'Flujo de trabajo'
-                                                     : 'Workflow.',
+                                                     : 'Choose what you\'d like to do.',
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 28,
@@ -448,11 +448,11 @@ subtitle: '\$0.00',
                               ),
                               _workflowItem(
                                 context: context,
-                                title: isSpanish?'Nuevo trabajo'
-    : 'New Job',
+                                title: isSpanish?'Nueva Orden de Servicio'
+    : 'New Service Order',
                                 subtitle:
                                     isSpanish? 'Crear un nuevo trabajo u orden de trabajo.'
-    : 'Create a new job or work order.',
+    : 'Start a new service call or repair order.',
                                 icon: Icons.note_add_outlined,
                                 color: Colors.blue,
                                 onTap: () => _openCreate(context),
@@ -465,10 +465,10 @@ subtitle: '\$0.00',
   context: context,
   title: isSpanish
     ? 'Continuar trabajo'
-    : 'Continue Job',
+    : 'Continue Work',
   subtitle: isSpanish
     ? 'Ver trabajos activos'
-    : 'View active jobs',
+    : 'Find unfinished work order',
   icon: Icons.update,
   color: Colors.lightGreen,
   onTap: () {

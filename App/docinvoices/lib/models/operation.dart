@@ -2,17 +2,19 @@ import 'labor_item.dart';
 import 'part_item.dart';
 
 class Operation {
-  const Operation({
+  Operation({
     required this.title,
     required this.labor,
-required this.parts,
+    required this.parts,
     this.notes = '',
+    this.repairDescription = '',
   });
 
-  final String title;
+  String title;
   final List<LaborItem> labor;
   final List<PartItem> parts;
-  final String notes;
+  String notes;
+  String repairDescription;
 
   double get laborTotal =>
       labor.fold(0.0, (sum, item) => sum + item.total);

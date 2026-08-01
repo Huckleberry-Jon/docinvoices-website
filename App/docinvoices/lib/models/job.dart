@@ -1,5 +1,6 @@
 import 'general_charge.dart';
 import 'operation.dart';
+import 'payment.dart';
 
 class Job {
   Job({
@@ -32,6 +33,7 @@ class Job {
 this.reminderDateTime,
 this.reminderEnabled = false,
 this.notes = '',
+this.payments = const [],
   });
 
   factory Job.createEstimate({
@@ -102,6 +104,25 @@ DateTime? reminderDateTime;
 bool reminderEnabled;
 
   final List<Operation> operations;
+  final List<Payment> payments;
   final List<GeneralCharge> generalCharges;
   String location;
+
+double get totalPaid {
+  return payments.fold(
+    0.0,
+    (sum, payment) => sum + payment.amount,
+  );
+}
+
+double get balanceDue {
+  final double total =
+      double.tryParse(estimatedTotal) ?? 0.0;
+
+  return total - totalPaid;
+}
+
+bool get isPaidInFull {
+  return balanceDue <= 0.01;
+}
 }

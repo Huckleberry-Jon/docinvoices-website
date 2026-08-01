@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'work_completed_screen.dart';
 import '../models/job.dart';
 import '../services/job_repository.dart';
+import 'review_work_screen.dart';
+import 'work_board_screen.dart';
 class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({
     super.key,
@@ -295,27 +296,47 @@ if (selectedApprovalMethod == 'Customer Approval') {
   return;
 }
 
-widget.job.jobStatus = 'Approved';
+widget.job.jobStatus = 'In Progress';
 
 JobRepository.instance.updateJob(widget.job);
 
-Navigator.push(
+ 
+  Navigator.pushReplacement(
   context,
   MaterialPageRoute(
-    builder: (context) => WorkCompletedScreen(
+    builder: (context) => WorkBoardScreen(
       languageCode: widget.languageCode,
       job: widget.job,
     ),
   ),
 );
- 
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => WorkCompletedScreen(
-        languageCode: widget.languageCode,
-        job: widget.job,
-      ),
+}
+Widget _approvalPriceRow({
+  required String label,
+  required double amount,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 6),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 16,
+            ),
+          ),
+        ),
+        Text(
+          '\$${amount.toStringAsFixed(2)}',
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     ),
   );
 }
@@ -324,6 +345,23 @@ Navigator.push(
     final bool isSpanish = widget.languageCode == 'es';
     final bool customerApprovalSelected =
         selectedApprovalMethod == 'Customer Approval';
+        final double laborTotal = widget.job.operations.fold(
+  0.0,
+  (sum, operation) => sum + operation.laborTotal,
+);
+
+final double partsTotal = widget.job.operations.fold(
+  0.0,
+  (sum, operation) => sum + operation.partsTotal,
+);
+
+final double generalChargesTotal = widget.job.generalCharges.fold(
+  0.0,
+  (sum, charge) => sum + charge.amount,
+);
+
+final double estimatedTotal =
+    laborTotal + partsTotal + generalChargesTotal;
 
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
@@ -464,19 +502,7 @@ Expanded(
           fontWeight: FontWeight.bold,
         ),
       ),
-      IconButton(
-        icon: const Icon(
-          Icons.edit,
-          color: Colors.white,
-        ),
-        tooltip: isSpanish ? 'Editar' : 'Edit',
-       onPressed: () {
-  Navigator.pop(context);
-
-          // We'll connect this next.
-        },
-      ),
-    ],
+          ],
   ),
 ),
                           ],
@@ -513,27 +539,51 @@ if (widget.job.mileage.isNotEmpty)
                           color: Colors.white12,
                           height: 28,
                         ),
-                         Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                isSpanish ? 'Total de la factura' : 'Invoice Total',
-                                style: TextStyle(
-                                  color: Colors.white70,
-                                  fontSize: 17,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              '\$0.00',
-                              style: TextStyle(
-                                color: Colors.orange,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ],
-                        ),
+                         Column(
+  children: [
+    _approvalPriceRow(
+      label: isSpanish ? 'Mano de obra' : 'Labor',
+      amount: laborTotal,
+    ),
+    _approvalPriceRow(
+      label: isSpanish ? 'Piezas' : 'Parts',
+      amount: partsTotal,
+    ),
+    _approvalPriceRow(
+      label: isSpanish
+          ? 'Cargos adicionales'
+          : 'Other Charges',
+      amount: generalChargesTotal,
+    ),
+    const Divider(
+      color: Colors.white24,
+      height: 28,
+    ),
+    Row(
+      children: [
+        Expanded(
+          child: Text(
+            isSpanish
+                ? 'Total estimado'
+                : 'Estimated Total',
+            style: const TextStyle(
+              color: Colors.white70,
+              fontSize: 17,
+            ),
+          ),
+        ),
+        Text(
+          '\$${estimatedTotal.toStringAsFixed(2)}',
+          style: const TextStyle(
+            color: Colors.orange,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    ),
+  ],
+),
                       ],
                     ),
                   ),

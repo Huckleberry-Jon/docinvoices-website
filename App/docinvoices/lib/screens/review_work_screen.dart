@@ -4,7 +4,6 @@ import 'approval_screen.dart';
 import '../models/operation.dart';
 import 'operation_details_screen.dart';
 import 'new_job_screen.dart';
-import 'voice_capture_screen.dart';
 import 'schedule_job_screen.dart';
 import 'package:docinvoices/services/job_repository.dart';
 class ReviewWorkScreen extends StatefulWidget {
@@ -325,6 +324,65 @@ Future<void> _addOperation() async {
       child: child,
     );
   }
+  Widget _operationCard(Operation operation) {
+  return InkWell(
+    onTap: () async {
+      await Navigator.push(
+        context,
+       MaterialPageRoute(
+  builder: (_) => OperationDetailsScreen(
+    languageCode: widget.languageCode,
+    operation: operation,
+  ),
+
+        ),
+      );
+
+      if (mounted) {
+        setState(() {});
+      }
+    },
+    borderRadius: BorderRadius.circular(14),
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(
+        horizontal: 16,
+        vertical: 16,
+      ),
+      decoration: BoxDecoration(
+        color: const Color(0xFF07111D),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: Colors.white12,
+        ),
+      ),
+      child: Row(
+        children: [
+          const Icon(
+            Icons.build_circle_outlined,
+            color: Colors.orange,
+            size: 28,
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Text(
+              operation.title,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right,
+            color: Colors.white54,
+          ),
+        ],
+      ),
+    ),
+  );
+}
 Future<void> _editNotes() async {
   final controller = TextEditingController(
     text: widget.job.notes,
@@ -420,8 +478,8 @@ Future<void> _editNotes() async {
                           children: [
                             Text(
   isSpanish
-      ? 'Revise su trabajo'
-      : 'Review Your Work',
+      ? 'Orden de reparación'
+      : 'Repair Order',
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: Colors.white,
@@ -454,27 +512,30 @@ Future<void> _editNotes() async {
                   ),
                   const SizedBox(height: 12),
                   Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 9,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF172334),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: const Text(
-                        '✨ AI Draft',
-                        style: TextStyle(
-                          color: Colors.amber,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  _card(
+  child: Container(
+    padding: const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 9,
+    ),
+    decoration: BoxDecoration(
+      color: const Color(0xFF172334),
+      borderRadius: BorderRadius.circular(14),
+    ),
+    child: Text(
+     isSpanish
+    ? 'Preparar para aprobación'
+    : 'Prepare for Approval',
+      style: const TextStyle(
+        color: Colors.amber,
+        fontSize: 17,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+),
+const SizedBox(height: 18),
+
+_card(
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -505,8 +566,8 @@ Future<void> _editNotes() async {
                               SizedBox(height: 6),
                               Text(
                                 isSpanish
-    ? 'Revise los detalles a continuación antes de continuar.'
-    : 'Review the details below before continuing.',
+    ? 'Revise las operaciones, la mano de obra, las piezas y los cargos antes de continuar.'
+    : 'Review operations, labor, parts, and charges before continuing.',
                                 style: TextStyle(
                                   color: Colors.white70,
                                   fontSize: 16,
@@ -526,7 +587,9 @@ Future<void> _editNotes() async {
       _sectionHeader(
   context: context,
   icon: Icons.assignment_outlined,
-  title: isSpanish ? 'Información del trabajo' : 'Job Information',
+  title: isSpanish
+    ? 'Información de la orden de servicio'
+    : 'Service Order Information',
   color: Colors.blue,
   onEdit: () async {
     await Navigator.push(
@@ -589,33 +652,24 @@ if (widget.vin.isNotEmpty)
                         _sectionHeader(
   context: context,
   icon: Icons.build_outlined,
-  title: isSpanish ? 'Servicios realizados' : 'Services Performed',
+  title: isSpanish ? 'Operaciones' : 'Operations',
   color: Colors.blue,
-  onEdit: () async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => VoiceCaptureScreen(
-          languageCode: widget.languageCode,
-          job: widget.job,
-        ),
-      ),
-    );
-
-    if (mounted) {
-      setState(() {});
-    }
-  },
+  onEdit: null,
 ),
-                       if (widget.transcription.isEmpty)
+
+const SizedBox(height: 8),
+
+if (widget.job.operations.isEmpty)
   _bulletItem(
     isSpanish
-        ? 'No se ingresó ningún trabajo.'
-        : 'No work entered.',
+        ? 'No hay operaciones agregadas.'
+        : 'No operations added.',
     Colors.orange,
   )
 else
-
+  ...widget.job.operations.map(
+    (operation) => _operationCard(operation),
+  ),
 
 const SizedBox(height: 8),
 
@@ -625,234 +679,83 @@ Align(
     onPressed: _addOperation,
     icon: const Icon(Icons.add),
     label: Text(
-      isSpanish ? 'Agregar más trabajo' : 'Add More Work',
+      isSpanish
+          ? 'Agregar operación'
+          : 'Add Operation',
     ),
   ),
 ),
-  _bulletItem(
-    widget.transcription,
-    Colors.blue,
-  ),
-                        const Divider(
-                          color: Colors.white12,
-                          height: 34,
-                        ),
-                       _sectionHeader(
-  context: context,
-  icon: Icons.inventory_2_outlined,
-  title: isSpanish ? 'Piezas' : 'Parts',
-  color: Colors.greenAccent,
-  onEdit: () {
-    if (widget.job.operations.isEmpty) {
-      _addOperation();
-      return;
-    }
-
-    _addOperation();
-  },
-),
-                        const SizedBox(height: 8),
-                        Row(
-  children: [
-    Expanded(
-      child: Text(
-  isSpanish
-      ? 'No se ingresaron piezas'
-      : 'No parts entered',
-        style: TextStyle(
-          color: Colors.white70,
-          fontSize: 17,
-        ),
-      ),
-    ),
-  ],
-),
-                        const Divider(
-                          color: Colors.white12,
-                          height: 34,
-                        ),
-                        _sectionHeader(
-  context: context,
-  icon: Icons.notes_outlined,
-  title: isSpanish ? 'Notas' : 'Notes',
-  color: Colors.amber,
-  onEdit: _editNotes,
-),
-                        const SizedBox(height: 6),
-                        Text(
-  widget.transcription,
-  style: const TextStyle(
-    color: Colors.white,
-    fontSize: 17,
-    height: 1.55,
-  ),
-),
- ],
+                      ],
                     ),
                   ),         
                   const SizedBox(height: 16),
                   _card(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        _sectionHeader(
-  context: context,
-  icon: Icons.calculate_outlined,
-  title: isSpanish ? 'Total estimado' : 'Estimated Total',
-  color: Colors.purpleAccent,
-  onEdit: () async {
-    if (widget.job.operations.isEmpty) {
-      _addOperation();
-      return;
-    }
-
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OperationDetailsScreen(
-          operation: widget.job.operations.first,
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Row(
+        children: [
+          const Icon(
+            Icons.verified_outlined,
+            color: Colors.purpleAccent,
+            size: 30,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              isSpanish
+                  ? 'Listo para aprobación'
+                  : 'Ready for Approval',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 21,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      ),
+      const SizedBox(height: 10),
+      Text(
+        isSpanish
+            ? 'Revise las operaciones antes de continuar.'
+            : 'Review the operations before continuing.',
+        style: const TextStyle(
+          color: Colors.white70,
+          fontSize: 16,
         ),
       ),
-    );
-
-    if (mounted) {
-      setState(() {});
-    }
-  },
-),
-                        const SizedBox(height: 4),
-                        _priceRow(
-  label: isSpanish ? 'Mano de obra' : 'Labor',
-  amount: laborTotal > 0
-      ? _money(laborTotal)
-      : isSpanish
-          ? 'No ingresado'
-          : 'Not entered',
-),
-
-_sectionHeader(
-  context: context,
-  icon: Icons.inventory_2_outlined,
-  title: isSpanish ? 'Piezas' : 'Parts',
-  color: Colors.greenAccent,
-  onEdit: () async {
-    if (widget.job.operations.isEmpty) {
-      _addOperation();
-      return;
-    }
-
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (_) => OperationDetailsScreen(
-          operation: widget.job.operations.first,
+      const SizedBox(height: 18),
+      SizedBox(
+        height: 54,
+        child: ElevatedButton.icon(
+          onPressed: () {
+            _continueToApproval(context);
+          },
+          iconAlignment: IconAlignment.end,
+          icon: const Icon(
+            Icons.arrow_forward,
+          ),
+          label: Text(
+            isSpanish
+                ? 'Continuar a aprobación'
+                : 'Continue to Approval',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
         ),
       ),
-    );
-
-    if (mounted) {
-      setState(() {});
-    }
-  },
+    ],
+  ),
 ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  Text(
-  isSpanish ? 'Impuesto sobre ventas' : 'Sales Tax',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 17,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 7),
-                                  InkWell(
-                                    onTap: () {
-                                      _showMessage(
-                                        context,
-isSpanish
-    ? 'El impuesto sobre ventas se basa en la configuración de impuestos guardada.'
-    : 'Sales tax is based on your saved tax settings.',
-                                      );
-                                    },
-                                    child: const Icon(
-                                      Icons.info_outline,
-                                      color: Colors.white54,
-                                      size: 19,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            Text(
-  isSpanish
-      ? 'Calculado en la factura'
-      : 'Calculated on invoice',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 17,
-                              ),
-                            ),
-                          ],
-                        ),
-                        const Divider(
-                          color: Colors.white24,
-                          height: 28,
-                        ),
-                        _priceRow(
-  label: 'TOTAL',
-  amount: estimatedTotal > 0
-      ? _money(estimatedTotal)
-      : isSpanish
-          ? 'Pendiente'
-          : 'Pending',
-  bold: true,
-  amountColor: Colors.purpleAccent,
-),
-                        const Divider(
-                          color: Colors.white12,
-                          height: 24,
-                        ),
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                isSpanish
-    ? 'El impuesto sobre ventas se calcula según la configuración de su negocio.'
-    : 'Sales tax is calculated from your business settings.',
-                                style: TextStyle(
-                                  color: Colors.white54,
-                                  fontSize: 13,
-                                ),
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {
-                                _showMessage(
-                                  context,
-                                  isSpanish
-    ? 'La configuración de impuestos estará disponible próximamente.'
-    : 'Tax Settings will be connected later.',
-                                );
-                              },
-                              child: Text(
-                               isSpanish
-    ? 'Ver configuración de impuestos'
-    : 'View Tax Settings',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
                   const SizedBox(height: 20),
 
 Row(
   children: [
     Expanded(
+  flex: 2,
       child: SizedBox(
         height: 60,
         child: OutlinedButton.icon(
@@ -873,8 +776,12 @@ Row(
           },
           icon: const Icon(Icons.edit_outlined),
           label: Text(
-            isSpanish ? 'Editar todo' : 'Edit All',
-          ),
+  isSpanish ? 'Editar' : 'Edit',
+  style: const TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+  ),
+),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.blue,
             side: const BorderSide(
@@ -889,14 +796,19 @@ Row(
     const SizedBox(width: 10),
 
     Expanded(
+  flex: 2,
       child: SizedBox(
         height: 60,
         child: OutlinedButton.icon(
           onPressed: _scheduleJob,
           icon: const Icon(Icons.calendar_month_outlined),
           label: Text(
-            isSpanish ? 'Programar' : 'Schedule',
-          ),
+  isSpanish ? 'Programar' : 'Schedule',
+  style: const TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w600,
+  ),
+),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.orange,
             side: const BorderSide(
@@ -908,112 +820,11 @@ Row(
       ),
     ),
 
-    const SizedBox(width: 10),
-
-    Expanded(
-      flex: 2,
-      child: SizedBox(
-        height: 60,
-        child: ElevatedButton.icon(
-          onPressed: () {
-            _continueToApproval(context);
-          },
-          iconAlignment: IconAlignment.end,
-          icon: const Icon(
-            Icons.arrow_forward,
-            size: 28,
-          ),
-          label: Text(
-            isSpanish ? 'Continuar' : 'Continue',
-            style: const TextStyle(fontSize: 20),
-          ),
-        ),
-      ),
-    ),
+    
+    
   ],
 ),
-                  Column(
-  crossAxisAlignment: CrossAxisAlignment.start,
-  children: [
-   Row(
-  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  children: [
-    Text(
-      isSpanish ? 'Operaciones' : 'Operations',
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 20,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  ],
-),
-const SizedBox(height: 12),
-    if (widget.job.operations.isEmpty)
-      Text(
-        isSpanish
-    ? 'Aún no se han agregado operaciones.'
-    : 'No operations added yet.',
-        style: TextStyle(
-          color: Colors.white54,
-          fontSize: 15,
-        ),
-      )
-    else
-      ...widget.job.operations.map(
-       (operation) => Padding(
-  padding: const EdgeInsets.only(bottom: 10),
-  child: InkWell(
-    borderRadius: BorderRadius.circular(16),
-    onTap: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => OperationDetailsScreen(
-            operation: operation,
-          ),
-        ),
-      );
-    },
-    child: Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF0B1624),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white12,
-        ),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.build_circle_outlined,
-            color: Colors.orange,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              operation.title,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          const Icon(
-            Icons.chevron_right,
-            color: Colors.white54,
-          ),
-        ],
-      ),
-    ),
-  ),
-),
-      ),
-  ],
-),
+                  const SizedBox.shrink(),
                   const SizedBox(height: 16),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,

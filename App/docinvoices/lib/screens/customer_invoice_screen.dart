@@ -5,6 +5,7 @@ import 'payment_received_screen.dart';
 import '../models/job.dart';
 import 'package:printing/printing.dart';
 import 'pdf_preview_screen.dart';
+import '../models/payment.dart';
 class CustomerInvoiceScreen extends StatefulWidget {
   const CustomerInvoiceScreen({
     super.key,
@@ -23,6 +24,7 @@ String get mileage => job.mileage;
 String get poNumber => job.poNumber;
 String get completedDate => job.completedDate;
 String get estimatedTotal => job.estimatedTotal;
+
 
 List<LaborItem> get laborItems =>
     job.operations.expand((operation) => operation.labor).toList();
@@ -65,10 +67,14 @@ double get invoiceTotal =>
   @override
   State<CustomerInvoiceScreen> createState() =>
       _CustomerInvoiceScreenState();
+     
 }
 
 class _CustomerInvoiceScreenState
     extends State<CustomerInvoiceScreen> {
+      String? selectedPaymentMethod;
+      final paymentAmountController = TextEditingController();
+      
   bool get isSpanish => widget.languageCode == 'es';
   bool showServiceDetails = false;
   
@@ -88,20 +94,116 @@ String get mileage => job.mileage;
 String get poNumber => job.poNumber;
 String get completedDate => job.completedDate;
 String get estimatedTotal => job.estimatedTotal;
+final paymentDetailController = TextEditingController();
+@override
+void initState() {
+  super.initState();
 
-  
-
+  paymentAmountController.text =
+      widget.job.balanceDue > 0
+          ? widget.job.balanceDue.toStringAsFixed(2)
+          : widget.invoiceTotal.toStringAsFixed(2);
+}
+@override
+void dispose() {
+  paymentDetailController.dispose();
+  paymentAmountController.dispose();
+  super.dispose();
+}
   void _completePayment() {
-    Navigator.push(
-  context,
-  MaterialPageRoute(
-    builder: (context) => PaymentReceivedScreen(
-      languageCode: widget.languageCode,
-      job: widget.job,
+  final String paymentDetail =
+    paymentDetailController.text.trim();
+
+final double? paymentAmount =
+    double.tryParse(paymentAmountController.text.trim());
+  if (selectedPaymentMethod == null) {
+    if (paymentAmount == null || paymentAmount <= 0) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        isSpanish
+            ? 'Ingrese un monto de pago válido.'
+            : 'Enter a valid payment amount.',
+      ),
     ),
+  );
+  return;
+}
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? 'Seleccione un método de pago.'
+              : 'Select a payment method.',
+        ),
+      ),
+    );
+    return;
+  }
+
+  if (selectedPaymentMethod == 'Cash') {
+    final double? amountReceived =
+        double.tryParse(paymentDetail);
+
+    if (amountReceived == null ||
+        amountReceived < paymentAmount!) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            isSpanish
+                ? 'Ingrese un monto recibido válido.'
+                : 'Enter a valid amount received.',
+          ),
+        ),
+      );
+      return;
+    }
+  }
+
+  if (selectedPaymentMethod == 'Check' &&
+      paymentDetail.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? 'Ingrese el número de cheque.'
+              : 'Enter the check number.',
+        ),
+      ),
+    );
+    return;
+  }
+
+  if (selectedPaymentMethod == 'Other' &&
+      paymentDetail.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? 'Ingrese una descripción del pago.'
+              : 'Enter a payment description.',
+        ),
+      ),
+    );
+    return;
+  }
+widget.job.payments.add(
+  Payment(
+    method: selectedPaymentMethod!,
+    amount: paymentAmount!,
+    reference: paymentDetailController.text.trim(),
   ),
 );
-  }
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => PaymentReceivedScreen(
+        languageCode: widget.languageCode,
+        job: widget.job,
+      ),
+    ),
+  );
+}
 
   Widget _card({
     required Widget child,
@@ -346,7 +448,39 @@ String get estimatedTotal => job.estimatedTotal;
       ),
     );
   }
-
+Widget _paymentSummaryRow({
+  required String label,
+  required double amount,
+  bool bold = false,
+}) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 5),
+    child: Row(
+      children: [
+        Expanded(
+          child: Text(
+            label,
+            style: TextStyle(
+              color: bold ? Colors.white : Colors.white70,
+              fontSize: bold ? 18 : 16,
+              fontWeight:
+                  bold ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
+        Text(
+          '\$${amount.toStringAsFixed(2)}',
+          style: TextStyle(
+            color: bold ? Colors.orange : Colors.white,
+            fontSize: bold ? 20 : 16,
+            fontWeight:
+                bold ? FontWeight.bold : FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
+  );
+}
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -927,11 +1061,108 @@ _priceRow(
                       ),
                     ],
                   ),
+                  _card(
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      Text(
+        isSpanish
+            ? 'Método de pago'
+            : 'Payment Method',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 21,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      const SizedBox(height: 14),
+      Wrap(
+        spacing: 10,
+        runSpacing: 10,
+        children: [
+          for (final method in [
+            'Cash',
+            'Card',
+            'Check',
+            'ACH',
+            'Other',
+          ])
+            ChoiceChip(
+              label: Text(
+                isSpanish
+                    ? {
+                        'Cash': 'Efectivo',
+                        'Card': 'Tarjeta',
+                        'Check': 'Cheque',
+                        'ACH': 'ACH',
+                        'Other': 'Otro',
+                      }[method]!
+                    : method,
+              ),
+              selected: selectedPaymentMethod == method,
+              onSelected: (selected) {
+                setState(() {
+                  selectedPaymentMethod =
+                      selected ? method : null;
+                });
+              },
+            ),
+        ],
+      ),
+    ],
+  ),
+),
+const SizedBox(height: 16),
+
+_card(
+  child: Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      _paymentSummaryRow(
+        label: isSpanish
+            ? 'Total de la factura'
+            : 'Invoice Total',
+        amount: widget.invoiceTotal,
+      ),
+      _paymentSummaryRow(
+        label: isSpanish
+            ? 'Pagado'
+            : 'Already Paid',
+        amount: widget.job.totalPaid,
+      ),
+      _paymentSummaryRow(
+        label: isSpanish
+            ? 'Saldo pendiente'
+            : 'Balance Due',
+        amount: widget.job.balanceDue,
+        bold: true,
+      ),
+      const SizedBox(height: 16),
+      TextField(
+        controller: paymentAmountController,
+        keyboardType: const TextInputType.numberWithOptions(
+          decimal: true,
+        ),
+        decoration: InputDecoration(
+          labelText: isSpanish
+              ? 'Monto del pago'
+              : 'Payment Amount',
+          prefixText: '\$',
+          border: const OutlineInputBorder(),
+        ),
+      ),
+    ],
+  ),
+),
+
+const SizedBox(height: 16),
+const SizedBox(height: 18),
                    SizedBox(height: 20),
                   SizedBox(
                     height: 76,
                     child: ElevatedButton(
-                      onPressed: _completePayment,
+                      onPressed:
+                   selectedPaymentMethod == null ? null : _completePayment,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.orange,
                         foregroundColor: Colors.black,

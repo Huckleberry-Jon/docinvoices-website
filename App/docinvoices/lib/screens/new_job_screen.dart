@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
-import 'voice_capture_screen.dart';
+
 import '../models/job.dart';
 import '../models/customer.dart';
 import 'package:docinvoices/services/job_repository.dart';
 import 'customer_picker_screen.dart';
-
+import 'review_work_screen.dart';
+import '../models/operation.dart';
+import '../models/general_charge.dart';
+import 'customer_screen.dart';
 class NewJobScreen extends StatefulWidget {
   const NewJobScreen({
     super.key,
@@ -34,7 +37,11 @@ class _NewJobScreenState extends State<NewJobScreen> {
       TextEditingController();
 final locationController = TextEditingController();
   final mileageController = TextEditingController();
-  @override
+  final complaintController = TextEditingController();
+  final serviceCallChargeController = TextEditingController(
+  text: '250.00',
+);
+    @override
 void initState() {
   super.initState();
 
@@ -45,20 +52,42 @@ void initState() {
     vinController.text = widget.job!.vin;
     locationController.text = widget.job!.location;
     mileageController.text = widget.job!.mileage;
+    complaintController.text =
+    widget.job!.operations.isNotEmpty
+        ? widget.job!.operations.first.title
+        : '';
+
+final serviceCharge = widget.job!.generalCharges
+    .where(
+      (charge) =>
+          charge.description == 'Service Call Charge' ||
+          charge.description == 'Cargo por llamada de servicio',
+    )
+    .toList();
+
+serviceCallChargeController.text =
+    serviceCharge.isNotEmpty
+        ? serviceCharge.first.amount.toStringAsFixed(2)
+        : '0.00';
   }
 }
 
-  @override
-  void dispose() {
-    customerController.dispose();
-    equipmentController.dispose();
-    unitController.dispose();
-    vinController.dispose();
-    super.dispose();
-  }
+ @override
+void dispose() {
+  customerController.dispose();
+  equipmentController.dispose();
+  unitController.dispose();
+  vinController.dispose();
+  locationController.dispose();
+  mileageController.dispose();
+  complaintController.dispose();
+  serviceCallChargeController.dispose();
 
+  super.dispose();
+}
   void _startVoiceCapture() {
   final String customerName = customerController.text.trim();
+  
 
   if (customerName.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(
@@ -77,6 +106,44 @@ void initState() {
   // EDIT MODE: update the existing job and return to Review Work.
   if (widget.job != null) {
     final Job existingJob = widget.job!;
+    final String updatedComplaint =
+    complaintController.text.trim();
+
+if (existingJob.operations.isEmpty) {
+  if (updatedComplaint.isNotEmpty) {
+    existingJob.operations.add(
+      Operation(
+        title: updatedComplaint,
+        labor: [],
+        parts: [],
+      ),
+    );
+  }
+} else {
+  existingJob.operations.first.title = updatedComplaint;
+}
+
+existingJob.generalCharges.removeWhere(
+  (charge) =>
+      charge.description == 'Service Call Charge' ||
+      charge.description == 'Cargo por llamada de servicio',
+);
+
+final double updatedServiceCallCharge = double.tryParse(
+      serviceCallChargeController.text.trim(),
+    ) ??
+    0.0;
+
+if (updatedServiceCallCharge > 0) {
+  existingJob.generalCharges.add(
+    GeneralCharge(
+      description: widget.languageCode == 'es'
+          ? 'Cargo por llamada de servicio'
+          : 'Service Call Charge',
+      amount: updatedServiceCallCharge,
+    ),
+  );
+}
 
     existingJob.customerName = customerController.text.trim();
     existingJob.equipment = equipmentController.text.trim();
@@ -84,8 +151,7 @@ void initState() {
     existingJob.vin = vinController.text.trim();
     existingJob.location = locationController.text.trim();
     existingJob.mileage = mileageController.text.trim();
-
-    Navigator.pop(context, existingJob);
+       Navigator.pop(context, existingJob);
     return;
   }
 
@@ -98,18 +164,43 @@ void initState() {
     location: locationController.text.trim(),
     mileage: mileageController.text.trim(),
   );
+final String complaint = complaintController.text.trim();
 
+if (complaint.isNotEmpty) {
+  job.operations.add(
+    Operation(
+      title: complaint,
+      labor: [],
+      parts: [],
+    ),
+  );
+}
+final double serviceCallCharge = double.tryParse(
+      serviceCallChargeController.text.trim(),
+    ) ??
+    0.0;
+
+if (serviceCallCharge > 0) {
+  job.generalCharges.add(
+    GeneralCharge(
+      description: widget.languageCode == 'es'
+          ? 'Cargo por llamada de servicio'
+          : 'Service Call Charge',
+      amount: serviceCallCharge,
+    ),
+  );
+}
   JobRepository.instance.addJob(job);
 
   Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => VoiceCaptureScreen(
-        languageCode: widget.languageCode,
-        job: job,
-      ),
+  context,
+  MaterialPageRoute(
+    builder: (_) => ReviewWorkScreen(
+      languageCode: widget.languageCode,
+      job: job,
     ),
-  );
+  ),
+);
 }
 
   @override
@@ -119,7 +210,7 @@ void initState() {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          isSpanish ? 'Crear estimado' : 'Create Estimate',
+          isSpanish ? 'Orden de servicio' : 'Service Order'
         ),
       ),
       body: SingleChildScrollView(
@@ -149,9 +240,9 @@ void initState() {
     });
   },
   decoration: InputDecoration(
-    labelText: isSpanish
-        ? 'Nombre del cliente'
-        : 'Customer Name',
+    label: Text(
+  isSpanish ? 'Buscar cliente' : 'Search Customer',
+),
     suffixIcon: const Icon(Icons.people),
   ),
 ),
@@ -167,7 +258,7 @@ void initState() {
           final Customer? customer = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const CustomerPickerScreen(),
+              builder: (_) => const CustomerScreen(),
             ),
           );
 
@@ -234,6 +325,36 @@ TextField(
         : 'Mileage',
   ),
 ),
+TextField(
+  controller: complaintController,
+  minLines: 3,
+  maxLines: 6,
+  textCapitalization: TextCapitalization.sentences,
+  decoration: InputDecoration(
+    labelText: isSpanish
+        ? 'Queja / Servicio solicitado'
+        : 'Complaint / Requested Service',
+    hintText: isSpanish
+        ? 'Ejemplo: No arranca'
+        : 'Example: No start',
+  ),
+),
+TextField(
+  controller: serviceCallChargeController,
+  keyboardType: const TextInputType.numberWithOptions(
+    decimal: true,
+  ),
+  decoration: InputDecoration(
+    labelText: isSpanish
+        ? 'Cargo por llamada de servicio'
+        : 'Service Call Charge',
+    prefixText: '\$',
+  ),
+),
+
+const SizedBox(height: 16),
+
+const SizedBox(height: 16),
             const SizedBox(height: 32),
 
             SizedBox(
@@ -244,8 +365,8 @@ TextField(
   widget.job != null
       ? (isSpanish ? 'Guardar cambios' : 'Save Changes')
       : (isSpanish
-          ? 'Continuar a captura de voz'
-          : 'Continue to Voice Capture'),
+          ? 'Continuar '
+          : 'Continue'),
 ),
               ),
             ),
