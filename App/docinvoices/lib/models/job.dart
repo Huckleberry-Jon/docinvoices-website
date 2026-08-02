@@ -33,10 +33,14 @@ class Job {
 this.reminderDateTime,
 this.reminderEnabled = false,
 this.notes = '',
-this.payments = const [],
-this.beforePhotoPaths = const [],
-this.afterPhotoPaths = const [],
-  });
+List<Payment>? payments,
+List<String>? beforePhotoPaths,
+List<String>? afterPhotoPaths,
+})  : payments = payments ?? <Payment>[],
+      beforePhotoPaths =
+          beforePhotoPaths ?? <String>[],
+      afterPhotoPaths =
+          afterPhotoPaths ?? <String>[];
 
   factory Job.createEstimate({
     required String location,

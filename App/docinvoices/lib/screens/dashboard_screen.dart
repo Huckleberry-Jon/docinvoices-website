@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'new_job_screen.dart';
 import 'create_screen.dart';
 import 'invoices_screen.dart';
 import 'active_jobs_screen.dart';
@@ -11,6 +11,7 @@ import '../services/job_repository.dart';
 import 'invoices_waiting_screen.dart';
 import 'notifications_screen.dart';
 import 'business_profile_screen.dart';
+import 'customer_screen.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
@@ -307,6 +308,27 @@ class _DashboardScreenState extends State<DashboardScreen> {
           },
         ),
 
+        ListTile(
+          leading: const Icon(Icons.person_add_alt_1_outlined),
+          title: Text(
+            isSpanish
+                ? 'Crear cliente'
+                : 'Create Customer',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => CustomerScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
         const Divider(),
 
         ListTile(
@@ -354,9 +376,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ListTile(
           leading: const Icon(Icons.description_outlined),
           title: Text(
-            isSpanish
-                ? 'Cotizaciones'
-                : 'Estimates',
+            isSpanish ? 'Cotizaciones' : 'Estimates',
           ),
           onTap: () {
             Navigator.pop(context);
@@ -419,9 +439,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ListTile(
           leading: const Icon(Icons.bar_chart_outlined),
           title: Text(
-            isSpanish
-                ? 'Reportes'
-                : 'Reports',
+            isSpanish ? 'Reportes' : 'Reports',
           ),
           onTap: () {
             Navigator.pop(context);
@@ -440,9 +458,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ListTile(
           leading: const Icon(Icons.info_outline),
           title: Text(
-            isSpanish
-                ? 'Acerca de'
-                : 'About',
+            isSpanish ? 'Acerca de' : 'About',
           ),
           onTap: () {
             Navigator.pop(context);
@@ -450,7 +466,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             showAboutDialog(
               context: context,
               applicationName: 'DocInvoices',
-              applicationVersion: '1.0.0 (8)',
+              applicationVersion: '1.0.0 (9)',
               applicationLegalese: '© 2026 DocInvoices',
             );
           },

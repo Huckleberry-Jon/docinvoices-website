@@ -38,10 +38,18 @@ class _NewJobScreenState extends State<NewJobScreen> {
 final locationController = TextEditingController();
   final mileageController = TextEditingController();
   final complaintController = TextEditingController();
-  final serviceCallChargeController = TextEditingController(
-  text: '250.00',
+  final serviceCallChargeController =
+    TextEditingController();
+    final serviceMilesController = TextEditingController();
+
+final mileageRateController =
+    TextEditingController(
+  text: '1.50',
 );
-    @override
+
+bool includeServiceCall = false;
+
+     @override
 void initState() {
   super.initState();
 
@@ -57,21 +65,45 @@ void initState() {
         ? widget.job!.operations.first.title
         : '';
 
-final serviceCharge = widget.job!.generalCharges
-    .where(
-      (charge) =>
-          charge.description == 'Service Call Charge' ||
-          charge.description == 'Cargo por llamada de servicio',
-    )
-    .toList();
+final serviceCharge = widget.job!.generalCharges.where(
+  (charge) =>
+      charge.description == 'Service Call Charge' ||
+      charge.description == 'Cargo por llamada de servicio',
+).toList();
+
+final mileageCharge = widget.job!.generalCharges.where(
+  (charge) =>
+      charge.description == 'Mileage' ||
+      charge.description == 'Millaje',
+).toList();
+
+includeServiceCall =
+    serviceCharge.isNotEmpty || mileageCharge.isNotEmpty;
 
 serviceCallChargeController.text =
     serviceCharge.isNotEmpty
         ? serviceCharge.first.amount.toStringAsFixed(2)
-        : '0.00';
-  }
-}
+        : '';
 
+mileageRateController.text = '1.50';
+
+if (mileageCharge.isNotEmpty) {
+  final double savedMileageTotal =
+      mileageCharge.first.amount;
+
+  final double savedRate =
+      double.tryParse(mileageRateController.text) ?? 1.50;
+
+  serviceMilesController.text =
+      savedRate > 0
+          ? (savedMileageTotal / savedRate)
+              .toStringAsFixed(1)
+          : '';
+} else {
+  serviceMilesController.clear();
+}
+  }
+  }
  @override
 void dispose() {
   customerController.dispose();
@@ -82,9 +114,11 @@ void dispose() {
   mileageController.dispose();
   complaintController.dispose();
   serviceCallChargeController.dispose();
-
+serviceMilesController.dispose();
+mileageRateController.dispose();
   super.dispose();
 }
+  
   void _startVoiceCapture() {
   final String customerName = customerController.text.trim();
   
@@ -126,44 +160,78 @@ if (existingJob.operations.isEmpty) {
 existingJob.generalCharges.removeWhere(
   (charge) =>
       charge.description == 'Service Call Charge' ||
-      charge.description == 'Cargo por llamada de servicio',
+      charge.description == 'Cargo por llamada de servicio' ||
+      charge.description == 'Mileage' ||
+      charge.description == 'Millaje',
 );
 
-final double updatedServiceCallCharge = double.tryParse(
-      serviceCallChargeController.text.trim(),
-    ) ??
-    0.0;
+final double updatedCallOutFee = includeServiceCall
+    ? double.tryParse(
+          serviceCallChargeController.text.trim(),
+        ) ??
+        0.0
+    : 0.0;
 
-if (updatedServiceCallCharge > 0) {
+final double updatedServiceMiles = includeServiceCall
+    ? double.tryParse(
+          serviceMilesController.text.trim(),
+        ) ??
+        0.0
+    : 0.0;
+
+final double updatedMileageRate = includeServiceCall
+    ? double.tryParse(
+          mileageRateController.text.trim(),
+        ) ??
+        0.0
+    : 0.0;
+
+if (updatedCallOutFee > 0) {
   existingJob.generalCharges.add(
     GeneralCharge(
       description: widget.languageCode == 'es'
           ? 'Cargo por llamada de servicio'
           : 'Service Call Charge',
-      amount: updatedServiceCallCharge,
+      amount: updatedCallOutFee,
     ),
   );
 }
 
-    existingJob.customerName = customerController.text.trim();
-    existingJob.equipment = equipmentController.text.trim();
-    existingJob.unitNumber = unitController.text.trim();
-    existingJob.vin = vinController.text.trim();
-    existingJob.location = locationController.text.trim();
-    existingJob.mileage = mileageController.text.trim();
-       Navigator.pop(context, existingJob);
-    return;
-  }
+final double updatedMileageTotal =
+    updatedServiceMiles * updatedMileageRate;
 
-  // NEW JOB MODE: create the job and continue to Voice Capture.
-  final Job job = Job.createEstimate(
-    customerName: customerController.text.trim(),
-    equipment: equipmentController.text.trim(),
-    unitNumber: unitController.text.trim(),
-    vin: vinController.text.trim(),
-    location: locationController.text.trim(),
-    mileage: mileageController.text.trim(),
+if (updatedMileageTotal > 0) {
+  existingJob.generalCharges.add(
+    GeneralCharge(
+      description: widget.languageCode == 'es'
+          ? 'Millaje'
+          : 'Mileage',
+      amount: updatedMileageTotal,
+    ),
   );
+}
+
+existingJob.customerName = customerController.text.trim();
+existingJob.equipment = equipmentController.text.trim();
+existingJob.unitNumber = unitController.text.trim();
+existingJob.vin = vinController.text.trim();
+existingJob.location = locationController.text.trim();
+existingJob.mileage = mileageController.text.trim();
+
+Navigator.pop(context, existingJob);
+return;
+}
+
+// NEW JOB MODE: create the job and continue to Voice Capture.
+final Job job = Job.createEstimate(
+  customerName: customerController.text.trim(),
+  equipment: equipmentController.text.trim(),
+  unitNumber: unitController.text.trim(),
+  vin: vinController.text.trim(),
+  location: locationController.text.trim(),
+  mileage: mileageController.text.trim(),
+);
+
 final String complaint = complaintController.text.trim();
 
 if (complaint.isNotEmpty) {
@@ -175,22 +243,55 @@ if (complaint.isNotEmpty) {
     ),
   );
 }
-final double serviceCallCharge = double.tryParse(
-      serviceCallChargeController.text.trim(),
-    ) ??
-    0.0;
 
-if (serviceCallCharge > 0) {
+final double callOutFee = includeServiceCall
+    ? double.tryParse(
+          serviceCallChargeController.text.trim(),
+        ) ??
+        0.0
+    : 0.0;
+
+final double serviceMiles = includeServiceCall
+    ? double.tryParse(
+          serviceMilesController.text.trim(),
+        ) ??
+        0.0
+    : 0.0;
+
+final double mileageRate = includeServiceCall
+    ? double.tryParse(
+          mileageRateController.text.trim(),
+        ) ??
+        0.0
+    : 0.0;
+
+if (callOutFee > 0) {
   job.generalCharges.add(
     GeneralCharge(
       description: widget.languageCode == 'es'
           ? 'Cargo por llamada de servicio'
           : 'Service Call Charge',
-      amount: serviceCallCharge,
+      amount: callOutFee,
     ),
   );
 }
-  JobRepository.instance.addJob(job);
+
+final double mileageTotal =
+    serviceMiles * mileageRate;
+
+if (mileageTotal > 0) {
+  job.generalCharges.add(
+    GeneralCharge(
+      description: widget.languageCode == 'es'
+          ? 'Millaje'
+          : 'Mileage',
+      amount: mileageTotal,
+    ),
+  );
+}
+
+
+ JobRepository.instance.addJob(job);
 
   Navigator.push(
   context,
@@ -258,7 +359,7 @@ if (serviceCallCharge > 0) {
           final Customer? customer = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const CustomerScreen(),
+              builder: (_) => const CustomerScreen(languageCode: '',),
             ),
           );
 
@@ -339,18 +440,83 @@ TextField(
         : 'Example: No start',
   ),
 ),
-TextField(
-  controller: serviceCallChargeController,
-  keyboardType: const TextInputType.numberWithOptions(
-    decimal: true,
+SwitchListTile(
+  contentPadding: EdgeInsets.zero,
+  title: Text(
+    isSpanish
+        ? 'Agregar llamada de servicio'
+        : 'Add Service Call',
   ),
-  decoration: InputDecoration(
-    labelText: isSpanish
-        ? 'Cargo por llamada de servicio'
-        : 'Service Call Charge',
-    prefixText: '\$',
+  subtitle: Text(
+    isSpanish
+        ? 'Incluya tarifa de llamada y millaje cuando corresponda.'
+        : 'Include a call-out fee and mileage when needed.',
   ),
+  value: includeServiceCall,
+  onChanged: (value) {
+    setState(() {
+      includeServiceCall = value;
+
+      if (!value) {
+        serviceCallChargeController.clear();
+        serviceMilesController.clear();
+        mileageRateController.clear();
+      }
+    });
+  },
 ),
+
+if (includeServiceCall) ...[
+  const SizedBox(height: 12),
+
+  TextField(
+    controller: serviceCallChargeController,
+    keyboardType: const TextInputType.numberWithOptions(
+      decimal: true,
+    ),
+    decoration: InputDecoration(
+      labelText: isSpanish
+          ? 'Tarifa de llamada'
+          : 'Call-out Fee',
+      prefixText: '\$',
+    ),
+  ),
+
+  const SizedBox(height: 16),
+
+  Row(
+    children: [
+      Expanded(
+        child: TextField(
+          controller: serviceMilesController,
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+          ),
+          decoration: InputDecoration(
+            labelText: isSpanish
+                ? 'Millas'
+                : 'Miles',
+          ),
+        ),
+      ),
+      const SizedBox(width: 14),
+      Expanded(
+        child: TextField(
+          controller: mileageRateController,
+          keyboardType: const TextInputType.numberWithOptions(
+            decimal: true,
+          ),
+          decoration: InputDecoration(
+            labelText: isSpanish
+                ? 'Tarifa por milla'
+                : 'Rate per Mile',
+            prefixText: '\$',
+          ),
+        ),
+      ),
+    ],
+  ),
+],
 
 const SizedBox(height: 16),
 

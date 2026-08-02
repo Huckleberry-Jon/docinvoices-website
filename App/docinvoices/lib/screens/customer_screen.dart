@@ -3,7 +3,7 @@ import '../models/customer.dart';
 import '../services/customer_repository.dart';
 
 class CustomerScreen extends StatefulWidget {
-  const CustomerScreen({super.key});
+  const CustomerScreen({super.key, required String languageCode});
 
   @override
   State<CustomerScreen> createState() => _CustomerScreenState();

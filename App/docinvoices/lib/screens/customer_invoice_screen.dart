@@ -1268,11 +1268,18 @@ _priceRow(
               ),
               selected: selectedPaymentMethod == method,
               onSelected: (selected) {
-                setState(() {
-                  selectedPaymentMethod =
-                      selected ? method : null;
-                });
-              },
+  setState(() {
+    selectedPaymentMethod =
+        selected ? method : null;
+
+    if (selected && method == 'Cash') {
+      paymentDetailController.text =
+          paymentAmountController.text;
+    } else {
+      paymentDetailController.clear();
+    }
+  });
+},
             ),
         ],
       ),

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../services/business_profile_repository.dart';
-
+import 'package:path_provider/path_provider.dart';
 class BusinessProfileScreen extends StatefulWidget {
   const BusinessProfileScreen({
     super.key,
@@ -64,17 +64,36 @@ void initState() {
   bool get isSpanish => widget.languageCode == 'es';
 
   Future<void> _chooseLogo() async {
-    final XFile? image = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
+  final XFile? image = await _imagePicker.pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 85,
+  );
 
-    if (image == null) return;
+  if (image == null) return;
 
-    setState(() {
-      logoPath = image.path;
-    });
-  }
+  final directory =
+      await getApplicationDocumentsDirectory();
+
+  final extension = image.path.contains('.')
+      ? image.path.substring(
+          image.path.lastIndexOf('.'),
+        )
+      : '.jpg';
+
+  final savedLogo = File(
+    '${directory.path}/business_logo$extension',
+  );
+
+  await File(image.path).copy(
+    savedLogo.path,
+  );
+
+  if (!mounted) return;
+
+  setState(() {
+    logoPath = savedLogo.path;
+  });
+}
 
   Future<void> _takeLogoPhoto() async {
     final XFile? image = await _imagePicker.pickImage(

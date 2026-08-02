@@ -85,7 +85,7 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
                         await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const CustomerScreen(),
+                        builder: (_) => const CustomerScreen(languageCode: '',),
                       ),
                     );
 
