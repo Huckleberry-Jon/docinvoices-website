@@ -39,7 +39,7 @@ bool isSpanishCustomer = false;
     super.dispose();
   }
 
-  void _saveCustomer() {
+ Future<void> _saveCustomer() async {
     if (!_formKey.currentState!.validate()) return;
 
     final customer = Customer(
@@ -54,8 +54,11 @@ bool isSpanishCustomer = false;
       notes: notesController.text.trim(),
       preferredLanguage: isSpanishCustomer ? 'es' : 'en',
     );
-CustomerRepository.addCustomer(customer);
-    Navigator.pop(context, customer);
+await CustomerRepository.addCustomer(customer);
+
+if (!mounted) return;
+
+Navigator.pop(context, customer);
   }
 
   @override

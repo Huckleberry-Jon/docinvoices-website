@@ -3,11 +3,12 @@
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
 import 'services/business_profile_repository.dart';
+import 'services/customer_repository.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await BusinessProfileRepository.instance.load();
-
+await CustomerRepository.loadCustomers();
   runApp(const DocInvoicesApp());
 }
 

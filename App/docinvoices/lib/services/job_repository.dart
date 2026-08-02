@@ -7,6 +7,10 @@ class JobRepository {
 
   final List<Job> _jobs = [];
 
+  int _nextEstimateNumber = 1001;
+  int _nextRepairOrderNumber = 1001;
+  int _nextInvoiceNumber = 1001;
+
   List<Job> get jobs => List.unmodifiable(_jobs);
 
   List<Job> get activeJobs {
@@ -16,21 +20,53 @@ class JobRepository {
     }).toList();
   }
 
- void addJob(Job job) {
-  _jobs.add(job);
-  
-}
+  String nextEstimateNumber() {
+    final number = _nextEstimateNumber;
+    _nextEstimateNumber++;
+
+    return number.toString();
+  }
+
+  String nextRepairOrderNumber() {
+    final number = _nextRepairOrderNumber;
+    _nextRepairOrderNumber++;
+
+    return number.toString();
+  }
+
+  String nextInvoiceNumber() {
+    final number = _nextInvoiceNumber;
+    _nextInvoiceNumber++;
+
+    return number.toString();
+  }
+
+  void addJob(Job job) {
+    if (job.estimateNumber.trim().isEmpty) {
+      job.estimateNumber = nextEstimateNumber();
+    }
+
+    _jobs.add(job);
+  }
 
   void updateJob(Job updatedJob) {
     final index = _jobs.indexWhere(
       (job) =>
-          job.repairOrderNumber == updatedJob.repairOrderNumber &&
-          job.customerName == updatedJob.customerName,
+          identical(job, updatedJob) ||
+          (
+            job.repairOrderNumber.trim().isNotEmpty &&
+            job.repairOrderNumber ==
+                updatedJob.repairOrderNumber
+          ) ||
+          (
+            job.invoiceNumber.trim().isNotEmpty &&
+            job.invoiceNumber ==
+                updatedJob.invoiceNumber
+          ),
     );
-    
 
     if (index == -1) {
-       _jobs.add(updatedJob);
+      _jobs.add(updatedJob);
       return;
     }
 

@@ -120,8 +120,8 @@ void dispose() {
 
 final double? paymentAmount =
     double.tryParse(paymentAmountController.text.trim());
-  if (selectedPaymentMethod == null) {
-    if (paymentAmount == null || paymentAmount <= 0) {
+
+if (paymentAmount == null || paymentAmount <= 0) {
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(
       content: Text(
@@ -133,24 +133,27 @@ final double? paymentAmount =
   );
   return;
 }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          isSpanish
-              ? 'Seleccione un método de pago.'
-              : 'Select a payment method.',
-        ),
-      ),
-    );
-    return;
-  }
 
+if (selectedPaymentMethod == null) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        isSpanish
+            ? 'Seleccione un método de pago.'
+            : 'Select a payment method.',
+      ),
+    ),
+  );
+  return;
+}
   if (selectedPaymentMethod == 'Cash') {
     final double? amountReceived =
-        double.tryParse(paymentDetail);
+        double.tryParse(
+  paymentDetailController.text.trim(),
+);
 
     if (amountReceived == null ||
-        amountReceived < paymentAmount!) {
+        amountReceived < paymentAmount) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -194,7 +197,7 @@ final double? paymentAmount =
 widget.job.payments.add(
   Payment(
     method: selectedPaymentMethod!,
-    amount: paymentAmount!,
+    amount: paymentAmount,
     reference: paymentDetailController.text.trim(),
   ),
 );

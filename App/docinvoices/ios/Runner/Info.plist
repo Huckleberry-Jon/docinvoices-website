@@ -71,5 +71,12 @@
 
 <key>NSSpeechRecognitionUsageDescription</key>
 <string>DocInvoices uses speech recognition to turn spoken work details into text.</string> 
+<key>NSCameraUsageDescription</key>
+<string>DocInvoices uses the camera to take before and after repair photos.</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>DocInvoices uses the photo library to select repair photos and a business logo.</string>
+<key>NSLocalNetworkUsageDescription</key>
+<string>DocInvoices uses the local network to find and connect to AirPrint printers.</string>
 </dict>
 </plist>
