@@ -5,7 +5,6 @@ import '../models/operation.dart';
 import 'operation_details_screen.dart';
 import 'new_job_screen.dart';
 import 'schedule_job_screen.dart';
-import 'package:docinvoices/services/job_repository.dart';
 class ReviewWorkScreen extends StatefulWidget {
   const ReviewWorkScreen({
     super.key,
@@ -58,9 +57,7 @@ double get estimatedTotal {
   return laborTotal + partsTotal;
 }
 
-String _money(double amount) {
-  return '\$${amount.toStringAsFixed(2)}';
-}
+
   void _continueToApproval(BuildContext context) {
   Navigator.push(
     context,
@@ -274,40 +271,6 @@ Future<void> _addOperation() async {
     );
   }
 
-  Widget _priceRow({
-    required String label,
-    required String amount,
-    bool bold = false,
-    Color? amountColor,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 7),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                color: bold ? Colors.white : Colors.white70,
-                fontSize: bold ? 20 : 17,
-                fontWeight:
-                    bold ? FontWeight.bold : FontWeight.normal,
-              ),
-            ),
-          ),
-          Text(
-            amount,
-            style: TextStyle(
-              color: amountColor ?? Colors.white,
-              fontSize: bold ? 27 : 17,
-              fontWeight:
-                  bold ? FontWeight.bold : FontWeight.normal,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _card({
     required Widget child,
@@ -382,72 +345,6 @@ Future<void> _addOperation() async {
       ),
     ),
   );
-}
-Future<void> _editNotes() async {
-  final controller = TextEditingController(
-    text: widget.job.notes,
-  );
-
-  final savedNotes = await showDialog<String>(
-    context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Text(
-          widget.languageCode == 'es'
-              ? 'Editar notas'
-              : 'Edit Notes',
-        ),
-        content: TextField(
-          controller: controller,
-          minLines: 4,
-          maxLines: 8,
-          textCapitalization: TextCapitalization.sentences,
-          decoration: InputDecoration(
-            hintText: widget.languageCode == 'es'
-                ? 'Ingrese notas...'
-                : 'Enter notes...',
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: Text(
-              widget.languageCode == 'es'
-                  ? 'Cancelar'
-                  : 'Cancel',
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(
-                context,
-                controller.text.trim(),
-              );
-            },
-            child: Text(
-              widget.languageCode == 'es'
-                  ? 'Guardar'
-                  : 'Save',
-            ),
-          ),
-        ],
-      );
-    },
-  );
-
-  controller.dispose();
-
-  if (savedNotes == null) {
-    return;
-  }
-
-  setState(() {
-    widget.job.notes = savedNotes;
-  });
-
-  JobRepository.instance.updateJob(widget.job);
 }
   @override
   Widget build(BuildContext context) {

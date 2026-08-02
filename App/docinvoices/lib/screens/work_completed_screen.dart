@@ -5,7 +5,11 @@ import '../models/job.dart';
 import 'customer_invoice_screen.dart';
 import '../models/operation.dart';
 import 'pdf_preview_screen.dart';
-
+import 'scheduled_jobs_screen.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import '../services/business_profile_repository.dart';
 class WorkCompletedScreen extends StatefulWidget {
   const WorkCompletedScreen({
     super.key,
@@ -27,6 +31,33 @@ class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
   bool showServiceDetails = false;
  final List<LaborItem> laborItems = [];
  final List<PartItem> partItems = [];
+ final ImagePicker _imagePicker = ImagePicker();
+
+Future<void> _takeBeforePhoto() async {
+  final XFile? photo = await _imagePicker.pickImage(
+    source: ImageSource.camera,
+    imageQuality: 80,
+  );
+
+  if (photo == null) return;
+
+  setState(() {
+    widget.job.beforePhotoPaths.add(photo.path);
+  });
+}
+
+Future<void> _takeAfterPhoto() async {
+  final XFile? photo = await _imagePicker.pickImage(
+    source: ImageSource.camera,
+    imageQuality: 80,
+  );
+
+  if (photo == null) return;
+
+  setState(() {
+    widget.job.afterPhotoPaths.add(photo.path);
+  });
+}
  double salesTaxRate = 0.0825;
  double get taxablePartsTotal {
   return partItems
@@ -73,12 +104,30 @@ double get generalChargesTotal {
     (total, charge) => total + charge.amount,
   );
 }
+double get jobTaxablePartsTotal {
+  return widget.job.operations.fold(
+    0.0,
+    (total, operation) =>
+        total +
+        operation.parts
+            .where((part) => part.taxable)
+            .fold(
+              0.0,
+              (partTotal, part) =>
+                  partTotal + part.total,
+            ),
+  );
+}
 
+double get jobSalesTax {
+  return jobTaxablePartsTotal * salesTaxRate;
+}
 double get finalJobTotal {
   return jobLaborTotal +
       jobPartsTotal +
       generalChargesTotal +
-      salesTax;
+      jobSalesTax -
+      widget.job.discountAmount;
 }
  
  void _showAddLaborDialog() {
@@ -505,19 +554,14 @@ hintText: isSpanish
   }
 
   Widget _photoPlaceholder({
-    required String label,
-    required IconData icon,
-  }) {
+  required String label,
+  required IconData icon,
+  required VoidCallback onTap,
+}) {
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          _showMessage(
-  isSpanish
-      ? 'El visor de fotos de $label se conectará más adelante.'
-      : '$label photo viewer will be connected later.',
-);
-        },
+        onTap: onTap,
         child: Container(
           height: 145,
           decoration: BoxDecoration(
@@ -600,17 +644,63 @@ hintText: isSpanish
                                 fontSize: 14,
                               ),
                             ),
+                            const SizedBox(height: 4),
+
+Text(
+  widget.job.invoiceNumber.trim().isEmpty
+      ? '--'
+      : widget.job.invoiceNumber,
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: FontWeight.bold,
+  ),
+),
                           ],
                         ),
                       ),
                       IconButton(
                         onPressed: () {
-                          _showMessage(
-                            isSpanish
-    ? 'La ayuda para clientes se conectará más adelante.'
-    : 'Customer help will be connected later.',
-                          );
-                        },
+  final profile =
+      BusinessProfileRepository.instance.profile;
+
+  showDialog(
+    context: context,
+    builder: (_) => AlertDialog(
+      title: Text(
+        isSpanish
+            ? '¿Necesita ayuda?'
+            : 'Need Help?',
+      ),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            isSpanish
+                ? 'Comuníquese con nosotros si tiene alguna pregunta sobre su reparación.'
+                : 'Contact us if you have any questions about your repair.',
+          ),
+          const SizedBox(height: 16),
+          if (profile.businessName.isNotEmpty)
+            Text(profile.businessName),
+          if (profile.phone.isNotEmpty)
+            Text(profile.phone),
+          if (profile.email.isNotEmpty)
+            Text(profile.email),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(
+            isSpanish ? 'Cerrar' : 'Close',
+          ),
+        ),
+      ],
+    ),
+  );
+},
                         icon: const Icon(
                           Icons.help_outline,
                           color: Colors.white70,
@@ -840,12 +930,14 @@ _detailRow(
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    isSpanish ? '3 fotos incluidas' : '3 photos included',
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 15,
-                                    ),
-                                  ),
+  isSpanish
+      ? '${widget.job.beforePhotoPaths.length + widget.job.afterPhotoPaths.length} fotos incluidas'
+      : '${widget.job.beforePhotoPaths.length + widget.job.afterPhotoPaths.length} photos included',
+  style: const TextStyle(
+    color: Colors.white60,
+    fontSize: 15,
+  ),
+),
                                 ],
                               ),
                             ),
@@ -855,14 +947,16 @@ _detailRow(
                         Row(
                           children: [
                             _photoPlaceholder(
-                              label: isSpanish ? 'Antes' : 'Before',
-                              icon: Icons.image_outlined,
-                            ),
+  label: isSpanish ? 'Antes' : 'Before',
+  icon: Icons.image_outlined,
+  onTap: _takeBeforePhoto,
+),
                             const SizedBox(width: 14),
                             _photoPlaceholder(
-                              label: isSpanish ? 'Después' : 'After',
-                              icon: Icons.auto_awesome,
-                            ),
+  label: isSpanish ? 'Después' : 'After',
+  icon: Icons.auto_awesome,
+  onTap: _takeAfterPhoto,
+),
                           ],
                         ),
                         const SizedBox(height: 14),
@@ -870,24 +964,95 @@ _detailRow(
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () {
-                              _showMessage(
-                                isSpanish
-    ? 'La galería de fotos se conectará más adelante.'
-    : 'Photo gallery will be connected later.',
-                              );
-                            },
-                            icon: const Icon(
-                              Icons.collections_outlined,
-                            ),
-                            label:  Text(
-                              isSpanish ? 'Ver todas las fotos' : 'View All Photos',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ),
+  final allPhotoPaths = [
+    ...widget.job.beforePhotoPaths,
+    ...widget.job.afterPhotoPaths,
+  ];
+
+  if (allPhotoPaths.isEmpty) {
+    _showMessage(
+      isSpanish
+          ? 'Aún no se han agregado fotos.'
+          : 'No photos have been added yet.',
+    );
+    return;
+  }
+
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) {
+      return Dialog(
+        child: SizedBox(
+          width: 700,
+          height: 520,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        isSpanish
+                            ? 'Fotos del trabajo'
+                            : 'Work Photos',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
                         ),
-                      ],
+                      ),
                     ),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
                   ),
+                  itemCount: allPhotoPaths.length,
+                  itemBuilder: (context, index) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.file(
+                        File(allPhotoPaths[index]),
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+},
+icon: const Icon(
+  Icons.collections_outlined,
+),
+label: Text(
+  isSpanish
+      ? 'Ver todas las fotos'
+      : 'View All Photos',
+  style: const TextStyle(
+    fontSize: 16,
+  ),
+),
+ ),
+                        ),
 
                   const SizedBox(height: 16),
 
@@ -943,6 +1108,9 @@ _detailRow(
                       ],
                     ),
                   ),
+                   ],
+                    ),
+                  ),
 
                   const SizedBox(height: 16),
 
@@ -994,13 +1162,14 @@ SizedBox(
 ),
 
 const SizedBox(height: 18),
-if (laborItems.isEmpty)
+if (widget.job.operations.isEmpty)
   _priceRow(
     label: isSpanish ? 'Mano de obra' : 'Labor',
 amount: isSpanish ? 'No ingresado' : 'Not entered',
   )
 else ...[
-  for (final item in laborItems) ...[
+  for (final operation in widget.job.operations)
+  for (final item in operation.labor) ...[
     _detailRow(
       label: item.description,
       value:
@@ -1021,13 +1190,14 @@ else ...[
     amount: '\$${jobLaborTotal.toStringAsFixed(2)}',
   ),
 ],
-if (partItems.isEmpty)
+if (widget.job.operations.isEmpty)
   _priceRow(
     label: isSpanish ? 'Piezas' : 'Parts',
 amount: isSpanish ? 'No ingresado' : 'Not entered',
   )
 else ...[
-  for (final item in partItems) ...[
+  for (final operation in widget.job.operations)
+  for (final item in operation.parts) ...[
     _detailRow(
       label: item.description,
       value:
@@ -1057,7 +1227,7 @@ else ...[
 ],
 _priceRow(
   label: isSpanish ? 'Impuesto sobre ventas' : 'Sales Tax',
-  amount: '\$${salesTax.toStringAsFixed(2)}',
+  amount: '\$${jobSalesTax.toStringAsFixed(2)}',
 ),
 const Divider(
   color: Colors.white24,
@@ -1209,13 +1379,26 @@ _priceRow(
                           children: [
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: () {
-                                  _showMessage(
-                                    isSpanish
-    ? 'La llamada al negocio se conectará más adelante.'
-    : 'Calling the business will be connected later.',
-                                  );
-                                },
+                                onPressed: () async {
+  final profile =
+      BusinessProfileRepository.instance.profile;
+
+  if (profile.phone.trim().isEmpty) {
+    _showMessage(
+      isSpanish
+          ? 'No hay un número de teléfono comercial guardado.'
+          : 'No business phone number has been saved.',
+    );
+    return;
+  }
+
+  final uri = Uri(
+    scheme: 'tel',
+    path: profile.phone,
+  );
+
+  await launchUrl(uri);
+},
                                 icon: const Icon(
                                   Icons.phone_outlined,
                                 ),
@@ -1227,13 +1410,16 @@ _priceRow(
                             const SizedBox(width: 12),
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: () {
-                                  _showMessage(
-                                    isSpanish
-    ? 'La programación del servicio se conectará más adelante.'
-    : 'Scheduling service will be connected later.',
-                                  );
-                                },
+                               onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ScheduledJobsScreen(
+        languageCode: widget.languageCode,
+             ),
+    ),
+  );
+},
                                 icon: const Icon(
                                   Icons.calendar_month_outlined,
                                 ),

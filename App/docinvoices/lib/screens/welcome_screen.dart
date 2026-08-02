@@ -98,8 +98,8 @@ class WelcomeScreen extends StatelessWidget {
                         SnackBar(
                           content: Text(
                             isSpanish
-                                ? 'La pantalla de inicio de sesión será la siguiente.'
-                                : 'The sign-in screen will be added later.',
+    ? 'Las cuentas de usuario estarán disponibles en una futura actualización.'
+    : 'User accounts will be available in a future update.',
                           ),
                         ),
                       );

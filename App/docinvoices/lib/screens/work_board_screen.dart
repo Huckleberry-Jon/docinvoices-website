@@ -3,7 +3,7 @@ import 'package:docinvoices/services/job_repository.dart';
 import '../models/job.dart';
 import '../models/operation.dart';
 import 'operation_details_screen.dart';
-import 'review_work_screen.dart';
+
 import 'work_completed_screen.dart';
 
 class WorkBoardScreen extends StatefulWidget {

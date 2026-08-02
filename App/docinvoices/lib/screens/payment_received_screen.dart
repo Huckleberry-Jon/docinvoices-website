@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-
+import '../models/payment.dart';
 import '../models/job.dart';
 import 'dashboard_screen.dart';
-
+import 'package:printing/printing.dart';
+import '../services/pdf_service.dart';
+import 'package:url_launcher/url_launcher.dart';
 class PaymentReceivedScreen extends StatefulWidget {
   const PaymentReceivedScreen({
     super.key,
@@ -27,6 +29,21 @@ class PaymentReceivedScreen extends StatefulWidget {
 
 class _PaymentReceivedScreenState
     extends State<PaymentReceivedScreen> {
+      Payment? get latestPayment {
+  if (widget.job.payments.isEmpty) {
+    return null;
+  }
+
+  return widget.job.payments.last;
+}
+
+String get paymentMethod {
+  return latestPayment?.method ?? '';
+}
+
+String get paymentReference {
+  return latestPayment?.reference ?? '';
+}
   bool get isSpanish => widget.languageCode == 'es';
   int selectedRating = 0;
 
@@ -108,13 +125,22 @@ class _PaymentReceivedScreenState
   }
 
   Widget _deliveryRow({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
+  required IconData icon,
+  required String title,
+  required String subtitle,
+  required Color color,
+  VoidCallback? onTap,
+}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+  padding: const EdgeInsets.only(bottom: 14),
+  child: InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(14),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 4,
+        vertical: 6,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -165,9 +191,11 @@ class _PaymentReceivedScreenState
             size: 24,
           ),
         ],
+       ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget _actionButton({
     required IconData icon,
@@ -280,7 +308,13 @@ class _PaymentReceivedScreenState
                   const SizedBox(height: 10),
 
                    Text(
-                    isSpanish ? 'Factura completada' : 'Invoice Complete',
+  widget.job.isPaidInFull
+      ? (isSpanish
+          ? 'Factura pagada'
+          : 'Invoice Paid')
+      : (isSpanish
+          ? 'Pago registrado'
+          : 'Payment Recorded'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.greenAccent,
@@ -292,9 +326,13 @@ class _PaymentReceivedScreenState
                   const SizedBox(height: 10),
 
                  Text(
-                                        isSpanish
-    ? 'Su pago fue procesado correctamente.'
-    : 'Your payment was processed successfully.',
+  widget.job.isPaidInFull
+      ? (isSpanish
+          ? 'La factura fue pagada por completo.'
+          : 'The invoice has been paid in full.')
+      : (isSpanish
+          ? 'El pago fue registrado. Queda un saldo pendiente.'
+          : 'The payment was recorded. A balance remains.'),
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       color: Colors.white70,
@@ -331,7 +369,9 @@ class _PaymentReceivedScreenState
                               ),
                             ),
                             Text(
-                              isSpanish ? 'PAGADO' : 'PAID',
+  widget.job.isPaidInFull
+      ? (isSpanish ? 'PAGADO' : 'PAID')
+      : (isSpanish ? 'PARCIAL' : 'PARTIAL'),
                               style: TextStyle(
                                 color: Colors.greenAccent,
                                 fontSize: 18,
@@ -352,29 +392,60 @@ class _PaymentReceivedScreenState
   value: widget.customerName,
                         ),
                         _detailRow(
-                          label: isSpanish ? 'Fecha de pago' : 'Payment Date',
-  value: isSpanish ? 'No disponible' : 'Not available',
-                        ),
+  label: isSpanish ? 'Fecha de pago' : 'Payment Date',
+  value: latestPayment == null
+      ? (isSpanish ? 'No disponible' : 'Not available')
+      : '${latestPayment!.date.month}/'
+        '${latestPayment!.date.day}/'
+        '${latestPayment!.date.year}',
+),
                         _detailRow(
   label: isSpanish ? 'Hora de pago' : 'Payment Time',
-  value: isSpanish ? 'No disponible' : 'Not available',
-                        ),
-                        _detailRow(
+  value: latestPayment == null
+      ? (isSpanish ? 'No disponible' : 'Not available')
+      : '${latestPayment!.date.hour.toString().padLeft(2, '0')}:'
+        '${latestPayment!.date.minute.toString().padLeft(2, '0')}',
+),
+                       _detailRow(
   label: isSpanish ? 'Método de pago' : 'Payment Method',
-  value: isSpanish
-      ? 'La integración de pagos no está conectada'
-      : 'Payment integration not connected',
-                        ),
+  value: paymentMethod.isEmpty
+      ? (isSpanish ? 'No disponible' : 'Not available')
+      : paymentMethod,
+),
+
+if (paymentReference.isNotEmpty)
+  _detailRow(
+    label: isSpanish ? 'Referencia' : 'Reference',
+    value: paymentReference,
+  ),
                         const Divider(
                           color: Colors.white24,
                           height: 28,
                         ),
                         _detailRow(
-  label: isSpanish ? 'Monto pagado' : 'Amount Paid',
-  value: '\$${widget.estimatedTotal}',
+  label: isSpanish
+      ? 'Pago registrado'
+      : 'Payment Recorded',
+  value: latestPayment == null
+      ? '\$0.00'
+      : '\$${latestPayment!.amount.toStringAsFixed(2)}',
   emphasize: true,
   valueColor: Colors.greenAccent,
-                        ),
+),
+_detailRow(
+  label: isSpanish ? 'Total pagado' : 'Total Paid',
+  value: '\$${widget.job.totalPaid.toStringAsFixed(2)}',
+),
+
+_detailRow(
+  label: isSpanish ? 'Saldo pendiente' : 'Balance Due',
+  value:
+      '\$${widget.job.balanceDue.clamp(0, double.infinity).toStringAsFixed(2)}',
+  emphasize: true,
+  valueColor: widget.job.isPaidInFull
+      ? Colors.greenAccent
+      : Colors.orangeAccent,
+),
                       ],
                     ),
                   ),
@@ -407,27 +478,87 @@ class _PaymentReceivedScreenState
                         const SizedBox(height: 20),
                         _deliveryRow(
   icon: Icons.email_outlined,
-  title: isSpanish ? 'Entrega por correo electrónico' : 'Email Delivery',
-subtitle: isSpanish
-    ? 'Disponible después de conectar la configuración del correo electrónico.'
-    : 'Available after email setup is connected.',
+  title: isSpanish
+      ? 'Enviar por correo electrónico'
+      : 'Email Receipt',
+  subtitle: isSpanish
+      ? 'Prepare el recibo para enviarlo por correo electrónico.'
+      : 'Prepare the receipt for email delivery.',
   color: Colors.blue,
+  onTap: () async {
+  final Uri email = Uri(
+    scheme: 'mailto',
+    queryParameters: {
+      'subject': widget.job.invoiceNumber.isEmpty
+          ? 'Invoice'
+          : 'Invoice ${widget.job.invoiceNumber}',
+    },
+  );
+
+  await launchUrl(email);
+},
 ),
                        _deliveryRow(
   icon: Icons.sms_outlined,
-  title: isSpanish ? 'Entrega por mensaje de texto' : 'Text Delivery',
-subtitle: isSpanish
-    ? 'Disponible después de conectar la mensajería de texto.'
-    : 'Available after text messaging is connected.',
+  title: isSpanish
+      ? 'Enviar por mensaje de texto'
+      : 'Text Receipt',
+  subtitle: isSpanish
+      ? 'Prepare el recibo para enviarlo por mensaje de texto.'
+      : 'Prepare the receipt for text delivery.',
   color: Colors.greenAccent,
+  onTap: () async {
+  final Uri sms = Uri(
+    scheme: 'sms',
+    queryParameters: {
+      'body': widget.job.invoiceNumber.isEmpty
+          ? 'Your invoice is ready.'
+          : 'Your invoice ${widget.job.invoiceNumber} is ready.',
+    },
+  );
+
+  await launchUrl(sms);
+},
 ),
                         _deliveryRow(
   icon: Icons.picture_as_pdf_outlined,
-  title: isSpanish ? 'Factura PDF' : 'Invoice PDF',
-subtitle: isSpanish
-    ? 'La entrega del PDF estará conectada antes del lanzamiento.'
-    : 'PDF delivery will be connected before release.',
-  color: Colors.redAccent)
+  title: isSpanish ? 'Compartir factura PDF' : 'Share Invoice PDF',
+  subtitle: isSpanish
+      ? 'Abra las opciones para compartir la factura.'
+      : 'Open sharing options for the invoice.',
+  color: Colors.redAccent,
+  onTap: () async {
+  final bytes = await PdfService.generateInvoice(
+    widget.job,
+  );
+
+  await Printing.sharePdf(
+    bytes: bytes,
+    filename:
+        '${widget.job.invoiceNumber.isEmpty ? 'Invoice' : widget.job.invoiceNumber}.pdf',
+  );
+},
+),
+_deliveryRow(
+  icon: Icons.print_outlined,
+  title: isSpanish ? 'Imprimir factura' : 'Print Invoice',
+  subtitle: isSpanish
+      ? 'Abra las opciones de impresión.'
+      : 'Open the print options.',
+  color: Colors.orange,
+  onTap: () async {
+    final bytes = await PdfService.generateInvoice(
+      widget.job,
+    );
+
+    await Printing.layoutPdf(
+      onLayout: (_) async => bytes,
+      name: widget.job.invoiceNumber.isEmpty
+          ? 'Invoice'
+          : widget.job.invoiceNumber,
+    );
+  },
+),
                       ],
                     ),
                   ),
@@ -454,13 +585,18 @@ subtitle: isSpanish
                               icon: Icons.download_outlined,
                               label: 'Receipt',
                               color: Colors.greenAccent,
-                              onPressed: () {
-                                _showMessage(
-                                  isSpanish
-    ? 'La descarga del recibo se conectará más adelante.'
-    : 'Receipt download will be connected later.',
-                                );
-                              },
+                              onPressed: () async {
+  final bytes = await PdfService.generateInvoice(
+    widget.job,
+  );
+
+  await Printing.layoutPdf(
+    onLayout: (_) async => bytes,
+    name: widget.job.invoiceNumber.isEmpty
+        ? 'Receipt'
+        : 'Receipt-${widget.job.invoiceNumber}',
+  );
+},
                             ),
                             const SizedBox(width: 12),
                             _actionButton(
@@ -468,13 +604,18 @@ subtitle: isSpanish
                                   Icons.picture_as_pdf_outlined,
                               label: isSpanish ? 'Factura PDF' : 'Invoice PDF',
                               color: Colors.redAccent,
-                              onPressed: () {
-                                _showMessage(
-                                  isSpanish
-      ? 'La descarga del PDF de la factura se conectará más adelante.'
-      : 'Invoice PDF download will be connected later.',
-                                );
-                              },
+                              onPressed: () async {
+  final bytes = await PdfService.generateInvoice(
+    widget.job,
+  );
+
+  await Printing.sharePdf(
+    bytes: bytes,
+    filename: widget.job.invoiceNumber.isEmpty
+        ? 'Invoice.pdf'
+        : '${widget.job.invoiceNumber}.pdf',
+  );
+},
                             ),
                           ],
                         ),

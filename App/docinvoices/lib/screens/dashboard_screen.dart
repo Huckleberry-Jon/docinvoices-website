@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'new_job_screen.dart';
+
 import 'create_screen.dart';
 import 'invoices_screen.dart';
 import 'active_jobs_screen.dart';
 import 'scheduled_jobs_screen.dart';
 import '../models/job.dart';
 import 'reports_screen.dart';
+import 'estimates_screen.dart';
+import '../services/job_repository.dart';
+import 'invoices_waiting_screen.dart';
+import 'notifications_screen.dart';
+import 'business_profile_screen.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
@@ -22,6 +27,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   final List<Job> jobs = [];
 
   String get languageCode => widget.languageCode;
+  
+  bool? get isSpanish => languageCode == 'es';
 
   void _openCreate(BuildContext context) {
     Navigator.push(
@@ -34,26 +41,35 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
   }
 
-  void _showComingSoon(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$feature will be connected later.'),
+  void _showComingSoon(
+  BuildContext context,
+  String feature,
+  bool isSpanish,
+) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        isSpanish
+            ? '$feature estará disponible en una futura actualización.'
+            : '$feature will be available in a future update.',
       ),
-    );
-  }
+    ),
+  );
+}
 
-  Widget _summaryCard({
-    required BuildContext context,
-    required String title,
-    required String value,
-    required String subtitle,
-    required IconData icon,
-    required Color color,
+ Widget _summaryCard({
+  required BuildContext context,
+  required String title,
+  required String value,
+  required String subtitle,
+  required IconData icon,
+  required Color color,
+  VoidCallback? onTap,
   }) {
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(20),
-        onTap: () => _showComingSoon(context, title),
+        onTap: onTap,
         child: Container(
           constraints: const BoxConstraints(minHeight: 180),
           padding: const EdgeInsets.all(20),
@@ -132,7 +148,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
     VoidCallback? onTap,
   }) {
     return InkWell(
-      onTap: onTap ?? () => _showComingSoon(context, title),
+      onTap: onTap ??
+    () => _showComingSoon(
+          context,
+          title,
+          isSpanish == true,
+        ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: 18,
@@ -198,7 +219,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     return Expanded(
       child: InkWell(
-        onTap: onTap ?? () => _showComingSoon(context, label),
+        onTap: onTap ?? () => _showComingSoon(context, label, isSpanish == true),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 4,
@@ -240,6 +261,204 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget build(BuildContext context) {
     final bool isSpanish = languageCode == 'es';
     return Scaffold(
+      drawer: Drawer(
+  child: SafeArea(
+    child: ListView(
+      children: [
+        const DrawerHeader(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(
+                Icons.description,
+                size: 48,
+                color: Colors.blue,
+              ),
+              SizedBox(height: 12),
+              Text(
+                'DocInvoices',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.business),
+          title: Text(
+            isSpanish
+                ? 'Configuración comercial'
+                : 'Business Settings',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => BusinessProfileScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
+        const Divider(),
+
+        ListTile(
+          leading: const Icon(Icons.build_outlined),
+          title: Text(
+            isSpanish
+                ? 'Trabajos activos'
+                : 'Active Jobs',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ActiveJobsScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.calendar_month_outlined),
+          title: Text(
+            isSpanish
+                ? 'Trabajos programados'
+                : 'Scheduled Jobs',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ScheduledJobsScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.description_outlined),
+          title: Text(
+            isSpanish
+                ? 'Cotizaciones'
+                : 'Estimates',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => EstimatesScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.receipt_long_outlined),
+          title: Text(
+            isSpanish
+                ? 'Facturas pendientes'
+                : 'Invoices Waiting',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => InvoicesWaitingScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.notifications_none),
+          title: Text(
+            isSpanish
+                ? 'Notificaciones'
+                : 'Notifications',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => NotificationsScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
+        const Divider(),
+
+        ListTile(
+          leading: const Icon(Icons.bar_chart_outlined),
+          title: Text(
+            isSpanish
+                ? 'Reportes'
+                : 'Reports',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ReportsScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
+
+        ListTile(
+          leading: const Icon(Icons.info_outline),
+          title: Text(
+            isSpanish
+                ? 'Acerca de'
+                : 'About',
+          ),
+          onTap: () {
+            Navigator.pop(context);
+
+            showAboutDialog(
+              context: context,
+              applicationName: 'DocInvoices',
+              applicationVersion: '1.0.0 (8)',
+              applicationLegalese: '© 2026 DocInvoices',
+            );
+          },
+        ),
+      ],
+    ),
+  ),
+),
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
         child: Column(
@@ -255,16 +474,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [
                         Row(
                           children: [
-                            IconButton(
-                              onPressed: () {
-                                _showComingSoon(context, 'Menu');
-                              },
-                              icon: const Icon(
-                                Icons.menu,
-                                color: Colors.white,
-                                size: 34,
-                              ),
-                            ),
+                            Builder(
+  builder: (menuContext) {
+    return IconButton(
+      onPressed: () {
+        Scaffold.of(menuContext).openDrawer();
+      },
+      icon: const Icon(
+        Icons.menu,
+        color: Colors.white,
+        size: 34,
+      ),
+    );
+  },
+),
                             const Spacer(),
                             Column(
                               children: [
@@ -306,11 +529,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               children: [
                                 IconButton(
                                   onPressed: () {
-                                    _showComingSoon(
-                                      context,
-                                      'Notifications',
-                                    );
-                                  },
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => NotificationsScreen(
+        languageCode: widget.languageCode,
+      ),
+    ),
+  );
+},
                                   icon: const Icon(
                                     Icons.notifications_none,
                                     color: Colors.white,
@@ -366,26 +593,55 @@ const SizedBox(height: 28),
 Row(
   children: [
     _summaryCard(
-      context: context,
-      title: isSpanish ? 'Trabajos de hoy' : 'Active Work Orders',
-      value: '0',
-      subtitle: isSpanish
-          ? 'No hay trabajos activos'
-          : 'Nothing in progress',
-      icon: Icons.work_outline,
-      color: Colors.blue,
-    ),
+  context: context,
+  title: isSpanish
+      ? 'Trabajos activos'
+      : 'Active Work Orders',
+  value: JobRepository.instance.activeJobs
+      .where((job) => job.jobStatus == 'In Progress')
+      .length
+      .toString(),
+  subtitle: isSpanish
+      ? 'Ver trabajos en progreso'
+      : 'View jobs in progress',
+  icon: Icons.work_outline,
+  color: Colors.blue,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ActiveJobsScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
+),
     const SizedBox(width: 16),
     _summaryCard(
-      context: context,
-      title: isSpanish
-          ? 'Facturas pendientes'
-          : 'Invoices Waiting',
-value: '0',
-subtitle: '\$0.00',
-                              icon: Icons.receipt_long_outlined,
-                              color: Colors.orange,
-                            ),
+  context: context,
+  title: isSpanish
+      ? 'Facturas pendientes'
+      : 'Invoices Waiting',
+  value: JobRepository.instance.activeJobs
+      .where((job) => job.balanceDue > 0)
+      .length
+      .toString(),
+  subtitle:
+      '\$${JobRepository.instance.activeJobs.where((job) => job.balanceDue > 0).fold<double>(0, (total, job) => total + job.balanceDue).toStringAsFixed(2)}',
+  icon: Icons.receipt_long_outlined,
+  color: Colors.orange,
+  onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => InvoicesWaitingScreen(
+        languageCode: widget.languageCode,
+      ),
+    ),
+  );
+},
+),
                           ],
                         ),
                         const SizedBox(height: 22),
@@ -512,17 +768,26 @@ subtitle: '\$0.00',
                                 height: 1,
                               ),
                               _workflowItem(
-                                context: context,
-                                title: isSpanish
-    ? 'Tareas'
-    : 'Tasks',
-                                subtitle:
-                                    isSpanish
-    ? 'Tareas y seguimientos.'
-    : 'Tasks and follow-ups.',
-                                icon: Icons.fact_check_outlined,
-                                color: Colors.lightBlueAccent,
-                              ),
+  context: context,
+  title: isSpanish
+      ? 'Tareas'
+      : 'Tasks',
+  subtitle: isSpanish
+      ? 'Tareas y seguimientos.'
+      : 'Tasks and follow-ups.',
+  icon: Icons.fact_check_outlined,
+  color: Colors.lightBlueAccent,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => NotificationsScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
+),
                             ],
                           ),
                         ),
@@ -543,23 +808,33 @@ subtitle: '\$0.00',
                 top: false,
                 child: Row(
                   children: [
-                    _bottomItem(
-                      context: context,
-                      label: 'Payments',
-                      icon: Icons.attach_money,
-                      color: Colors.lightGreen,
-                    ),
-                    _bottomItem(
+                  _bottomItem(
   context: context,
-  label: languageCode == 'es' ? 'Cotizaciones' : 'Estimates',
+  label: 'Payments',
+  icon: Icons.attach_money,
+  color: Colors.lightGreen,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InvoicesScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
+),
+                   _bottomItem(
+  context: context,
   icon: Icons.description_outlined,
+  label: isSpanish ? 'Cotizaciones' : 'Estimates',
   color: Colors.orange,
   onTap: () {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => NewJobScreen(
-          languageCode: languageCode,
+        builder: (_) => EstimatesScreen(
+          languageCode: widget.languageCode,
         ),
       ),
     );

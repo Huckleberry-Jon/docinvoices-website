@@ -3,9 +3,13 @@ import '../models/labor_item.dart';
 import '../models/part_item.dart';
 import 'payment_received_screen.dart';
 import '../models/job.dart';
-import 'package:printing/printing.dart';
+
 import 'pdf_preview_screen.dart';
 import '../models/payment.dart';
+import 'dart:io';
+import 'package:url_launcher/url_launcher.dart';
+import '../services/business_profile_repository.dart';
+import 'notifications_screen.dart';
 class CustomerInvoiceScreen extends StatefulWidget {
   const CustomerInvoiceScreen({
     super.key,
@@ -483,6 +487,7 @@ Widget _paymentSummaryRow({
 }
   @override
   Widget build(BuildContext context) {
+    final profile = BusinessProfileRepository.instance.profile;
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -518,7 +523,9 @@ Widget _paymentSummaryRow({
                             ),
                             SizedBox(height: 4),
                             Text(
-                              'Invoice #10518',
+                              widget.job.invoiceNumber.trim().isEmpty
+    ? (isSpanish ? 'Factura pendiente' : 'Invoice Pending')
+    : '${isSpanish ? 'Factura' : 'Invoice'} #${widget.job.invoiceNumber}',
                               style: TextStyle(
                                 color: Colors.white54,
                                 fontSize: 14,
@@ -543,6 +550,91 @@ Widget _paymentSummaryRow({
                       ),
                     ],
                   ),
+                  _card(
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      Container(
+        width: 82,
+        height: 82,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: const Color(0xFF101D2C),
+          border: Border.all(
+            color: Colors.orange.withValues(alpha: 0.65),
+          ),
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: profile.logoPath.trim().isEmpty
+            ? const Icon(
+                Icons.business_outlined,
+                color: Colors.white54,
+                size: 38,
+              )
+            : Image.file(
+                File(profile.logoPath),
+                fit: BoxFit.cover,
+              ),
+      ),
+      const SizedBox(width: 16),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              profile.businessName.trim().isEmpty
+                  ? 'DocInvoices'
+                  : profile.businessName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 23,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            if (profile.tagline.trim().isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                profile.tagline,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+            if (profile.phone.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                profile.phone,
+                style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+            if (profile.email.trim().isNotEmpty)
+              Text(
+                profile.email,
+                style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 14,
+                ),
+              ),
+            if (profile.fullAddress.trim().isNotEmpty)
+              Text(
+                profile.fullAddress,
+                style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 14,
+                ),
+              ),
+          ],
+        ),
+      ),
+    ],
+  ),
+),
+
+const SizedBox(height: 18),
                   const SizedBox(height: 18),
                   _card(
                     borderColor:
@@ -740,12 +832,14 @@ Widget _paymentSummaryRow({
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        isSpanish ? '5 servicios completados' : '5 completed services',
-                                        style: TextStyle(
-                                          color: Colors.white60,
-                                          fontSize: 15,
-                                        ),
-                                      ),
+  isSpanish
+      ? '${widget.job.operations.length} ${widget.job.operations.length == 1 ? 'servicio completado' : 'servicios completados'}'
+      : '${widget.job.operations.length} ${widget.job.operations.length == 1 ? 'completed service' : 'completed services'}',
+  style: const TextStyle(
+    color: Colors.white60,
+    fontSize: 15,
+  ),
+),
                                     ],
                                   ),
                                 ),
@@ -831,12 +925,82 @@ Widget _paymentSummaryRow({
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () {
-                              _showMessage(
-                                isSpanish
-    ? 'La galería de fotos se conectará más adelante.'
-    : 'Photo gallery will be connected later.',
-                              );
-                            },
+  final allPhotoPaths = [
+    ...widget.job.beforePhotoPaths,
+    ...widget.job.afterPhotoPaths,
+  ];
+
+  if (allPhotoPaths.isEmpty) {
+    _showMessage(
+      isSpanish
+          ? 'Aún no se han agregado fotos.'
+          : 'No photos have been added yet.',
+    );
+    return;
+  }
+
+  showDialog<void>(
+    context: context,
+    builder: (dialogContext) {
+      return Dialog(
+        child: SizedBox(
+          width: 700,
+          height: 520,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        isSpanish
+                            ? 'Fotos del trabajo'
+                            : 'Work Photos',
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                      },
+                      icon: const Icon(Icons.close),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate:
+                      const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                  ),
+                  itemCount: allPhotoPaths.length,
+                  itemBuilder: (context, index) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: Image.file(
+                        File(allPhotoPaths[index]),
+                        fit: BoxFit.cover,
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+},
                             icon: const Icon(
                               Icons.collections_outlined,
                             ),
@@ -1155,8 +1319,6 @@ _card(
   ),
 ),
 
-const SizedBox(height: 16),
-const SizedBox(height: 18),
                    SizedBox(height: 20),
                   SizedBox(
                     height: 76,
@@ -1190,6 +1352,40 @@ const SizedBox(height: 18),
     fontWeight: FontWeight.w600,
   ),
 ),
+if (selectedPaymentMethod != null) ...[
+  const SizedBox(height: 16),
+
+  TextField(
+    controller: paymentDetailController,
+    keyboardType: selectedPaymentMethod == 'Cash'
+        ? const TextInputType.numberWithOptions(
+            decimal: true,
+          )
+        : TextInputType.text,
+    decoration: InputDecoration(
+      labelText: selectedPaymentMethod == 'Cash'
+          ? (isSpanish
+              ? 'Monto recibido'
+              : 'Amount Received')
+          : selectedPaymentMethod == 'Card'
+              ? (isSpanish
+                  ? 'Número de autorización'
+                  : 'Authorization Number')
+              : selectedPaymentMethod == 'Check'
+                  ? (isSpanish
+                      ? 'Número de cheque'
+                      : 'Check Number')
+                  : selectedPaymentMethod == 'ACH'
+                      ? (isSpanish
+                          ? 'Número de confirmación'
+                          : 'Confirmation Number')
+                      : (isSpanish
+                          ? 'Nota del pago'
+                          : 'Payment Memo'),
+      border: const OutlineInputBorder(),
+    ),
+  ),
+],
                         ],
                       ),
                     ),
@@ -1214,13 +1410,26 @@ const SizedBox(height: 18),
                           children: [
                             Expanded(
                               child: OutlinedButton.icon(
-                                onPressed: () {
-                                  _showMessage(
-                                    isSpanish
-    ? 'La llamada al negocio se conectará más adelante.'
-    : 'Calling the business will be connected later.',
-                                  );
-                                },
+                                onPressed: () async {
+  final profile =
+      BusinessProfileRepository.instance.profile;
+
+  if (profile.phone.trim().isEmpty) {
+    _showMessage(
+      isSpanish
+          ? 'No hay un número de teléfono comercial guardado.'
+          : 'No business phone number has been saved.',
+    );
+    return;
+  }
+
+  final uri = Uri(
+    scheme: 'tel',
+    path: profile.phone,
+  );
+
+  await launchUrl(uri);
+},
                                 icon: const Icon(
                                   Icons.phone_outlined,
                                 ),
@@ -1231,16 +1440,23 @@ const SizedBox(height: 18),
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: () {
-                                  _showMessage(
-                                    isSpanish
-    ? 'La programación del servicio se conectará más adelante.'
-    : 'Scheduling service will be connected later.',
-                                  );
-                                },
-                                icon: const Icon(
-                                  Icons.calendar_month_outlined,
-                                ),
-                                label:  Text(isSpanish ? 'Programar de nuevo' : 'Schedule Again',),
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => NotificationsScreen(
+        languageCode: widget.languageCode,
+      ),
+    ),
+  );
+},
+icon: const Icon(
+  Icons.notifications_active_outlined,
+),
+label: Text(
+  isSpanish
+      ? 'Crear recordatorio'
+      : 'Create Reminder',
+),
                               ),
                             ),
                           ],

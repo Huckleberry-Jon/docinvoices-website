@@ -2,7 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'screens/splash_screen.dart';
-void main() {
+import 'services/business_profile_repository.dart';
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await BusinessProfileRepository.instance.load();
+
   runApp(const DocInvoicesApp());
 }
 

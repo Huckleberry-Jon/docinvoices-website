@@ -1,6 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'dashboard_screen.dart';
 import 'language_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -15,13 +18,25 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
 
-    Timer(const Duration(seconds: 2), () {
+    Timer(const Duration(seconds: 2), () async {
+      final prefs = await SharedPreferences.getInstance();
+
+      final bool setupComplete =
+          prefs.getBool('setupComplete') ?? false;
+
+      final String languageCode =
+          prefs.getString('languageCode') ?? 'en';
+
       if (!mounted) return;
 
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => const LanguageScreen(),
+          builder: (_) => setupComplete
+              ? DashboardScreen(
+                  languageCode: languageCode,
+                )
+              : const LanguageScreen(),
         ),
       );
     });

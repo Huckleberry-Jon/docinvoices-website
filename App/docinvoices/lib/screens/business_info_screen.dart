@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-
+import '../services/business_profile_repository.dart';
 import 'choose_industry_screen.dart';
-
+import 'package:shared_preferences/shared_preferences.dart';
 class BusinessInfoScreen extends StatelessWidget {
   const BusinessInfoScreen({
     super.key,
@@ -36,6 +36,15 @@ class BusinessInfoScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isSpanish = languageCode == 'es';
+    final profile = BusinessProfileRepository.instance.profile;
+
+String businessName = profile.businessName;
+String phone = profile.phone;
+String email = profile.email;
+String street = profile.street;
+String city = profile.city;
+String state = profile.state;
+String zip = profile.zip;
     return Scaffold(
       backgroundColor: const Color(0xFF050B14),
       body: SafeArea(
@@ -76,14 +85,18 @@ Text(
   ),
 ),
 const SizedBox(height: 36),
-TextField(
+TextFormField(
+  initialValue: businessName,
+  onChanged: (value) => businessName = value,
   decoration: _fieldStyle(
     isSpanish ? 'Nombre de la empresa' : 'Business Name',
     Icons.business_outlined,
   ),
 ),
 const SizedBox(height: 18),
-TextField(
+TextFormField(
+  initialValue: phone,
+  onChanged: (value) => phone = value,
   keyboardType: TextInputType.phone,
   decoration: _fieldStyle(
     isSpanish ? 'Teléfono de la empresa' : 'Business Phone',
@@ -91,15 +104,21 @@ TextField(
   ),
 ),
 const SizedBox(height: 18),
-TextField(
+TextFormField(
+  initialValue: email,
+  onChanged: (value) => email = value,
   keyboardType: TextInputType.emailAddress,
   decoration: _fieldStyle(
-    isSpanish ? 'Correo electrónico de la empresa' : 'Business Email',
+    isSpanish
+        ? 'Correo electrónico de la empresa'
+        : 'Business Email',
     Icons.email_outlined,
   ),
 ),
 const SizedBox(height: 18),
-TextField(
+TextFormField(
+  initialValue: street,
+  onChanged: (value) => street = value,
   decoration: _fieldStyle(
     isSpanish ? 'Dirección' : 'Street Address',
     Icons.location_on_outlined,
@@ -110,7 +129,9 @@ Row(
   children: [
     Expanded(
       flex: 2,
-      child: TextField(
+      child: TextFormField(
+        initialValue: city,
+        onChanged: (value) => city = value,
         decoration: _fieldStyle(
           isSpanish ? 'Ciudad' : 'City',
           Icons.location_city_outlined,
@@ -119,7 +140,9 @@ Row(
     ),
     const SizedBox(width: 14),
     Expanded(
-      child: TextField(
+      child: TextFormField(
+        initialValue: state,
+        onChanged: (value) => state = value,
         textCapitalization: TextCapitalization.characters,
         decoration: _fieldStyle(
           isSpanish ? 'Estado' : 'State',
@@ -130,28 +153,54 @@ Row(
   ],
 ),
 const SizedBox(height: 18),
-TextField(
+TextFormField(
+  initialValue: zip,
+  onChanged: (value) => zip = value,
   keyboardType: TextInputType.number,
   decoration: _fieldStyle(
     isSpanish ? 'Código postal' : 'ZIP Code',
     Icons.markunread_mailbox_outlined,
   ),
-
-                  ),
+),
+                  
                   const SizedBox(height: 34),
                   SizedBox(
                     height: 60,
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ChooseIndustryScreen(
-                           languageCode: languageCode,
-),
-                          ),
-                        );
-                      },
+                     onPressed: () async {
+  profile.businessName = businessName.trim();
+  profile.phone = phone.trim();
+  profile.email = email.trim();
+  profile.street = street.trim();
+  profile.city = city.trim();
+  profile.state = state.trim();
+  profile.zip = zip.trim();
+
+  await BusinessProfileRepository.instance.save();
+  final prefs = await SharedPreferences.getInstance();
+
+await prefs.setBool(
+  'setupComplete',
+  true,
+);
+
+await prefs.setString(
+  'languageCode',
+  languageCode,
+);
+
+  if (!context.mounted) return;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ChooseIndustryScreen(
+        languageCode: languageCode,
+      ),
+    ),
+  );
+},
+                      
                       child: Text(
   isSpanish ? 'Continuar' : 'Continue',
   style: const TextStyle(fontSize: 20),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
 import '../services/job_repository.dart';
-import 'review_work_screen.dart';
+
 import 'work_board_screen.dart';
 class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({
@@ -410,10 +410,10 @@ final double estimatedTotal =
                       IconButton(
                         onPressed: () {
                           _showMessage(
-                            isSpanish
-    ? 'La ayuda de aprobación se conectará más adelante.'
-    : 'Approval help will be connected later.',
-                          );
+  isSpanish
+      ? 'Seleccione cómo desea obtener la aprobación del cliente.'
+      : 'Choose how you would like to receive customer approval.',
+);
                         },
                         icon: const Icon(
                           Icons.help_outline,

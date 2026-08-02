@@ -34,6 +34,8 @@ this.reminderDateTime,
 this.reminderEnabled = false,
 this.notes = '',
 this.payments = const [],
+this.beforePhotoPaths = const [],
+this.afterPhotoPaths = const [],
   });
 
   factory Job.createEstimate({
@@ -106,6 +108,8 @@ bool reminderEnabled;
   final List<Operation> operations;
   final List<Payment> payments;
   final List<GeneralCharge> generalCharges;
+  final List<String> beforePhotoPaths;
+final List<String> afterPhotoPaths;
   String location;
 
 double get totalPaid {

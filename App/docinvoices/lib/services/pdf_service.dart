@@ -1,14 +1,26 @@
 import 'dart:typed_data';
-
+import '../services/business_profile_repository.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../models/job.dart';
-
+import 'dart:io';
 class PdfService {
   static Future<Uint8List> generateInvoice(Job job) async {
     final pdf = pw.Document();
 
+final profile =
+    BusinessProfileRepository.instance.profile;
+
+Uint8List? logoBytes;
+
+if (profile.logoPath.trim().isNotEmpty) {
+  final logoFile = File(profile.logoPath);
+
+  if (await logoFile.exists()) {
+    logoBytes = await logoFile.readAsBytes();
+  }
+}
     final laborTotal = job.operations.fold<double>(
       0,
       (sum, operation) => sum + operation.laborTotal,
@@ -33,7 +45,10 @@ class PdfService {
         margin: const pw.EdgeInsets.all(32),
         build: (context) {
           return [
-            _buildHeader(job),
+            _buildHeader(
+  job,
+  logoBytes,
+),
             pw.SizedBox(height: 20),
             _buildCustomerAndEquipment(job),
             pw.SizedBox(height: 20),
@@ -64,7 +79,12 @@ class PdfService {
     return pdf.save();
   }
 
-  static pw.Widget _buildHeader(Job job) {
+  static pw.Widget _buildHeader(
+  Job job,
+  Uint8List? logoBytes,
+) {
+    final profile =
+    BusinessProfileRepository.instance.profile;
   final invoiceNumber = job.invoiceNumber.trim().isEmpty
       ? 'Pending'
       : job.invoiceNumber.trim();
@@ -102,14 +122,19 @@ class PdfService {
                       width: 1,
                     ),
                   ),
-                  child: pw.Text(
-                    'LOGO',
-                    style: pw.TextStyle(
-                      color: PdfColors.orange800,
-                      fontSize: 11,
-                      fontWeight: pw.FontWeight.bold,
-                    ),
-                  ),
+                  child: logoBytes == null
+    ? pw.Text(
+        'LOGO',
+        style: pw.TextStyle(
+          color: PdfColors.orange800,
+          fontSize: 11,
+          fontWeight: pw.FontWeight.bold,
+        ),
+      )
+    : pw.Image(
+        pw.MemoryImage(logoBytes),
+        fit: pw.BoxFit.cover,
+      ),
                 ),
                 pw.SizedBox(width: 16),
                 pw.Expanded(
@@ -117,7 +142,9 @@ class PdfService {
                     crossAxisAlignment: pw.CrossAxisAlignment.start,
                     children: [
                       pw.Text(
-                        'YOUR BUSINESS NAME',
+                        profile.businessName.trim().isEmpty
+    ? 'DocInvoices'
+    : profile.businessName,
                         style: pw.TextStyle(
                           color: PdfColors.grey900,
                           fontSize: 21,
@@ -126,7 +153,9 @@ class PdfService {
                       ),
                       pw.SizedBox(height: 5),
                       pw.Text(
-                        'Professional field service invoice',
+                        profile.tagline.trim().isEmpty
+    ? 'Professional field service invoice'
+    : profile.tagline,
                         style: const pw.TextStyle(
                           color: PdfColors.grey600,
                           fontSize: 10,
@@ -134,7 +163,11 @@ class PdfService {
                       ),
                       pw.SizedBox(height: 12),
                       pw.Text(
-                        'Phone | Email | Business Address',
+                        [
+  profile.phone,
+  profile.email,
+  profile.fullAddress,
+].where((value) => value.trim().isNotEmpty).join(' | '),
                         style: const pw.TextStyle(
                           color: PdfColors.grey700,
                           fontSize: 9,
@@ -172,13 +205,8 @@ class PdfService {
                 pw.SizedBox(height: 10),
                 _buildHeaderLine('Invoice #', invoiceNumber),
                 if (job.completedDate.trim().isNotEmpty)
-  _buildHeaderLine(
-    'Date',
-    job.completedDate.trim(),
-  ),
   
-  
-                  _buildHeaderLine(
+                    _buildHeaderLine(
                  'Date',
                  job.completedDate.trim(),
                   ),
