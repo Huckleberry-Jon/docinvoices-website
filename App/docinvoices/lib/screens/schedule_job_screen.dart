@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
-
+import '../services/job_repository.dart';
 class ScheduleJobScreen extends StatefulWidget {
   const ScheduleJobScreen({
     super.key,
@@ -73,6 +73,8 @@ class _ScheduleJobScreenState extends State<ScheduleJobScreen> {
   widget.job.scheduledDateTime = selectedDateTime;
   widget.job.reminderEnabled = reminderOption != 'None';
 
+  
+
   switch (reminderOption) {
     case '15 Minutes':
       widget.job.reminderDateTime =
@@ -97,7 +99,7 @@ class _ScheduleJobScreenState extends State<ScheduleJobScreen> {
     default:
       widget.job.reminderDateTime = null;
   }
-
+JobRepository.instance.updateJob(widget.job);
   Navigator.pop(context, true);
 }
 

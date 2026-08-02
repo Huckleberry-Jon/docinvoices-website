@@ -50,30 +50,30 @@ class JobRepository {
   }
 
   void updateJob(Job updatedJob) {
-    final index = _jobs.indexWhere(
-      (job) =>
-          identical(job, updatedJob) ||
-          (
-            job.repairOrderNumber.trim().isNotEmpty &&
-            job.repairOrderNumber ==
-                updatedJob.repairOrderNumber
-          ) ||
-          (
-            job.invoiceNumber.trim().isNotEmpty &&
-            job.invoiceNumber ==
-                updatedJob.invoiceNumber
-          ),
-    );
+  final index = _jobs.indexWhere(
+    (job) =>
+        identical(job, updatedJob) ||
+        (
+          job.estimateNumber.trim().isNotEmpty &&
+          job.estimateNumber == updatedJob.estimateNumber
+        ) ||
+        (
+          job.repairOrderNumber.trim().isNotEmpty &&
+          job.repairOrderNumber ==
+              updatedJob.repairOrderNumber
+        ) ||
+        (
+          job.invoiceNumber.trim().isNotEmpty &&
+          job.invoiceNumber ==
+              updatedJob.invoiceNumber
+        ),
+  );
 
-    if (index == -1) {
-      _jobs.add(updatedJob);
-      return;
-    }
-
-    _jobs[index] = updatedJob;
+  if (index == -1) {
+    addJob(updatedJob);
+    return;
   }
 
-  void deleteJob(Job jobToDelete) {
-    _jobs.remove(jobToDelete);
-  }
+  _jobs[index] = updatedJob;
+}
 }

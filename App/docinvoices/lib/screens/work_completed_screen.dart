@@ -30,6 +30,17 @@ class WorkCompletedScreen extends StatefulWidget {
 }
 
 class _WorkCompletedScreenState extends State<WorkCompletedScreen> {
+  @override
+void initState() {
+  super.initState();
+
+  if (widget.job.invoiceNumber.trim().isEmpty) {
+    widget.job.invoiceNumber =
+        JobRepository.instance.nextInvoiceNumber();
+
+    JobRepository.instance.updateJob(widget.job);
+  }
+}
   bool get isSpanish => widget.languageCode == 'es';
   bool showServiceDetails = false;
  final List<LaborItem> laborItems = [];
@@ -648,7 +659,16 @@ hintText: isSpanish
                               ),
                             ),
                             const SizedBox(height: 4),
+const SizedBox(height: 4),
 
+Text(
+  widget.job.invoiceNumber,
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: FontWeight.bold,
+  ),
+),
 Text(
   widget.job.invoiceNumber.trim().isEmpty
       ? '--'

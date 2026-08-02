@@ -5,6 +5,7 @@ import '../models/operation.dart';
 import 'operation_details_screen.dart';
 import 'new_job_screen.dart';
 import 'schedule_job_screen.dart';
+import '../services/job_repository.dart';
 class ReviewWorkScreen extends StatefulWidget {
   const ReviewWorkScreen({
     super.key,
@@ -70,7 +71,7 @@ double get estimatedTotal {
   );
 }
 Future<void> _scheduleJob() async {
-  await Navigator.push(
+  final bool? saved = await Navigator.push<bool>(
     context,
     MaterialPageRoute(
       builder: (context) => ScheduleJobScreen(
@@ -80,9 +81,14 @@ Future<void> _scheduleJob() async {
     ),
   );
 
-  if (mounted) {
-    setState(() {});
-  }
+  if (!mounted || saved != true) return;
+
+  JobRepository.instance.updateJob(widget.job);
+
+  Navigator.popUntil(
+    context,
+    (route) => route.isFirst,
+  );
 }
 Future<void> _addOperation() async {
   final bool isSpanish = widget.languageCode == 'es';
