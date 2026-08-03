@@ -1,4 +1,6 @@
 import '../models/job.dart';
+import 'dart:convert';
+
 
 class JobRepository {
   JobRepository._();
@@ -19,7 +21,12 @@ class JobRepository {
           job.jobStatus != 'Invoiced';
     }).toList();
   }
-
+List<Job> get invoicesWaiting {
+  return _jobs.where((job) {
+    return job.invoiceNumber.trim().isNotEmpty &&
+        job.balanceDue > 0;
+  }).toList();
+}
   String nextEstimateNumber() {
     final number = _nextEstimateNumber;
     _nextEstimateNumber++;
@@ -75,5 +82,91 @@ class JobRepository {
   }
 
   _jobs[index] = updatedJob;
+}
+String exportJobs() {
+  final exportData = {
+    'version': 1,
+    'exportedAt': DateTime.now().toIso8601String(),
+    'jobs': _jobs.map((job) => job.toJson()).toList(),
+  };
+
+  return const JsonEncoder.withIndent('  ').convert(
+    exportData,
+  );
+}
+
+void importJobs(
+  String jsonText, {
+  bool replaceExisting = true,
+}) {
+  final decoded = jsonDecode(jsonText);
+
+  if (decoded is! Map<String, dynamic>) {
+    throw const FormatException(
+      'Invalid DocInvoices backup file.',
+    );
+  }
+
+  final rawJobs = decoded['jobs'];
+
+  if (rawJobs is! List) {
+    throw const FormatException(
+      'Backup file does not contain a jobs list.',
+    );
+  }
+
+  final importedJobs = rawJobs
+      .map(
+        (item) => Job.fromJson(
+          Map<String, dynamic>.from(item as Map),
+        ),
+      )
+      .toList();
+
+  if (replaceExisting) {
+    _jobs
+      ..clear()
+      ..addAll(importedJobs);
+  } else {
+    for (final job in importedJobs) {
+      updateJob(job);
+    }
+  }
+
+  _refreshNextNumbers();
+}
+
+void _refreshNextNumbers() {
+  int highestEstimate = 1000;
+  int highestRepairOrder = 1000;
+  int highestInvoice = 1000;
+
+  for (final job in _jobs) {
+    final estimate =
+        int.tryParse(job.estimateNumber.trim());
+
+    final repairOrder =
+        int.tryParse(job.repairOrderNumber.trim());
+
+    final invoice =
+        int.tryParse(job.invoiceNumber.trim());
+
+    if (estimate != null && estimate > highestEstimate) {
+      highestEstimate = estimate;
+    }
+
+    if (repairOrder != null &&
+        repairOrder > highestRepairOrder) {
+      highestRepairOrder = repairOrder;
+    }
+
+    if (invoice != null && invoice > highestInvoice) {
+      highestInvoice = invoice;
+    }
+  }
+
+  _nextEstimateNumber = highestEstimate + 1;
+  _nextRepairOrderNumber = highestRepairOrder + 1;
+  _nextInvoiceNumber = highestInvoice + 1;
 }
 }

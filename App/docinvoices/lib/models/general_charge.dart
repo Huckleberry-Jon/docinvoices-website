@@ -8,4 +8,21 @@ class GeneralCharge {
   final String description;
   final double amount;
   final bool taxable;
+  Map<String, dynamic> toJson() {
+  return {
+    'description': description,
+    'amount': amount,
+    'taxable': taxable,
+  };
+}
+
+factory GeneralCharge.fromJson(
+  Map<String, dynamic> json,
+) {
+  return GeneralCharge(
+    description: json['description'] ?? '',
+    amount: (json['amount'] ?? 0).toDouble(),
+    taxable: json['taxable'] ?? false,
+  );
+}
 }

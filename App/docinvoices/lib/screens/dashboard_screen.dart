@@ -608,18 +608,15 @@ Text(
 const SizedBox(height: 28),
 Row(
   children: [
-    _summaryCard(
+   _summaryCard(
   context: context,
   title: isSpanish
       ? 'Trabajos activos'
       : 'Active Work Orders',
-  value: JobRepository.instance.activeJobs
-      .where((job) => job.jobStatus == 'In Progress')
-      .length
-      .toString(),
+  value: JobRepository.instance.activeJobs.length.toString(),
   subtitle: isSpanish
-      ? 'Ver trabajos en progreso'
-      : 'View jobs in progress',
+      ? 'Ver trabajos activos'
+      : 'View active work orders',
   icon: Icons.work_outline,
   color: Colors.blue,
   onTap: () {
@@ -634,29 +631,29 @@ Row(
   },
 ),
     const SizedBox(width: 16),
-    _summaryCard(
+   _summaryCard(
   context: context,
   title: isSpanish
       ? 'Facturas pendientes'
       : 'Invoices Waiting',
-  value: JobRepository.instance.activeJobs
-      .where((job) => job.balanceDue > 0)
-      .length
-      .toString(),
+  value: JobRepository.instance.invoicesWaiting.length.toString(),
   subtitle:
-      '\$${JobRepository.instance.activeJobs.where((job) => job.balanceDue > 0).fold<double>(0, (total, job) => total + job.balanceDue).toStringAsFixed(2)}',
+      '\$${JobRepository.instance.invoicesWaiting.fold<double>(
+        0,
+        (total, job) => total + job.balanceDue,
+      ).toStringAsFixed(2)}',
   icon: Icons.receipt_long_outlined,
   color: Colors.orange,
   onTap: () {
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => InvoicesWaitingScreen(
-        languageCode: widget.languageCode,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InvoicesWaitingScreen(
+          languageCode: widget.languageCode,
+        ),
       ),
-    ),
-  );
-},
+    );
+  },
 ),
                           ],
                         ),

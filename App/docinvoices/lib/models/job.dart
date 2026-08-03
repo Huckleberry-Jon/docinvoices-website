@@ -133,4 +133,121 @@ double get balanceDue {
 bool get isPaidInFull {
   return balanceDue <= 0.01;
 }
+Map<String, dynamic> toJson() {
+  return {
+    'location': location,
+    'customerName': customerName,
+    'equipment': equipment,
+    'unitNumber': unitNumber,
+    'vin': vin,
+    'transcription': transcription,
+    'mileage': mileage,
+    'poNumber': poNumber,
+    'completedDate': completedDate,
+    'estimatedTotal': estimatedTotal,
+    'laborHours': laborHours,
+    'laborRate': laborRate,
+    'partsCost': partsCost,
+    'markupPercent': markupPercent,
+    'taxLabor': taxLabor,
+    'taxParts': taxParts,
+    'isTaxExempt': isTaxExempt,
+    'discountAmount': discountAmount,
+    'estimateNumber': estimateNumber,
+    'repairOrderNumber': repairOrderNumber,
+    'invoiceNumber': invoiceNumber,
+    'jobStatus': jobStatus,
+    'notes': notes,
+    'scheduledDateTime':
+        scheduledDateTime?.toIso8601String(),
+    'reminderDateTime':
+        reminderDateTime?.toIso8601String(),
+    'reminderEnabled': reminderEnabled,
+    'operations':
+        operations.map((item) => item.toJson()).toList(),
+    'payments':
+        payments.map((item) => item.toJson()).toList(),
+    'generalCharges':
+        generalCharges.map((item) => item.toJson()).toList(),
+    'beforePhotoPaths': beforePhotoPaths,
+    'afterPhotoPaths': afterPhotoPaths,
+  };
+}
+
+factory Job.fromJson(
+  Map<String, dynamic> json,
+) {
+  return Job(
+    location: json['location'] ?? '',
+    customerName: json['customerName'] ?? '',
+    equipment: json['equipment'] ?? '',
+    unitNumber: json['unitNumber'] ?? '',
+    vin: json['vin'] ?? '',
+    transcription: json['transcription'] ?? '',
+    mileage: json['mileage'] ?? '',
+    poNumber: json['poNumber'] ?? '',
+    completedDate: json['completedDate'] ?? '',
+    estimatedTotal: json['estimatedTotal'] ?? '0.00',
+    laborHours: (json['laborHours'] ?? 0).toDouble(),
+    laborRate: (json['laborRate'] ?? 0).toDouble(),
+    partsCost: (json['partsCost'] ?? 0).toDouble(),
+    markupPercent:
+        (json['markupPercent'] ?? 0).toDouble(),
+    taxLabor: json['taxLabor'] ?? false,
+    taxParts: json['taxParts'] ?? false,
+    isTaxExempt: json['isTaxExempt'] ?? false,
+    discountAmount:
+        (json['discountAmount'] ?? 0).toDouble(),
+    estimateNumber: json['estimateNumber'] ?? '',
+    repairOrderNumber:
+        json['repairOrderNumber'] ?? '',
+    invoiceNumber: json['invoiceNumber'] ?? '',
+    jobStatus: json['jobStatus'] ?? 'Estimate',
+    notes: json['notes'] ?? '',
+    scheduledDateTime:
+        json['scheduledDateTime'] == null
+            ? null
+            : DateTime.tryParse(
+                json['scheduledDateTime'],
+              ),
+    reminderDateTime:
+        json['reminderDateTime'] == null
+            ? null
+            : DateTime.tryParse(
+                json['reminderDateTime'],
+              ),
+    reminderEnabled:
+        json['reminderEnabled'] ?? false,
+    operations: (json['operations'] as List? ?? [])
+        .map(
+          (item) => Operation.fromJson(
+            Map<String, dynamic>.from(item),
+          ),
+        )
+        .toList(),
+    payments: (json['payments'] as List? ?? [])
+        .map(
+          (item) => Payment.fromJson(
+            Map<String, dynamic>.from(item),
+          ),
+        )
+        .toList(),
+    generalCharges:
+        (json['generalCharges'] as List? ?? [])
+            .map(
+              (item) => GeneralCharge.fromJson(
+                Map<String, dynamic>.from(item),
+              ),
+            )
+            .toList(),
+    beforePhotoPaths:
+        (json['beforePhotoPaths'] as List? ?? [])
+            .map((item) => item.toString())
+            .toList(),
+    afterPhotoPaths:
+        (json['afterPhotoPaths'] as List? ?? [])
+            .map((item) => item.toString())
+            .toList(),
+  );
+}
 }

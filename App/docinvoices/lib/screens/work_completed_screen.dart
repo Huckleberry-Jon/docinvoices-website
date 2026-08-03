@@ -4,15 +4,14 @@ import '../models/part_item.dart';
 import '../models/job.dart';
 import 'customer_invoice_screen.dart';
 import '../models/operation.dart';
-import 'pdf_preview_screen.dart';
+
 import 'scheduled_jobs_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import '../services/business_profile_repository.dart';
 import '../services/job_repository.dart';
-import 'package:printing/printing.dart';
-import '../services/pdf_service.dart';
+
 class WorkCompletedScreen extends StatefulWidget {
   const WorkCompletedScreen({
     super.key,
@@ -515,57 +514,6 @@ hintText: isSpanish
     );
   }
 
- Widget _actionButton({
-  required IconData icon,
-  required String label,
-  required Color color,
-  VoidCallback? onTap,
-}) {
-    return Expanded(
-      child: InkWell(
-        borderRadius: BorderRadius.circular(15),
-        onTap: onTap ??
-    () {
-      _showMessage(
-        isSpanish
-            ? '$label se conectará más adelante.'
-            : '$label will be connected later.',
-      );
-    },
-        child: Container(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 8,
-            vertical: 14,
-          ),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(
-              color: color.withValues(alpha: 0.55),
-            ),
-          ),
-          child: Column(
-            children: [
-              Icon(
-                icon,
-                color: color,
-                size: 29,
-              ),
-              const SizedBox(height: 7),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   Widget _photoPlaceholder({
   required String label,
@@ -1283,86 +1231,6 @@ _priceRow(
 
                   const SizedBox(height: 16),
 
-                  Row(
-  children: [
-    _actionButton(
-      icon: Icons.email_outlined,
-      label: isSpanish ? 'Correo' : 'Email',
-      color: Colors.blue,
-      onTap: () async {
-        final email = Uri(
-          scheme: 'mailto',
-          queryParameters: {
-            'subject': widget.job.invoiceNumber.trim().isEmpty
-                ? 'Invoice'
-                : 'Invoice ${widget.job.invoiceNumber}',
-            'body': isSpanish
-                ? 'Su factura está lista.'
-                : 'Your invoice is ready.',
-          },
-        );
-
-        await launchUrl(email);
-      },
-    ),
-    const SizedBox(width: 10),
-    _actionButton(
-      icon: Icons.sms_outlined,
-      label: isSpanish ? 'Texto' : 'Text',
-      color: Colors.greenAccent,
-      onTap: () async {
-        final sms = Uri(
-          scheme: 'sms',
-          queryParameters: {
-            'body': widget.job.invoiceNumber.trim().isEmpty
-                ? (isSpanish
-                    ? 'Su factura está lista.'
-                    : 'Your invoice is ready.')
-                : (isSpanish
-                    ? 'Su factura ${widget.job.invoiceNumber} está lista.'
-                    : 'Your invoice ${widget.job.invoiceNumber} is ready.'),
-          },
-        );
-
-        await launchUrl(sms);
-      },
-    ),
-    const SizedBox(width: 10),
-    _actionButton(
-      icon: Icons.picture_as_pdf_outlined,
-      label: 'PDF',
-      color: Colors.redAccent,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PdfPreviewScreen(
-              job: widget.job,
-            ),
-          ),
-        );
-      },
-    ),
-    const SizedBox(width: 10),
-    _actionButton(
-      icon: Icons.share_outlined,
-      label: isSpanish ? 'Compartir' : 'Share',
-      color: Colors.purpleAccent,
-      onTap: () async {
-        final bytes = await PdfService.generateInvoice(
-          widget.job,
-        );
-
-        await Printing.sharePdf(
-          bytes: bytes,
-          filename: widget.job.invoiceNumber.trim().isEmpty
-              ? 'Invoice.pdf'
-              : '${widget.job.invoiceNumber}.pdf',
-        );
-      },
-    ),
-  ],
-),
 
                   const SizedBox(height: 20),
 

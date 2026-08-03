@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'job_history_screen.dart';
 import '../models/job.dart';
 import '../services/job_repository.dart';
 
@@ -38,41 +38,69 @@ class ReportsScreen extends StatelessWidget {
         status.contains('en progreso');
   }
 
+  void _openReport(
+    BuildContext context, {
+    required String title,
+    required List<Job> jobs,
+    String? summary,
+  }) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => _ReportDetailsScreen(
+          languageCode: languageCode,
+          title: title,
+          jobs: jobs,
+          summary: summary,
+        ),
+      ),
+    );
+  }
+
   Widget _reportCard({
     required IconData icon,
     required String title,
     required String value,
+    required VoidCallback onTap,
   }) {
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 26,
-              child: Icon(
-                icon,
-                size: 28,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 26,
+                child: Icon(
+                  icon,
+                  size: 28,
                 ),
               ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-            ),
-          ],
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(width: 8),
+              const Icon(
+                Icons.chevron_right,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -84,34 +112,34 @@ class ReportsScreen extends StatelessWidget {
 
     final paidJobs = jobs.where(_isPaid).toList();
 
-    final totalRevenue = paidJobs.fold<double>(
-      0,
-      (total, job) => total + _moneyValue(job.estimatedTotal),
-    );
-
-    final totalInvoices = jobs
+    final invoicedJobs = jobs
         .where(
           (job) => job.invoiceNumber.trim().isNotEmpty,
         )
-        .length;
+        .toList();
 
-    final paidInvoices = jobs.where(_isPaid).length;
-
-    final outstandingInvoices = jobs
+    final outstandingJobs = jobs
         .where(
           (job) =>
               job.invoiceNumber.trim().isNotEmpty &&
               !_isPaid(job),
         )
-        .length;
+        .toList();
 
-    final scheduledJobs = jobs
+    final scheduledJobList = jobs
         .where(
           (job) => job.scheduledDateTime != null,
         )
-        .length;
+        .toList();
 
-    final jobsInProgress = jobs.where(_isInProgress).length;
+    final jobsInProgressList =
+        jobs.where(_isInProgress).toList();
+
+    final totalRevenue = paidJobs.fold<double>(
+      0,
+      (total, job) =>
+          total + _moneyValue(job.estimatedTotal),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -128,14 +156,56 @@ class ReportsScreen extends StatelessWidget {
                 ? 'Ingresos totales'
                 : 'Total Revenue',
             value: '\$${totalRevenue.toStringAsFixed(2)}',
+            onTap: () {
+              _openReport(
+                context,
+                title: isSpanish
+                    ? 'Ingresos totales'
+                    : 'Total Revenue',
+                jobs: paidJobs,
+                summary:
+                    '\$${totalRevenue.toStringAsFixed(2)}',
+              );
+            },
           ),
           const SizedBox(height: 10),
+          _reportCard(
+  icon: Icons.history,
+  title: isSpanish
+      ? 'Historial de trabajos'
+      : 'Job History',
+  value: jobs
+      .where((job) => job.invoiceNumber.trim().isNotEmpty)
+      .length
+      .toString(),
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => JobHistoryScreen(
+          languageCode: languageCode,
+          onlyCompleted: true,
+        ),
+      ),
+    );
+  },
+),
           _reportCard(
             icon: Icons.receipt_long_outlined,
             title: isSpanish
                 ? 'Facturas totales'
                 : 'Total Invoices',
-            value: totalInvoices.toString(),
+            value: invoicedJobs.length.toString(),
+            onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => JobHistoryScreen(
+        languageCode: languageCode,
+      ),
+    ),
+  );
+},
           ),
           const SizedBox(height: 10),
           _reportCard(
@@ -143,7 +213,18 @@ class ReportsScreen extends StatelessWidget {
             title: isSpanish
                 ? 'Facturas pagadas'
                 : 'Paid Invoices',
-            value: paidInvoices.toString(),
+            value: paidJobs.length.toString(),
+            onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => JobHistoryScreen(
+        languageCode: languageCode,
+        onlyPaid: true,
+      ),
+    ),
+  );
+},
           ),
           const SizedBox(height: 10),
           _reportCard(
@@ -151,7 +232,18 @@ class ReportsScreen extends StatelessWidget {
             title: isSpanish
                 ? 'Facturas pendientes'
                 : 'Outstanding Invoices',
-            value: outstandingInvoices.toString(),
+            value: outstandingJobs.length.toString(),
+           onTap: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => JobHistoryScreen(
+        languageCode: languageCode,
+        onlyOutstanding: true,
+      ),
+    ),
+  );
+},
           ),
           const SizedBox(height: 10),
           _reportCard(
@@ -159,7 +251,16 @@ class ReportsScreen extends StatelessWidget {
             title: isSpanish
                 ? 'Trabajos programados'
                 : 'Scheduled Jobs',
-            value: scheduledJobs.toString(),
+            value: scheduledJobList.length.toString(),
+            onTap: () {
+              _openReport(
+                context,
+                title: isSpanish
+                    ? 'Trabajos programados'
+                    : 'Scheduled Jobs',
+                jobs: scheduledJobList,
+              );
+            },
           ),
           const SizedBox(height: 10),
           _reportCard(
@@ -167,10 +268,124 @@ class ReportsScreen extends StatelessWidget {
             title: isSpanish
                 ? 'Trabajos en progreso'
                 : 'Jobs In Progress',
-            value: jobsInProgress.toString(),
+            value: jobsInProgressList.length.toString(),
+            onTap: () {
+              _openReport(
+                context,
+                title: isSpanish
+                    ? 'Trabajos en progreso'
+                    : 'Jobs In Progress',
+                jobs: jobsInProgressList,
+              );
+            },
           ),
         ],
       ),
+    );
+  }
+}
+
+class _ReportDetailsScreen extends StatelessWidget {
+  const _ReportDetailsScreen({
+    required this.languageCode,
+    required this.title,
+    required this.jobs,
+    this.summary,
+  });
+
+  final String languageCode;
+  final String title;
+  final List<Job> jobs;
+  final String? summary;
+
+  bool get isSpanish => languageCode == 'es';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(title),
+      ),
+      body: jobs.isEmpty
+          ? Center(
+              child: Text(
+                isSpanish
+                    ? 'No hay registros para este reporte.'
+                    : 'No records found for this report.',
+                style: const TextStyle(
+                  fontSize: 17,
+                ),
+              ),
+            )
+          : ListView(
+              padding: const EdgeInsets.all(16),
+              children: [
+                if (summary != null) ...[
+                  Card(
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          Text(
+                            isSpanish
+                                ? 'Total'
+                                : 'Report Total',
+                            style: const TextStyle(
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            summary!,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                ],
+                ...jobs.map(
+                  (job) => Card(
+                    child: ListTile(
+                      leading: const CircleAvatar(
+                        child: Icon(
+                          Icons.description_outlined,
+                        ),
+                      ),
+                      title: Text(
+                        job.customerName.trim().isEmpty
+                            ? (isSpanish
+                                ? 'Cliente sin nombre'
+                                : 'Unnamed Customer')
+                            : job.customerName,
+                      ),
+                      subtitle: Text(
+                        [
+                          if (job.equipment.trim().isNotEmpty)
+                            job.equipment,
+                          if (job.invoiceNumber.trim().isNotEmpty)
+                            '${isSpanish ? 'Factura' : 'Invoice'} '
+                                '${job.invoiceNumber}',
+                          job.jobStatus,
+                        ].join(' • '),
+                      ),
+                      trailing: Text(
+                        job.estimatedTotal.trim().isEmpty
+                            ? '\$0.00'
+                            : '\$${job.estimatedTotal.replaceAll('\$', '')}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
     );
   }
 }

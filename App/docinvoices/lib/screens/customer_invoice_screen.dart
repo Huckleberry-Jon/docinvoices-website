@@ -3,7 +3,8 @@ import '../models/labor_item.dart';
 import '../models/part_item.dart';
 import 'payment_received_screen.dart';
 import '../models/job.dart';
-
+import 'package:printing/printing.dart';
+import '../services/pdf_service.dart';
 import 'pdf_preview_screen.dart';
 import '../models/payment.dart';
 import 'dart:io';
@@ -334,13 +335,7 @@ widget.job.payments.add(
     return Expanded(
       child: InkWell(
         borderRadius: BorderRadius.circular(15),
-        onTap: () {
-          _showMessage(
-  isSpanish
-      ? '$label se conectará más adelante.'
-      : '$label will be connected later.',
-);
-        },
+        onTap: onTap,
         child: Container(
           padding: const EdgeInsets.symmetric(
             horizontal: 8,
@@ -1193,41 +1188,84 @@ _priceRow(
                   const SizedBox(height: 16),
                   Row(
                     children: [
-                      _actionButton(
-                        icon: Icons.email_outlined,
-                        label: isSpanish ? 'Correo electrónico' : 'Email',
-                        color: Colors.blue,
-                      ),
-                      const SizedBox(width: 10),
-                      _actionButton(
-                        icon: Icons.sms_outlined,
-                        label: isSpanish ? 'Mensaje de texto' : 'Text',
-                        color: Colors.greenAccent,
-                      ),
-                      const SizedBox(width: 10),
-                      _actionButton(
-  icon: Icons.picture_as_pdf_outlined,
-  label: 'PDF',
-  color: Colors.redAccent,
-  onTap: () {
-    Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (context) => PdfPreviewScreen(
-        job: widget.job,
-      ),
+                     _actionButton(
+      icon: Icons.email_outlined,
+      label: isSpanish ? 'Correo' : 'Email',
+      color: Colors.blue,
+      onTap: () async {
+        final email = Uri(
+          scheme: 'mailto',
+          queryParameters: {
+            'subject': widget.job.invoiceNumber.trim().isEmpty
+                ? 'Invoice'
+                : 'Invoice ${widget.job.invoiceNumber}',
+            'body': isSpanish
+                ? 'Su factura está lista.'
+                : 'Your invoice is ready.',
+          },
+        );
+
+        await launchUrl(email);
+      },
     ),
-  );
-},
-                      ),
-                      const SizedBox(width: 10),
-                      _actionButton(
-                        icon: Icons.link,
-  label: isSpanish ? 'Enlace seguro' : 'Secure Link',
-  color: Colors.purpleAccent,
-                      ),
-                    ],
-                  ),
+    const SizedBox(width: 10),
+    _actionButton(
+      icon: Icons.sms_outlined,
+      label: isSpanish ? 'Texto' : 'Text',
+      color: Colors.greenAccent,
+      onTap: () async {
+        final sms = Uri(
+          scheme: 'sms',
+          queryParameters: {
+            'body': widget.job.invoiceNumber.trim().isEmpty
+                ? (isSpanish
+                    ? 'Su factura está lista.'
+                    : 'Your invoice is ready.')
+                : (isSpanish
+                    ? 'Su factura ${widget.job.invoiceNumber} está lista.'
+                    : 'Your invoice ${widget.job.invoiceNumber} is ready.'),
+          },
+        );
+
+        await launchUrl(sms);
+      },
+    ),
+    const SizedBox(width: 10),
+    _actionButton(
+      icon: Icons.picture_as_pdf_outlined,
+      label: 'PDF',
+      color: Colors.redAccent,
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PdfPreviewScreen(
+              job: widget.job,
+            ),
+          ),
+        );
+      },
+    ),
+    const SizedBox(width: 10),
+    _actionButton(
+      icon: Icons.share_outlined,
+      label: isSpanish ? 'Compartir' : 'Share',
+      color: Colors.purpleAccent,
+      onTap: () async {
+        final bytes = await PdfService.generateInvoice(
+          widget.job,
+        );
+
+        await Printing.sharePdf(
+          bytes: bytes,
+          filename: widget.job.invoiceNumber.trim().isEmpty
+              ? 'Invoice.pdf'
+              : '${widget.job.invoiceNumber}.pdf',
+        );
+      },
+    ),
+  ],
+),
                   _card(
   child: Column(
     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1329,39 +1367,45 @@ _card(
   ),
 ),
 
-                   SizedBox(height: 20),
-                  SizedBox(
-                    height: 76,
-                    child: ElevatedButton(
-                      onPressed:
-                   selectedPaymentMethod == null ? null : _completePayment,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.orange,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(18),
-                        ),
-                      ),
-                      child:  Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            isSpanish ? 'Completar pago' : 'Complete Payment',
-                            style: TextStyle(
-                              fontSize: 21,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 3),
-                          Text(
-  isSpanish
-      ? 'Total: \$${widget.invoiceTotal.toStringAsFixed(2)}'
-      : 'Invoice Total: \$${widget.invoiceTotal.toStringAsFixed(2)}',
-  style: const TextStyle(
-    fontSize: 17,
-    fontWeight: FontWeight.w600,
+                  const SizedBox(height: 20),
+
+SizedBox(
+  height: 76,
+  child: ElevatedButton(
+    onPressed:
+        selectedPaymentMethod == null ? null : _completePayment,
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.orange,
+      foregroundColor: Colors.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(18),
+      ),
+    ),
+    child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(
+          isSpanish ? 'Completar pago' : 'Complete Payment',
+          style: const TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 3),
+        Text(
+          isSpanish
+              ? 'Total: \$${widget.invoiceTotal.toStringAsFixed(2)}'
+              : 'Invoice Total: \$${widget.invoiceTotal.toStringAsFixed(2)}',
+          style: const TextStyle(
+            fontSize: 17,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    ),
   ),
 ),
+
 if (selectedPaymentMethod != null) ...[
   const SizedBox(height: 16),
 
@@ -1396,10 +1440,7 @@ if (selectedPaymentMethod != null) ...[
     ),
   ),
 ],
-                        ],
-                      ),
-                    ),
-                  ),
+                       
                   const SizedBox(height: 18),
                   _card(
                     child: Column(
