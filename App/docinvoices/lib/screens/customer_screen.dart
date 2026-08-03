@@ -3,15 +3,17 @@ import '../models/customer.dart';
 import '../services/customer_repository.dart';
 
 class CustomerScreen extends StatefulWidget {
-  const CustomerScreen({super.key, required String languageCode});
+  const CustomerScreen({
+    super.key,
+    required this.languageCode,
+  });
+
+  final String languageCode;
 
   @override
-  State<CustomerScreen> createState() => _CustomerScreenState();
-}
-
+  State<CustomerScreen> createState() => _CustomerScreenState();}
 class _CustomerScreenState extends State<CustomerScreen> {
-  final _formKey = GlobalKey<FormState>();
-
+final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final companyController = TextEditingController();
   final phoneController = TextEditingController();
@@ -37,6 +39,7 @@ bool isSpanishCustomer = false;
     zipController.dispose();
     notesController.dispose();
     super.dispose();
+    
   }
 
  Future<void> _saveCustomer() async {
@@ -62,59 +65,79 @@ Navigator.pop(context, customer);
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('New Customer'),
+Widget build(BuildContext context) {
+  final bool isSpanish =
+      widget.languageCode == 'es';
+
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(
+        isSpanish
+            ? 'Nuevo cliente'
+            : 'New Customer',
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: const EdgeInsets.all(16),
-          children: [
-            const Text(
-              'Customer Information',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+    ),
+    body: Form(
+      key: _formKey,
+      child: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            isSpanish
+                ? 'Información del cliente'
+                : 'Customer Information',
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
             ),
+          ),
 
-            const SizedBox(height: 16),
+          const SizedBox(height: 16),
 
-            TextFormField(
-              controller: nameController,
-              decoration: const InputDecoration(
-                labelText: 'Customer Name *',
-              ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Customer name is required';
-                }
-                return null;
-              },
+          TextFormField(
+            controller: nameController,
+            decoration: InputDecoration(
+              labelText: isSpanish
+                  ? 'Nombre del cliente *'
+                  : 'Customer Name *',
             ),
+            validator: (value) {
+              if (value == null ||
+                  value.trim().isEmpty) {
+                return isSpanish
+                    ? 'Se requiere el nombre del cliente'
+                    : 'Customer name is required';
+              }
+              return null;
+            },
+          ),
 
-            TextFormField(
-              controller: companyController,
-              decoration: const InputDecoration(
-                labelText: 'Company',
-              ),
+          TextFormField(
+            controller: companyController,
+            decoration: InputDecoration(
+              labelText: isSpanish
+                  ? 'Empresa'
+                  : 'Company',
             ),
+          ),
 
-            TextFormField(
-              controller: phoneController,
-              decoration: const InputDecoration(
-                labelText: 'Phone',
-              ),
+          TextFormField(
+            controller: phoneController,
+            decoration: InputDecoration(
+              labelText: isSpanish
+                  ? 'Teléfono'
+                  : 'Phone',
             ),
+          ),
 
-            TextFormField(
-              controller: emailController,
-              decoration: const InputDecoration(
-                labelText: 'Email',
-              ),
+          TextFormField(
+            controller: emailController,
+            decoration: InputDecoration(
+              labelText: isSpanish
+                  ? 'Correo electrónico'
+                  : 'Email',
             ),
+          ),
 const SizedBox(height: 16),
 
 SwitchListTile(

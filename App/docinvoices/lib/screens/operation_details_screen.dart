@@ -23,103 +23,146 @@ class OperationDetailsScreen extends StatefulWidget {
 
 class _OperationDetailsScreenState
     extends State<OperationDetailsScreen> {
-      late final TextEditingController complaintController;
-late final TextEditingController repairController;
-late final stt.SpeechToText speech;
-bool isListening = false;
+  late final TextEditingController complaintController;
+  late final TextEditingController repairController;
+  late stt.SpeechToText speech;
 
-@override
-void initState() {
-  super.initState();
-  speech = stt.SpeechToText();
+  bool speechAvailable = false;
+  bool isListening = false;
+  String repairBeforeListening = '';
 
-  complaintController = TextEditingController(
-    text: widget.operation.title,
-  );
+  @override
+  void initState() {
+    super.initState();
 
-  repairController = TextEditingController(
-  text: widget.operation.repairDescription,
-);
-}
+    speech = stt.SpeechToText();
 
-@override
-void dispose() {
-  complaintController.dispose();
-  repairController.dispose();
-  super.dispose();
-}
-  String _money(double amount) {
-    return '\$${amount.toStringAsFixed(2)}';
+    complaintController = TextEditingController(
+      text: widget.operation.title,
+    );
+
+    repairController = TextEditingController(
+      text: widget.operation.repairDescription,
+    );
+
+    _initializeSpeech();
   }
 
-  String _number(double value) {
-    if (value == value.roundToDouble()) {
-      return value.toStringAsFixed(0);
+  Future<void> _initializeSpeech() async {
+    speechAvailable = await speech.initialize(
+      onStatus: (status) {
+        debugPrint('Operation speech status: $status');
+
+        if (!mounted) return;
+
+        if (status == 'done' || status == 'notListening') {
+          setState(() {
+            isListening = false;
+          });
+        }
+      },
+      onError: (error) {
+        debugPrint('Operation speech error: $error');
+
+        if (!mounted) return;
+
+        setState(() {
+          isListening = false;
+        });
+      },
+    );
+
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  Future<void> _toggleListening() async {
+    if (isListening || speech.isListening) {
+      await speech.stop();
+
+      if (!mounted) return;
+
+      setState(() {
+        isListening = false;
+      });
+
+      return;
     }
 
-    return value.toStringAsFixed(2);
-  }
+    if (!speechAvailable) {
+      await _initializeSpeech();
+    }
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
+    if (!speechAvailable) {
+      if (!mounted) return;
+
+      _showMessage(
+        widget.languageCode == 'es'
+            ? 'El reconocimiento de voz no está disponible.'
+            : 'Voice recognition is not available.',
+      );
+
+      return;
+    }
+
+    repairBeforeListening = repairController.text.trim();
+
+    await speech.listen(
+      onResult: (result) {
+        if (!mounted) return;
+
+        final String newWords = result.recognizedWords.trim();
+
+        setState(() {
+          repairController.text = repairBeforeListening.isEmpty
+              ? newWords
+              : newWords.isEmpty
+                  ? repairBeforeListening
+                  : '$repairBeforeListening\n$newWords';
+
+          repairController.selection = TextSelection.fromPosition(
+            TextPosition(
+              offset: repairController.text.length,
+            ),
+          );
+        });
+      },
     );
-  }
-  Future<void> _toggleListening() async {
-  if (isListening) {
-    await speech.stop();
 
     if (!mounted) return;
 
     setState(() {
-      isListening = false;
+      isListening = true;
     });
-
-    return;
   }
 
-  final bool available = await speech.initialize();
-
-  if (!available) {
-    _showMessage('Voice recognition is not available.');
-    return;
+  @override
+  void dispose() {
+    speech.stop();
+    complaintController.dispose();
+    repairController.dispose();
+    super.dispose();
   }
-
-  if (!mounted) return;
-
-  setState(() {
-    isListening = true;
-  });
-
-  final String existingText = repairController.text.trim();
-
-  await speech.listen(
-    onResult: (result) {
-      if (!mounted) return;
-
-      final String newWords = result.recognizedWords.trim();
-
-      setState(() {
-        repairController.text = existingText.isEmpty
-            ? newWords
-            : '$existingText\n$newWords';
-
-        repairController.selection = TextSelection.fromPosition(
-          TextPosition(
-            offset: repairController.text.length,
-          ),
-        );
-
-        if (result.finalResult) {
-          isListening = false;
-        }
-      });
-    },
-  );
+String _money(double amount) {
+  return '\$${amount.toStringAsFixed(2)}';
 }
 
+String _number(double value) {
+  if (value == value.roundToDouble()) {
+    return value.toStringAsFixed(0);
+  }
+
+  return value.toStringAsFixed(2);
+}
+
+void _showMessage(String message) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+    ),
+  );
+}
   Future<void> _showAddLaborDialog() async {
     final descriptionController = TextEditingController();
     final hoursController = TextEditingController();
