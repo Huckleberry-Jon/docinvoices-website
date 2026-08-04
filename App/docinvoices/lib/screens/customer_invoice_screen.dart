@@ -853,15 +853,27 @@ const SizedBox(height: 18),
                           ),
                         ),
                         if (showServiceDetails) ...[
-                          const Divider(
-                            color: Colors.white12,
-                            height: 30,
-                          ),
-                          _serviceItem(
-    widget.transcription,
+  const Divider(
+    color: Colors.white12,
+    height: 30,
   ),
-                          
-                        ],
+
+  if (widget.job.operations.isEmpty)
+    Text(
+      isSpanish
+          ? 'No se agregaron servicios.'
+          : 'No services added.',
+      style: const TextStyle(
+        color: Colors.white60,
+      ),
+    )
+  else
+    ...widget.job.operations.map(
+      (operation) => _serviceItem(
+        operation.title,
+      ),
+    ),
+],
                       ],
                     ),
                   ),
@@ -893,12 +905,15 @@ const SizedBox(height: 18),
                                   ),
                                   SizedBox(height: 5),
                                   Text(
-                                    isSpanish ? '3 fotos incluidas' : '3 photos included',
-                                    style: TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 15,
-                                    ),
-                                  ),
+  isSpanish
+      ? '${widget.job.beforePhotoPaths.length + widget.job.afterPhotoPaths.length} fotos incluidas'
+      : '${widget.job.beforePhotoPaths.length + widget.job.afterPhotoPaths.length} photos included',
+  style: const TextStyle(
+    color: Colors.white60,
+    fontSize: 15,
+  ),
+),
+                                  
                                 ],
                               ),
                             ),
@@ -1039,16 +1054,40 @@ const SizedBox(height: 18),
                               ),
                               SizedBox(height: 8),
                               Text(
-                                isSpanish
-    ? 'Aprobación del cliente registrada'
-    : 'Customer approval recorded',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                              SizedBox(height: 5),
+  widget.job.approvalStatus.isEmpty
+      ? (isSpanish
+          ? 'Aún no se ha registrado ninguna aprobación.'
+          : 'No approval has been recorded yet.')
+      : widget.job.approvalStatus,
+  style: const TextStyle(
+    color: Colors.white,
+    fontSize: 16,
+    fontWeight: FontWeight.w600,
+  ),
+),
+
+const SizedBox(height: 10),
+
+_detailRow(
+  label: isSpanish ? 'Método' : 'Method',
+  value: widget.job.approvalMethod.isEmpty
+      ? '-'
+      : widget.job.approvalMethod,
+),
+
+_detailRow(
+  label: isSpanish ? 'Solicitado por' : 'Requested By',
+  value: widget.job.approvalRequestedBy.isEmpty
+      ? '-'
+      : widget.job.approvalRequestedBy,
+),
+
+_detailRow(
+  label: isSpanish ? 'Fecha' : 'Date',
+  value: widget.job.approvalDate == null
+      ? '-'
+      : widget.job.approvalDate.toString(),
+),
                               Text(
                                  isSpanish
     ? 'Los detalles de la aprobación estarán disponibles en una actualización futura.'
@@ -1131,7 +1170,48 @@ if (widget.partItems.isEmpty)
   ).toStringAsFixed(2)}',
 )
 else ...[
-  for (final item in widget.partItems) ...[
+if (widget.job.generalCharges.isNotEmpty) ...[
+  const Divider(
+    color: Colors.white12,
+    height: 20,
+  ),
+
+  Text(
+    isSpanish
+        ? 'Cargos adicionales'
+        : 'Additional Charges',
+    style: const TextStyle(
+      color: Colors.white,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+
+  const SizedBox(height: 10),
+
+  for (final charge in widget.job.generalCharges) ...[
+    _priceRow(
+      label: charge.description,
+      amount:
+          '\$${charge.amount.toStringAsFixed(2)}',
+    ),
+  ],
+
+  const Divider(
+    color: Colors.white12,
+    height: 24,
+  ),
+
+  _priceRow(
+    label: isSpanish
+        ? 'Total de cargos adicionales'
+        : 'Additional Charges Total',
+    amount:
+        '\$${widget.generalChargesTotal.toStringAsFixed(2)}',
+  ),
+],
+
+    for (final item in widget.partItems) ...[
     _detailRow(
       label: item.description,
       value:
@@ -1194,18 +1274,21 @@ _priceRow(
       color: Colors.blue,
       onTap: () async {
         final email = Uri(
-          scheme: 'mailto',
-          queryParameters: {
-            'subject': widget.job.invoiceNumber.trim().isEmpty
-                ? 'Invoice'
-                : 'Invoice ${widget.job.invoiceNumber}',
-            'body': isSpanish
-                ? 'Su factura está lista.'
-                : 'Your invoice is ready.',
-          },
-        );
+  scheme: 'mailto',
+  path: widget.job.customerEmail,
+  queryParameters: {
+    'subject': widget.job.invoiceNumber.trim().isEmpty
+        ? (isSpanish ? 'Factura' : 'Invoice')
+        : (isSpanish
+            ? 'Factura ${widget.job.invoiceNumber}'
+            : 'Invoice ${widget.job.invoiceNumber}'),
+    'body': isSpanish
+        ? 'Su factura está lista.'
+        : 'Your invoice is ready.',
+  },
+);
 
-        await launchUrl(email);
+await launchUrl(email);
       },
     ),
     const SizedBox(width: 10),
@@ -1214,20 +1297,21 @@ _priceRow(
       label: isSpanish ? 'Texto' : 'Text',
       color: Colors.greenAccent,
       onTap: () async {
-        final sms = Uri(
-          scheme: 'sms',
-          queryParameters: {
-            'body': widget.job.invoiceNumber.trim().isEmpty
-                ? (isSpanish
-                    ? 'Su factura está lista.'
-                    : 'Your invoice is ready.')
-                : (isSpanish
-                    ? 'Su factura ${widget.job.invoiceNumber} está lista.'
-                    : 'Your invoice ${widget.job.invoiceNumber} is ready.'),
-          },
-        );
+       final sms = Uri(
+  scheme: 'sms',
+  path: widget.job.customerPhone,
+  queryParameters: {
+    'body': widget.job.invoiceNumber.trim().isEmpty
+        ? (isSpanish
+            ? 'Su factura está lista.'
+            : 'Your invoice is ready.')
+        : (isSpanish
+            ? 'Su factura ${widget.job.invoiceNumber} está lista.'
+            : 'Your invoice ${widget.job.invoiceNumber} is ready.'),
+  },
+);
 
-        await launchUrl(sms);
+await launchUrl(sms);
       },
     ),
     const SizedBox(width: 10),

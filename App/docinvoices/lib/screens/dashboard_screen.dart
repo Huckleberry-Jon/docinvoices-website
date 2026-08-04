@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'settings_screen.dart';
 import 'create_screen.dart';
 import 'invoices_screen.dart';
 import 'active_jobs_screen.dart';
@@ -307,7 +307,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
             );
           },
         ),
+ListTile(
+          leading: const Icon(Icons.settings_outlined),
+          title: Text(
+            isSpanish
+                ? 'Configuración'
+                : 'Settings',
+          ),
+          onTap: () {
+            Navigator.pop(context);
 
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => SettingsScreen(
+                  languageCode: widget.languageCode,
+                ),
+              ),
+            );
+          },
+        ),
         ListTile(
           leading: const Icon(Icons.person_add_alt_1_outlined),
           title: Text(

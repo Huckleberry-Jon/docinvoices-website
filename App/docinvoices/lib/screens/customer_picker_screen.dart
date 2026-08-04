@@ -4,7 +4,12 @@ import '../services/customer_repository.dart';
 import 'customer_screen.dart';
 
 class CustomerPickerScreen extends StatefulWidget {
-  const CustomerPickerScreen({super.key});
+  const CustomerPickerScreen({
+    super.key,
+    required this.languageCode,
+  });
+
+  final String languageCode;
 
   @override
   State<CustomerPickerScreen> createState() =>
@@ -58,15 +63,37 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
                       final customer = customers[index];
 
                       return ListTile(
-                        leading: const Icon(Icons.person),
-                        title: Text(customer.name),
-                        subtitle: customer.company.isEmpty
-                            ? null
-                            : Text(customer.company),
-                        onTap: () {
-                          Navigator.pop(context, customer);
-                        },
-                      );
+  leading: const Icon(Icons.person),
+  title: Text(customer.name),
+  subtitle: customer.company.isEmpty
+      ? null
+      : Text(customer.company),
+
+  onTap: () {
+    Navigator.pop(context, customer);
+  },
+
+  trailing: IconButton(
+    icon: const Icon(Icons.edit_outlined),
+    onPressed: () async {
+      final Customer? updatedCustomer =
+          await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => CustomerScreen(
+            languageCode: widget.languageCode,
+            customer: customer,
+          ),
+        ),
+      );
+
+      if (updatedCustomer == null) return;
+      if (!mounted) return;
+
+      setState(() {});
+    },
+  ),
+);
                     },
                   ),
           ),
@@ -85,7 +112,9 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
                         await Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => const CustomerScreen(languageCode: '',),
+                        builder: (_) => CustomerScreen(
+  languageCode: widget.languageCode,
+),
                       ),
                     );
 

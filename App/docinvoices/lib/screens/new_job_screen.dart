@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../services/vin_lookup_service.dart';
 import '../models/job.dart';
 import '../models/customer.dart';
 import 'package:docinvoices/services/job_repository.dart';
@@ -41,13 +41,18 @@ final locationController = TextEditingController();
   final serviceCallChargeController =
     TextEditingController();
     final serviceMilesController = TextEditingController();
+final TextEditingController customerPhoneController =
+    TextEditingController();
 
+final TextEditingController customerEmailController =
+    TextEditingController();
 final mileageRateController =
     TextEditingController(
   text: '1.50',
 );
 
 bool includeServiceCall = false;
+bool isLookingUpVin = false;
 
      @override
 void initState() {
@@ -114,8 +119,10 @@ void dispose() {
   mileageController.dispose();
   complaintController.dispose();
   serviceCallChargeController.dispose();
-serviceMilesController.dispose();
-mileageRateController.dispose();
+  serviceMilesController.dispose();
+  mileageRateController.dispose();
+  customerPhoneController.dispose();
+  customerEmailController.dispose();
   super.dispose();
 }
   
@@ -212,6 +219,11 @@ if (updatedMileageTotal > 0) {
 }
 
 existingJob.customerName = customerController.text.trim();
+existingJob.customerPhone =
+    customerPhoneController.text.trim();
+
+existingJob.customerEmail =
+    customerEmailController.text.trim();
 existingJob.equipment = equipmentController.text.trim();
 existingJob.unitNumber = unitController.text.trim();
 existingJob.vin = vinController.text.trim();
@@ -225,6 +237,8 @@ return;
 // NEW JOB MODE: create the job and continue to Voice Capture.
 final Job job = Job.createEstimate(
   customerName: customerController.text.trim(),
+   customerPhone: customerPhoneController.text.trim(),
+  customerEmail: customerEmailController.text.trim(),
   equipment: equipmentController.text.trim(),
   unitNumber: unitController.text.trim(),
   vin: vinController.text.trim(),
@@ -329,16 +343,20 @@ if (mileageTotal > 0) {
     final Customer? customer = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => const CustomerPickerScreen(),
+        builder: (_) => CustomerPickerScreen(
+  languageCode: widget.languageCode,
+),
       ),
     );
 
     if (customer == null) return;
 
     setState(() {
-      selectedCustomer = customer;
-      customerController.text = customer.name;
-    });
+  selectedCustomer = customer;
+  customerController.text = customer.name;
+  customerPhoneController.text = customer.phone;
+  customerEmailController.text = customer.email;
+});
   },
   decoration: InputDecoration(
     label: Text(
@@ -364,8 +382,13 @@ if (mileageTotal > 0) {
           );
 
           if (customer != null) {
-            customerController.text = customer.name;
-          }
+  setState(() {
+    selectedCustomer = customer;
+    customerController.text = customer.name;
+    customerPhoneController.text = customer.phone;
+    customerEmailController.text = customer.email;
+  });
+}
         },
       ),
     ),
@@ -396,14 +419,92 @@ const SizedBox(height: 16),
             const SizedBox(height: 16),
 
             TextField(
-              controller: vinController,
-              textCapitalization: TextCapitalization.characters,
-              decoration: InputDecoration(
-                labelText: isSpanish
-                    ? 'VIN / Número de serie'
-                    : 'VIN / Serial Number',
+  controller: vinController,
+  textCapitalization: TextCapitalization.characters,
+  decoration: InputDecoration(
+    labelText: isSpanish
+        ? 'VIN / Número de serie'
+        : 'VIN / Serial Number',
+    suffixIcon: isLookingUpVin
+        ? const Padding(
+            padding: EdgeInsets.all(12),
+            child: SizedBox(
+              width: 22,
+              height: 22,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
               ),
             ),
+          )
+        : IconButton(
+            icon: const Icon(Icons.search),
+            tooltip: isSpanish
+                ? 'Buscar VIN'
+                : 'Lookup VIN',
+            onPressed: () async {
+              final vin =
+                  vinController.text.trim();
+
+              if (vin.length != 17) {
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isSpanish
+                          ? 'El VIN debe tener 17 caracteres.'
+                          : 'VIN must contain 17 characters.',
+                    ),
+                  ),
+                );
+                return;
+              }
+
+              setState(() {
+                isLookingUpVin = true;
+              });
+
+              try {
+                final result =
+                    await VinLookupService
+                        .lookupVin(vin);
+
+                if (!mounted) return;
+
+                setState(() {
+                  equipmentController.text =
+                      result.equipmentDescription;
+                });
+
+               ScaffoldMessenger.of(this.context)
+    .showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      isSpanish
+                          ? 'VIN encontrado.'
+                          : 'VIN decoded successfully.',
+                    ),
+                  ),
+                );
+              } catch (error) {
+                if (!mounted) return;
+
+               ScaffoldMessenger.of(this.context)
+    .showSnackBar(
+                  SnackBar(
+                    content: Text(error.toString()),
+                  ),
+                );
+              } finally {
+                if (mounted) {
+                  setState(() {
+                    isLookingUpVin = false;
+                  });
+                }
+              }
+            },
+          ),
+  ),
+),
             const SizedBox(height: 16),
 
 TextField(

@@ -6,11 +6,22 @@ class Job {
   Job({
     
     required this.location,
+    required this.customerPhone,
+required this.customerEmail,
     required this.customerName,
     required this.equipment,
     required this.unitNumber,
     required this.vin,
-    required this.transcription,
+this.vehicleYear = '',
+this.vehicleMake = '',
+this.vehicleModel = '',
+this.engineManufacturer = '',
+this.engineModel = '',
+this.vehicleType = '',
+this.bodyClass = '',
+this.fuelType = '',
+this.gvwrClass = '',
+required this.transcription,
     required this.mileage,
     required this.poNumber,
     required this.completedDate,
@@ -29,7 +40,11 @@ class Job {
     this.repairOrderNumber = '',
     this.invoiceNumber = '',
     this.jobStatus = 'Estimate',
-    this.scheduledDateTime,
+this.approvalStatus = '',
+this.approvalMethod = '',
+this.approvalRequestedBy = '',
+this.approvalDate,
+this.scheduledDateTime,
 this.reminderDateTime,
 this.reminderEnabled = false,
 this.notes = '',
@@ -45,6 +60,8 @@ List<String>? afterPhotoPaths,
   factory Job.createEstimate({
     required String location,
     required String customerName,
+    required String customerPhone,
+required String customerEmail,
     required String equipment,
     required String unitNumber,
     required String vin,
@@ -54,6 +71,8 @@ List<String>? afterPhotoPaths,
     return Job(
       location: location,
       customerName: customerName,
+      customerPhone: customerPhone,
+customerEmail: customerEmail,
       equipment: equipment,
       unitNumber: unitNumber,
       vin: vin,
@@ -81,10 +100,21 @@ List<String>? afterPhotoPaths,
   }
 
   String customerName;
+  String customerPhone;
+String customerEmail;
   String equipment;
   String unitNumber;
   String vin;
-  String transcription;
+String vehicleYear;
+String vehicleMake;
+String vehicleModel;
+String engineManufacturer;
+String engineModel;
+String vehicleType;
+String bodyClass;
+String fuelType;
+String gvwrClass;
+String transcription;
   String mileage;
   String poNumber;
   String completedDate;
@@ -103,8 +133,14 @@ List<String>? afterPhotoPaths,
   String estimateNumber;
   String repairOrderNumber;
   String invoiceNumber;
-  String jobStatus;
-  String notes;
+String jobStatus;
+
+String approvalStatus;
+String approvalMethod;
+String approvalRequestedBy;
+DateTime? approvalDate;
+
+String notes;
   DateTime? scheduledDateTime;
 DateTime? reminderDateTime;
 bool reminderEnabled;
@@ -137,10 +173,21 @@ Map<String, dynamic> toJson() {
   return {
     'location': location,
     'customerName': customerName,
+    'customerPhone': customerPhone,
+'customerEmail': customerEmail,
     'equipment': equipment,
     'unitNumber': unitNumber,
     'vin': vin,
-    'transcription': transcription,
+'vehicleYear': vehicleYear,
+'vehicleMake': vehicleMake,
+'vehicleModel': vehicleModel,
+'engineManufacturer': engineManufacturer,
+'engineModel': engineModel,
+'vehicleType': vehicleType,
+'bodyClass': bodyClass,
+'fuelType': fuelType,
+'gvwrClass': gvwrClass,
+'transcription': transcription,
     'mileage': mileage,
     'poNumber': poNumber,
     'completedDate': completedDate,
@@ -157,7 +204,11 @@ Map<String, dynamic> toJson() {
     'repairOrderNumber': repairOrderNumber,
     'invoiceNumber': invoiceNumber,
     'jobStatus': jobStatus,
-    'notes': notes,
+'approvalStatus': approvalStatus,
+'approvalMethod': approvalMethod,
+'approvalRequestedBy': approvalRequestedBy,
+'approvalDate': approvalDate?.toIso8601String(),
+'notes': notes,
     'scheduledDateTime':
         scheduledDateTime?.toIso8601String(),
     'reminderDateTime':
@@ -180,10 +231,22 @@ factory Job.fromJson(
   return Job(
     location: json['location'] ?? '',
     customerName: json['customerName'] ?? '',
+    customerPhone: json['customerPhone'] ?? '',
+customerEmail: json['customerEmail'] ?? '',
     equipment: json['equipment'] ?? '',
     unitNumber: json['unitNumber'] ?? '',
     vin: json['vin'] ?? '',
-    transcription: json['transcription'] ?? '',
+vehicleYear: json['vehicleYear'] ?? '',
+vehicleMake: json['vehicleMake'] ?? '',
+vehicleModel: json['vehicleModel'] ?? '',
+engineManufacturer:
+    json['engineManufacturer'] ?? '',
+engineModel: json['engineModel'] ?? '',
+vehicleType: json['vehicleType'] ?? '',
+bodyClass: json['bodyClass'] ?? '',
+fuelType: json['fuelType'] ?? '',
+gvwrClass: json['gvwrClass'] ?? '',
+transcription: json['transcription'] ?? '',
     mileage: json['mileage'] ?? '',
     poNumber: json['poNumber'] ?? '',
     completedDate: json['completedDate'] ?? '',
@@ -203,7 +266,16 @@ factory Job.fromJson(
         json['repairOrderNumber'] ?? '',
     invoiceNumber: json['invoiceNumber'] ?? '',
     jobStatus: json['jobStatus'] ?? 'Estimate',
-    notes: json['notes'] ?? '',
+approvalStatus: json['approvalStatus'] ?? '',
+approvalMethod: json['approvalMethod'] ?? '',
+approvalRequestedBy:
+    json['approvalRequestedBy'] ?? '',
+approvalDate: json['approvalDate'] == null
+    ? null
+    : DateTime.tryParse(
+        json['approvalDate'],
+      ),
+notes: json['notes'] ?? '',
     scheduledDateTime:
         json['scheduledDateTime'] == null
             ? null

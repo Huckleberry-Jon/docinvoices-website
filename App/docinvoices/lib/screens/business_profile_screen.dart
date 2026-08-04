@@ -41,8 +41,8 @@ void initState() {
         profile.taxRate.toStringAsFixed(2);
   }
 
-  logoPath =
-      profile.logoPath.isEmpty ? null : profile.logoPath;
+  _loadSavedLogo(profile.logoPath);
+  
 }
   final businessNameController = TextEditingController();
   final phoneController = TextEditingController();
@@ -96,18 +96,61 @@ void initState() {
 }
 
   Future<void> _takeLogoPhoto() async {
-    final XFile? image = await _imagePicker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
-    );
+  final XFile? image = await _imagePicker.pickImage(
+    source: ImageSource.camera,
+    imageQuality: 85,
+  );
 
-    if (image == null) return;
+  if (image == null) return;
 
-    setState(() {
-      logoPath = image.path;
-    });
+  final directory =
+      await getApplicationDocumentsDirectory();
+
+  final extension = image.path.contains('.')
+      ? image.path.substring(
+          image.path.lastIndexOf('.'),
+        )
+      : '.jpg';
+
+  final savedLogo = File(
+    '${directory.path}/business_logo$extension',
+  );
+
+  await File(image.path).copy(
+    savedLogo.path,
+  );
+
+  if (!mounted) return;
+
+  setState(() {
+    logoPath = savedLogo.path;
+  });
+}
+Future<void> _loadSavedLogo(
+  String savedLogoName,
+) async {
+  if (savedLogoName.trim().isEmpty) {
+    return;
   }
 
+  final directory =
+      await getApplicationDocumentsDirectory();
+
+  final fileName = savedLogoName.contains('/')
+      ? Uri.file(savedLogoName).pathSegments.last
+      : savedLogoName;
+
+  final currentLogoPath =
+      '${directory.path}/$fileName';
+
+  if (!mounted) return;
+
+  setState(() {
+    logoPath = File(currentLogoPath).existsSync()
+        ? currentLogoPath
+        : null;
+  });
+}
   Future<void> _saveProfile() async {
   final profile = BusinessProfileRepository.instance.profile;
 
@@ -125,7 +168,9 @@ void initState() {
   profile.taxRate =
       double.tryParse(taxRateController.text.trim()) ?? 0.0;
 
-  profile.logoPath = logoPath ?? '';
+  profile.logoPath = logoPath == null
+    ? ''
+    : File(logoPath!).uri.pathSegments.last;
   await BusinessProfileRepository.instance.save();
 if (!mounted) return;
   ScaffoldMessenger.of(context).showSnackBar(
@@ -211,7 +256,7 @@ if (!mounted) return;
                                 )
                               : Image.file(
                                   File(logoPath!),
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.contain,
                                 ),
                         ),
                         const SizedBox(height: 18),

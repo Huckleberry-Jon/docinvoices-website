@@ -6,14 +6,20 @@ class CustomerScreen extends StatefulWidget {
   const CustomerScreen({
     super.key,
     required this.languageCode,
+    this.customer,
   });
 
   final String languageCode;
+  final Customer? customer;
 
   @override
-  State<CustomerScreen> createState() => _CustomerScreenState();}
-class _CustomerScreenState extends State<CustomerScreen> {
-final _formKey = GlobalKey<FormState>();
+  State<CustomerScreen> createState() =>
+      _CustomerScreenState();
+}
+    class _CustomerScreenState extends State<CustomerScreen> {
+  bool get isEditing => widget.customer != null;
+
+  final _formKey = GlobalKey<FormState>();
   final nameController = TextEditingController();
   final companyController = TextEditingController();
   final phoneController = TextEditingController();
@@ -27,6 +33,27 @@ final _formKey = GlobalKey<FormState>();
   final notesController = TextEditingController();
 
 bool isSpanishCustomer = false;
+@override
+void initState() {
+  super.initState();
+
+  if (widget.customer != null) {
+    final customer = widget.customer!;
+
+    nameController.text = customer.name;
+    companyController.text = customer.company;
+    phoneController.text = customer.phone;
+    emailController.text = customer.email;
+    streetController.text = customer.street;
+    cityController.text = customer.city;
+    stateController.text = customer.state;
+    zipController.text = customer.zip;
+    notesController.text = customer.notes;
+
+    isSpanishCustomer =
+        customer.preferredLanguage == 'es';
+  }
+}
   @override
   void dispose() {
     nameController.dispose();
@@ -57,7 +84,14 @@ bool isSpanishCustomer = false;
       notes: notesController.text.trim(),
       preferredLanguage: isSpanishCustomer ? 'es' : 'en',
     );
-await CustomerRepository.addCustomer(customer);
+if (isEditing) {
+  await CustomerRepository.updateCustomer(
+    widget.customer!,
+    customer,
+  );
+} else {
+  await CustomerRepository.addCustomer(customer);
+}
 
 if (!mounted) return;
 
@@ -71,11 +105,11 @@ Widget build(BuildContext context) {
 
   return Scaffold(
     appBar: AppBar(
-      title: Text(
-        isSpanish
-            ? 'Nuevo cliente'
-            : 'New Customer',
-      ),
+     title: Text(
+  isEditing
+      ? (isSpanish ? 'Editar cliente' : 'Edit Customer')
+      : (isSpanish ? 'Nuevo cliente' : 'New Customer'),
+),
     ),
     body: Form(
       key: _formKey,
@@ -210,7 +244,9 @@ SwitchListTile(
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
+                    child: Text(
+  isSpanish ? 'Cancelar' : 'Cancel',
+),
                   ),
                 ),
 
@@ -219,7 +255,11 @@ SwitchListTile(
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _saveCustomer,
-                    child: const Text('Save Customer'),
+                    child: Text(
+  isEditing
+      ? (isSpanish ? 'Guardar cambios' : 'Save Changes')
+      : (isSpanish ? 'Guardar cliente' : 'Save Customer'),
+),
                   ),
                 ),
               ],

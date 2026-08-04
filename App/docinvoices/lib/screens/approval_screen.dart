@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../models/job.dart';
 import '../services/job_repository.dart';
-
+import 'package:url_launcher/url_launcher.dart';
+import 'pdf_preview_screen.dart';
 import 'work_board_screen.dart';
 class ApprovalScreen extends StatefulWidget {
   const ApprovalScreen({
@@ -274,7 +275,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
         selectedSendMethod != null;
   }
 
-  void _continue() {
+  Future<void> _continue() async {
   if (!_canContinue) {
     _showMessage(
       isSpanish
@@ -283,33 +284,171 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
     );
     return;
   }
-if (selectedApprovalMethod == 'Customer Approval') {
-  widget.job.jobStatus = 'Awaiting Approval';
 
+  if (selectedApprovalMethod == 'Self Approval') {
+  widget.job.approvalStatus = 'Approved';
+  widget.job.approvalMethod = 'Self Approval';
+  widget.job.approvalRequestedBy = 'Business';
+  widget.job.approvalDate = DateTime.now();
+  widget.job.notes = approvalNotesController.text.trim();
+  widget.job.jobStatus = 'In Progress';
+    JobRepository.instance.updateJob(widget.job);
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => WorkBoardScreen(
+          languageCode: widget.languageCode,
+          job: widget.job,
+        ),
+      ),
+    );
+    return;
+  }
+
+  switch (selectedSendMethod) {
+    case 'Text Message':
+      if (widget.job.customerPhone.trim().isEmpty) {
+        _showMessage(
+          isSpanish
+              ? 'Este cliente no tiene un número de teléfono guardado.'
+              : 'This customer does not have a saved phone number.',
+        );
+        return;
+      }
+
+      final sms = Uri(
+        scheme: 'sms',
+        path: widget.job.customerPhone.trim(),
+        queryParameters: {
+          'body': widget.job.estimateNumber.trim().isEmpty
+              ? (isSpanish
+                  ? 'Su estimado está listo para aprobación.'
+                  : 'Your estimate is ready for approval.')
+              : (isSpanish
+                  ? 'Su estimado ${widget.job.estimateNumber} está listo para aprobación.'
+                  : 'Your estimate ${widget.job.estimateNumber} is ready for approval.'),
+        },
+      );
+
+      final opened = await launchUrl(sms);
+
+      if (!opened) {
+        _showMessage(
+          isSpanish
+              ? 'No se pudo abrir la aplicación de mensajes.'
+              : 'Could not open the messaging app.',
+        );
+        return;
+      }
+      break;
+
+    case 'Email':
+      if (widget.job.customerEmail.trim().isEmpty) {
+        _showMessage(
+          isSpanish
+              ? 'Este cliente no tiene un correo electrónico guardado.'
+              : 'This customer does not have a saved email address.',
+        );
+        return;
+      }
+
+      final email = Uri(
+        scheme: 'mailto',
+        path: widget.job.customerEmail.trim(),
+        queryParameters: {
+          'subject': widget.job.estimateNumber.trim().isEmpty
+              ? (isSpanish
+                  ? 'Estimado listo para aprobación'
+                  : 'Estimate Ready for Approval')
+              : (isSpanish
+                  ? 'Estimado ${widget.job.estimateNumber}'
+                  : 'Estimate ${widget.job.estimateNumber}'),
+          'body': widget.job.estimateNumber.trim().isEmpty
+              ? (isSpanish
+                  ? 'Su estimado está listo para revisión y aprobación.'
+                  : 'Your estimate is ready for review and approval.')
+              : (isSpanish
+                  ? 'Su estimado ${widget.job.estimateNumber} está listo para revisión y aprobación.'
+                  : 'Your estimate ${widget.job.estimateNumber} is ready for review and approval.'),
+        },
+      );
+
+      final opened = await launchUrl(email);
+
+      if (!opened) {
+        _showMessage(
+          isSpanish
+              ? 'No se pudo abrir la aplicación de correo.'
+              : 'Could not open the email app.',
+        );
+        return;
+      }
+      break;
+
+    case 'Print PDF':
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PdfPreviewScreen(
+            job: widget.job,
+          ),
+        ),
+      );
+      return;
+
+    case 'Signature':
+      _showMessage(
+        isSpanish
+            ? 'La pantalla de firma todavía necesita conectarse.'
+            : 'The signature screen still needs to be connected.',
+      );
+      return;
+
+    case 'Phone Approval':
+      if (approvalNotesController.text.trim().isEmpty) {
+        _showMessage(
+          isSpanish
+              ? 'Ingrese una nota que documente la aprobación telefónica.'
+              : 'Enter a note documenting the phone approval.',
+        );
+        return;
+      }
+
+      widget.job.approvalStatus = 'Approved';
+widget.job.approvalMethod = 'Phone Approval';
+widget.job.approvalRequestedBy = 'Customer';
+widget.job.approvalDate = DateTime.now();
+widget.job.notes = approvalNotesController.text.trim();
+widget.job.jobStatus = 'In Progress';
+      JobRepository.instance.updateJob(widget.job);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => WorkBoardScreen(
+            languageCode: widget.languageCode,
+            job: widget.job,
+          ),
+        ),
+      );
+      return;
+  }
+
+  widget.job.approvalStatus = 'Awaiting Approval';
+widget.job.approvalMethod = selectedSendMethod ?? '';
+widget.job.approvalRequestedBy = 'Customer';
+widget.job.approvalDate = DateTime.now();
+widget.job.notes = approvalNotesController.text.trim();
+widget.job.jobStatus = 'Awaiting Approval';
   JobRepository.instance.updateJob(widget.job);
+
+  if (!mounted) return;
 
   Navigator.popUntil(
     context,
     (route) => route.isFirst,
   );
-
-  return;
-}
-
-widget.job.jobStatus = 'In Progress';
-
-JobRepository.instance.updateJob(widget.job);
-
- 
-  Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (context) => WorkBoardScreen(
-      languageCode: widget.languageCode,
-      job: widget.job,
-    ),
-  ),
-);
 }
 Widget _approvalPriceRow({
   required String label,
