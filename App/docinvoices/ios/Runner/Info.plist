@@ -78,5 +78,7 @@
 <string>DocInvoices uses the photo library to select repair photos and a business logo.</string>
 <key>NSLocalNetworkUsageDescription</key>
 <string>DocInvoices uses the local network to find and connect to AirPrint printers.</string>
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>DocInvoices uses your location to help automatically enter the service location on work orders.</string>
 </dict>
 </plist>

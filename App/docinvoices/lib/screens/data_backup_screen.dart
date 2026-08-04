@@ -264,17 +264,21 @@ Future<void> _importCustomers() async {
 Future<void> _importBackup() async {
   try {
     final result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: ['json'],
-      withData: true,
-    );
+  type: FileType.custom,
+  allowedExtensions: [
+    'json',
+    'csv',
+  ],
+  withData: true,
+);
 
     if (result == null || result.files.isEmpty) {
       return;
     }
 
     final selectedFile = result.files.single;
-
+final extension =
+    selectedFile.extension?.toLowerCase() ?? '';
     String jsonText;
 
     if (selectedFile.bytes != null) {
@@ -290,7 +294,20 @@ Future<void> _importBackup() async {
         'Could not read the selected backup file.',
       );
     }
+if (extension == 'csv') {
+  if (!mounted) return;
 
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        isSpanish
+            ? 'La importación de archivos CSV estará disponible en la próxima actualización.'
+            : 'CSV customer import will be available in the next update.',
+      ),
+    ),
+  );
+  return;
+}
     if (!mounted) return;
 
     final bool? replaceExisting =
