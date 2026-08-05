@@ -18,6 +18,8 @@ class CustomerPickerScreen extends StatefulWidget {
 
 class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
   String searchText = '';
+  
+  bool get isSpanish => widget.languageCode == 'es';
 
   @override
   Widget build(BuildContext context) {
@@ -31,17 +33,23 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Select Customer'),
+        title: Text(
+  isSpanish
+      ? 'Seleccionar cliente'
+      : 'Select Customer',
+),
       ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
             child: TextField(
-              decoration: const InputDecoration(
-                labelText: 'Search Customers',
-                prefixIcon: Icon(Icons.search),
-              ),
+             decoration: InputDecoration(
+  labelText: isSpanish
+      ? 'Buscar clientes'
+      : 'Search Customers',
+  prefixIcon: const Icon(Icons.search),
+),
               onChanged: (value) {
                 setState(() {
                   searchText = value.trim();
@@ -52,8 +60,13 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
 
           Expanded(
             child: customers.isEmpty
-                ? const Center(
-                    child: Text('No customers found'),
+                ? Center(
+  child: Text(
+    isSpanish
+        ? 'No se encontraron clientes.'
+        : 'No customers found.',
+  ),
+
                   )
                 : ListView.separated(
                     itemCount: customers.length,
@@ -73,26 +86,88 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
     Navigator.pop(context, customer);
   },
 
-  trailing: IconButton(
-    icon: const Icon(Icons.edit_outlined),
-    onPressed: () async {
-      final Customer? updatedCustomer =
-          await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => CustomerScreen(
-            languageCode: widget.languageCode,
-            customer: customer,
+  trailing: Row(
+  mainAxisSize: MainAxisSize.min,
+  children: [
+    IconButton(
+      icon: const Icon(Icons.edit_outlined),
+      onPressed: () async {
+        final Customer? updatedCustomer =
+            await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => CustomerScreen(
+              languageCode: widget.languageCode,
+              customer: customer,
+            ),
           ),
-        ),
-      );
+        );
 
-      if (updatedCustomer == null) return;
-      if (!mounted) return;
+        if (updatedCustomer == null) return;
+        if (!mounted) return;
 
-      setState(() {});
-    },
-  ),
+        setState(() {});
+      },
+    ),
+    IconButton(
+      icon: const Icon(
+        Icons.delete_outline,
+        color: Colors.redAccent,
+      ),
+      onPressed: () async {
+        final bool? shouldDelete =
+            await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) {
+            return AlertDialog(
+              title: Text(
+                widget.languageCode == 'es'
+                    ? 'Eliminar cliente'
+                    : 'Delete Customer',
+              ),
+              content: Text(
+                widget.languageCode == 'es'
+                    ? '¿Está seguro de que desea eliminar a ${customer.name}?'
+                    : 'Are you sure you want to delete ${customer.name}?',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pop(dialogContext, false),
+                  child: Text(
+                    widget.languageCode == 'es'
+                        ? 'Cancelar'
+                        : 'Cancel',
+                  ),
+                ),
+                TextButton(
+                  onPressed: () =>
+                      Navigator.pop(dialogContext, true),
+                  child: Text(
+                    widget.languageCode == 'es'
+                        ? 'Eliminar'
+                        : 'Delete',
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (shouldDelete != true) return;
+
+        await CustomerRepository.deleteCustomer(customer);
+
+        if (!mounted) return;
+
+        setState(() {});
+      },
+    ),
+  ],
+),
 );
                     },
                   ),
@@ -106,7 +181,11 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
                 width: double.infinity,
                 child: ElevatedButton.icon(
                   icon: const Icon(Icons.person_add),
-                  label: const Text('Search for Customer'),
+                  label: Text(
+  widget.languageCode == 'es'
+      ? 'Nuevo cliente'
+      : 'New Customer',
+),
                   onPressed: () async {
                     final Customer? customer =
                         await Navigator.push(

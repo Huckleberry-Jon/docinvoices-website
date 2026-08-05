@@ -279,6 +279,44 @@ class ReportsScreen extends StatelessWidget {
               );
             },
           ),
+          const SizedBox(height: 20),
+
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 20),
+  child: Text(
+    isSpanish
+        ? 'Próximamente'
+        : 'Coming Soon',
+    style: const TextStyle(
+      color: Colors.white70,
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+),
+
+const SizedBox(height: 12),
+
+_reportCard(
+  icon: Icons.account_balance_wallet_outlined,
+  title: isSpanish
+      ? 'Herramientas financieras'
+      : 'Financial Tools',
+  value: isSpanish
+      ? 'Próximamente'
+      : 'Coming Soon',
+  onTap: () {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? 'El módulo financiero llegará en una próxima actualización.'
+              : 'The Financial module is coming in an upcoming update.',
+        ),
+      ),
+    );
+  },
+),
         ],
       ),
     );

@@ -47,13 +47,6 @@ String get paymentReference {
   bool get isSpanish => widget.languageCode == 'es';
   int selectedRating = 0;
 
-  void _showMessage(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-      ),
-    );
-  }
 
   void _returnToDashboard() {
         Navigator.pushAndRemoveUntil(
@@ -228,29 +221,6 @@ String get paymentReference {
     );
   }
 
-  Widget _ratingStar(int rating) {
-    final bool selected = rating <= selectedRating;
-    
-
-    return IconButton(
-      onPressed: () {
-        setState(() {
-          selectedRating = rating;
-        });
-
-        _showMessage(
-          isSpanish
-    ? 'Gracias por su calificación de $rating estrellas.'
-    : 'Thank you for your $rating-star rating.',
-        );
-      },
-      icon: Icon(
-        selected ? Icons.star : Icons.star_border,
-        color: selected ? Colors.amber : Colors.white38,
-        size: 38,
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -583,7 +553,9 @@ _deliveryRow(
                           children: [
                             _actionButton(
                               icon: Icons.download_outlined,
-                              label: 'Receipt',
+                             label: isSpanish
+    ? 'Imprimir recibo'
+    : 'Print Receipt',
                               color: Colors.greenAccent,
                               onPressed: () async {
   final bytes = await PdfService.generateInvoice(
@@ -642,31 +614,45 @@ _deliveryRow(
                         const SizedBox(height: 15),
                         Row(
                           children: [
-                            _actionButton(
-                              icon: Icons.email_outlined,
-                              label: isSpanish ? 'Enviar por correo nuevamente' : 'Email Again',
-                              color: Colors.blue,
-                              onPressed: () {
-                                _showMessage(
-                                  isSpanish
-    ? 'El recibo fue enviado nuevamente por correo electrónico.'
-    : 'Receipt email sent again.',
-                                );
-                              },
-                            ),
+                           _actionButton(
+  icon: Icons.email_outlined,
+  label: isSpanish
+      ? 'Enviar por correo nuevamente'
+      : 'Email Again',
+  color: Colors.blue,
+  onPressed: () async {
+    final bytes = await PdfService.generateInvoice(widget.job);
+
+    await Printing.sharePdf(
+      bytes: bytes,
+      filename: widget.job.invoiceNumber.isEmpty
+          ? (isSpanish ? 'Recibo.pdf' : 'Receipt.pdf')
+          : isSpanish
+              ? 'Recibo-${widget.job.invoiceNumber}.pdf'
+              : 'Receipt-${widget.job.invoiceNumber}.pdf',
+    );
+  },
+),
                             const SizedBox(width: 12),
                             _actionButton(
-                              icon: Icons.sms_outlined,
-                              label: isSpanish ? 'Enviar por texto nuevamente' : 'Text Again',
-color: Colors.greenAccent,
-onPressed: () {
-  _showMessage(
-    isSpanish
-        ? 'El recibo fue enviado nuevamente por mensaje de texto.'
-        : 'Receipt text sent again.',
-                                );
-                              },
-                            ),
+  icon: Icons.sms_outlined,
+  label: isSpanish
+      ? 'Enviar por texto nuevamente'
+      : 'Text Again',
+  color: Colors.greenAccent,
+  onPressed: () async {
+    final bytes = await PdfService.generateInvoice(widget.job);
+
+    await Printing.sharePdf(
+      bytes: bytes,
+      filename: widget.job.invoiceNumber.isEmpty
+          ? (isSpanish ? 'Recibo.pdf' : 'Receipt.pdf')
+          : isSpanish
+              ? 'Recibo-${widget.job.invoiceNumber}.pdf'
+              : 'Receipt-${widget.job.invoiceNumber}.pdf',
+    );
+  },
+),
                           ],
                         ),
                       ],
@@ -675,43 +661,7 @@ onPressed: () {
 
                   const SizedBox(height: 16),
 
-                  _card(
-                    child: Column(
-                      children: [
-                         Text(
-                          isSpanish ? '¿Cómo lo hicimos?' : 'How did we do?',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                         Text(
-                          isSpanish
-    ? 'Sus comentarios nos ayudan a brindar un mejor servicio.'
-    : 'Your feedback helps us provide better service.',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white60,
-                            fontSize: 15,
-                          ),
-                        ),
-                        const SizedBox(height: 14),
-                        Row(
-                          mainAxisAlignment:
-                              MainAxisAlignment.center,
-                          children: [
-                            _ratingStar(1),
-                            _ratingStar(2),
-                            _ratingStar(3),
-                            _ratingStar(4),
-                            _ratingStar(5),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                  
 
                   const SizedBox(height: 22),
 

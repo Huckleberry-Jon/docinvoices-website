@@ -524,14 +524,18 @@ const SizedBox(height: 16),
       _infoItem(
         icon: Icons.local_shipping_outlined,
         label: isSpanish ? 'Equipo' : 'Equipment',
-        value: [
+       value: [
   widget.equipment,
-if (widget.unitNumber.isNotEmpty)
-  '${isSpanish ? 'Unidad' : 'Unit'} ${widget.unitNumber}',
-if (widget.mileage.isNotEmpty)
-  '${isSpanish ? 'Millaje' : 'Mileage'}: ${widget.mileage}',
-if (widget.vin.isNotEmpty)
-  'VIN / Serial: ${widget.vin}',
+  if (widget.unitNumber.isNotEmpty)
+    '${isSpanish ? 'Unidad' : 'Unit'} ${widget.unitNumber}',
+  if (widget.vin.isNotEmpty)
+    'VIN / Serial: ${widget.vin}',
+  if (widget.job.esn.isNotEmpty)
+    'ESN: ${widget.job.esn}',
+  if (widget.job.tsn.isNotEmpty)
+    'TSN: ${widget.job.tsn}',
+  if (widget.mileage.isNotEmpty)
+    '${isSpanish ? 'Millaje' : 'Mileage'}: ${widget.mileage}',
 ].where((value) => value.isNotEmpty).join('\n'),
         color: Colors.blue,
       ),

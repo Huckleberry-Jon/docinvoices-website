@@ -2,7 +2,7 @@ import 'dart:typed_data';
 import '../services/business_profile_repository.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-
+import 'package:flutter/foundation.dart';
 import '../models/job.dart';
 import 'dart:io';
 class PdfService {
@@ -16,6 +16,9 @@ Uint8List? logoBytes;
 
 if (profile.logoPath.trim().isNotEmpty) {
   final logoFile = File(profile.logoPath);
+
+  debugPrint('PDF logo path: ${profile.logoPath}');
+  debugPrint('PDF logo exists: ${await logoFile.exists()}');
 
   if (await logoFile.exists()) {
     logoBytes = await logoFile.readAsBytes();

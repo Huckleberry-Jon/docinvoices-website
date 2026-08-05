@@ -29,7 +29,13 @@ String get mileage => job.mileage;
 String get poNumber => job.poNumber;
 String get completedDate => job.completedDate;
 String get estimatedTotal => job.estimatedTotal;
-
+String get esn => job.esn;
+String get tsn => job.tsn;
+String get vehicleYear => job.vehicleYear;
+String get vehicleMake => job.vehicleMake;
+String get vehicleModel => job.vehicleModel;
+String get engineManufacturer => job.engineManufacturer;
+String get engineModel => job.engineModel;
 
 List<LaborItem> get laborItems =>
     job.operations.expand((operation) => operation.labor).toList();
@@ -762,9 +768,17 @@ const SizedBox(height: 18),
                           value: widget.customerName,
                         ),
                         _detailRow(
-                          label: isSpanish ? 'Equipo' : 'Equipment',
-                          value: widget.equipment,
-                        ),
+  label: isSpanish ? 'Equipo' : 'Equipment',
+  value: widget.equipment.isNotEmpty
+      ? widget.equipment
+      : [
+          widget.vehicleYear,
+          widget.vehicleMake,
+          widget.vehicleModel,
+        ]
+            .where((e) => e.trim().isNotEmpty)
+            .join(' '),
+),
                         _detailRow(
                           label: isSpanish ? 'Unidad #' : 'Unit #',
                           value: widget.unitNumber,
@@ -773,6 +787,27 @@ const SizedBox(height: 18),
                           label: isSpanish ? 'VIN / Número de serie' : 'VIN / Serial Number',
                           value: widget.vin,
                         ),
+                        if (widget.engineManufacturer.isNotEmpty ||
+    widget.engineModel.isNotEmpty)
+  _detailRow(
+    label: isSpanish ? 'Motor' : 'Engine',
+    value: [
+      widget.engineManufacturer,
+      widget.engineModel,
+    ].where((e) => e.trim().isNotEmpty).join(' '),
+  ),
+
+if (widget.esn.isNotEmpty)
+  _detailRow(
+    label: 'ESN',
+    value: widget.esn,
+  ),
+
+if (widget.tsn.isNotEmpty)
+  _detailRow(
+    label: 'TSN',
+    value: widget.tsn,
+  ),
                         _detailRow(
                           label: isSpanish ? 'Kilometraje' : 'Mileage',
                           value: widget.mileage,

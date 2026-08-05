@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'invoices_screen.dart';
 import 'new_job_screen.dart';
 import 'customer_screen.dart';
+import 'reports_screen.dart';
 class CreateScreen extends StatefulWidget {
   const CreateScreen({
      super.key,
@@ -421,9 +422,9 @@ _createOption(
     _createOption(
   title: isSpanish
       ? 'Solicitud de piezas'
-      : 'Parts Request',
+      : 'New Parts Request',
   subtitle: isSpanish
-    ? 'Solicita piezas a tus proveedores.'
+    ? 'Nueva solicitud de piezas'
     : 'Request parts from your providers.',
   icon: Icons.calendar_month_outlined,
   accentColor: Colors.purpleAccent,
@@ -730,10 +731,20 @@ _createOption(
     );
   },
 ),
-                    _bottomItem(
+                  _bottomItem(
   icon: Icons.bar_chart,
   label: isSpanish ? 'Informes' : 'Reports',
   color: Colors.lightGreen,
+  onTap: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ReportsScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
 ),
                   ],
                 ),

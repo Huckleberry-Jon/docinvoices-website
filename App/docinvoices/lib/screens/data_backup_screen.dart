@@ -436,19 +436,27 @@ if (extension == 'csv') {
               ),
               content: SingleChildScrollView(
                 child: Text(
-                  isSpanish
-                      ? 'Exportar clientes crea un archivo de respaldo con sus clientes y abre las opciones para compartir o guardar el archivo.\n\n'
-                          'Importar clientes le permite seleccionar un archivo de respaldo de DocInvoices.\n\n'
-                          'Combinar conserva sus clientes actuales y agrega los clientes nuevos.\n\n'
-                          'Reemplazar elimina la lista actual de clientes y usa solamente los clientes del archivo importado.\n\n'
-                          'Los respaldos de trabajos se importan y exportan por separado.\n\n'
-                          'Guarde sus archivos de respaldo en un lugar seguro antes de cambiar de teléfono o eliminar su cuenta.'
-                      : 'Export Customers creates a backup file containing your customers and opens the share options so you can save or send the file.\n\n'
-                          'Import Customers lets you select a DocInvoices customer backup file.\n\n'
-                          'Merge keeps your current customers and adds customers that are not already saved.\n\n'
-                          'Replace removes the current customer list and uses only the customers in the imported file.\n\n'
-                          'Job backups are imported and exported separately.\n\n'
-                          'Save your backup files somewhere safe before changing phones or deleting your account.',
+  isSpanish
+      ? 'Cómo exportar clientes:\n\n'
+          '1. Toque "Exportar clientes".\n'
+          '2. Elija dónde guardar el archivo.\n'
+          '3. Guarde el respaldo en un lugar seguro.\n\n'
+          'Cómo importar clientes:\n\n'
+          '1. Toque "Importar clientes".\n'
+          '2. Seleccione un archivo de respaldo de DocInvoices.\n'
+          '3. Elija "Combinar" para agregar clientes nuevos o "Reemplazar" para usar solamente el respaldo.\n'
+          '4. Confirme la importación.\n\n'
+          'Los respaldos de trabajos se administran por separado.'
+      : 'How to Export Customers:\n\n'
+          '1. Tap "Export Customers".\n'
+          '2. Choose where to save the backup file.\n'
+          '3. Keep the backup somewhere safe.\n\n'
+          'How to Import Customers:\n\n'
+          '1. Tap "Import Customers".\n'
+          '2. Select a DocInvoices backup file.\n'
+          '3. Choose "Merge" to add new customers or "Replace" to use only the backup file.\n'
+          '4. Confirm the import.\n\n'
+          'Job backups are managed separately.',
                 ),
               ),
               actions: [

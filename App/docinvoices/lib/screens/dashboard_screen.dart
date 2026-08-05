@@ -347,7 +347,24 @@ ListTile(
             );
           },
         ),
+ListTile(
+  leading: const Icon(Icons.people),
+  title: Text(
+    isSpanish ? 'Clientes actuales' : 'Current Customers',
+  ),
+  onTap: () {
+    Navigator.pop(context);
 
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CustomerScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
+),
         const Divider(),
 
         ListTile(

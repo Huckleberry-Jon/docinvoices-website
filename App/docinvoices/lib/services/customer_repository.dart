@@ -32,6 +32,12 @@ class CustomerRepository {
     _customers.add(customer);
     await _saveCustomers();
   }
+  static Future<void> deleteCustomer(
+  Customer customer,
+) async {
+  _customers.remove(customer);
+  await _saveCustomers();
+}
 static Future<void> updateCustomer(
   Customer existingCustomer,
   Customer updatedCustomer,

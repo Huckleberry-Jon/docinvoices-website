@@ -35,6 +35,11 @@ class _NewJobScreenState extends State<NewJobScreen> {
 
   final TextEditingController vinController =
       TextEditingController();
+      final TextEditingController esnController =
+    TextEditingController();
+
+final TextEditingController tsnController =
+    TextEditingController();
 final locationController = TextEditingController();
   final mileageController = TextEditingController();
   final complaintController = TextEditingController();
@@ -53,7 +58,7 @@ final mileageRateController =
 
 bool includeServiceCall = false;
 bool isLookingUpVin = false;
-
+VinLookupResult? vinLookupResult;
      @override
 void initState() {
   super.initState();
@@ -63,6 +68,8 @@ void initState() {
     equipmentController.text = widget.job!.equipment;
     unitController.text = widget.job!.unitNumber;
     vinController.text = widget.job!.vin;
+    esnController.text = widget.job!.esn;
+tsnController.text = widget.job!.tsn;
     locationController.text = widget.job!.location;
     mileageController.text = widget.job!.mileage;
     complaintController.text =
@@ -115,6 +122,8 @@ void dispose() {
   equipmentController.dispose();
   unitController.dispose();
   vinController.dispose();
+  esnController.dispose();
+tsnController.dispose();
   locationController.dispose();
   mileageController.dispose();
   complaintController.dispose();
@@ -227,6 +236,8 @@ existingJob.customerEmail =
 existingJob.equipment = equipmentController.text.trim();
 existingJob.unitNumber = unitController.text.trim();
 existingJob.vin = vinController.text.trim();
+existingJob.esn = esnController.text.trim();
+existingJob.tsn = tsnController.text.trim();
 existingJob.location = locationController.text.trim();
 existingJob.mileage = mileageController.text.trim();
 
@@ -244,8 +255,21 @@ final Job job = Job.createEstimate(
   vin: vinController.text.trim(),
   location: locationController.text.trim(),
   mileage: mileageController.text.trim(),
-);
+ 
+ );
+ final vinResult = vinLookupResult;
 
+if (vinResult != null) {
+  job.vehicleYear = vinResult.year;
+  job.vehicleMake = vinResult.make;
+  job.vehicleModel = vinResult.model;
+  job.engineManufacturer = vinResult.engineManufacturer;
+  job.engineModel = vinResult.engineModel;
+  job.vehicleType = vinResult.vehicleType;
+  job.bodyClass = vinResult.bodyClass;
+  job.fuelType = vinResult.fuelType;
+  job.gvwrClass = vinResult.gvwrClass;
+}
 final String complaint = complaintController.text.trim();
 
 if (complaint.isNotEmpty) {
@@ -306,7 +330,8 @@ if (mileageTotal > 0) {
 
 
  JobRepository.instance.addJob(job);
-
+job.esn = esnController.text.trim();
+job.tsn = tsnController.text.trim();
   Navigator.push(
   context,
   MaterialPageRoute(
@@ -396,7 +421,27 @@ if (mileageTotal > 0) {
 ),
 
 const SizedBox(height: 16),
+TextField(
+  controller: esnController,
+  decoration: InputDecoration(
+    labelText: isSpanish
+        ? 'ESN / Número de serie del motor'
+        : 'ESN / Engine Serial Number',
+  ),
+),
 
+const SizedBox(height: 16),
+
+TextField(
+  controller: tsnController,
+  decoration: InputDecoration(
+    labelText: isSpanish
+        ? 'TSN / Número de serie de la transmisión'
+        : 'TSN / Transmission Serial Number',
+  ),
+),
+
+const SizedBox(height: 16),
             TextField(
               controller: equipmentController,
               textCapitalization: TextCapitalization.sentences,
@@ -469,11 +514,24 @@ const SizedBox(height: 16),
                         .lookupVin(vin);
 
                 if (!mounted) return;
-
+vinLookupResult = result;
                 setState(() {
-                  equipmentController.text =
-                      result.equipmentDescription;
-                });
+  equipmentController.text =
+      result.equipmentDescription;
+
+  if (widget.job != null) {
+    widget.job!.vehicleYear = result.year;
+    widget.job!.vehicleMake = result.make;
+    widget.job!.vehicleModel = result.model;
+    widget.job!.engineManufacturer =
+        result.engineManufacturer;
+    widget.job!.engineModel = result.engineModel;
+    widget.job!.vehicleType = result.vehicleType;
+    widget.job!.bodyClass = result.bodyClass;
+    widget.job!.fuelType = result.fuelType;
+    widget.job!.gvwrClass = result.gvwrClass;
+  }
+});
 
                ScaffoldMessenger.of(this.context)
     .showSnackBar(
