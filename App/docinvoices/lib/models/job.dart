@@ -12,6 +12,8 @@ required this.customerEmail,
     required this.equipment,
     required this.unitNumber,
     required this.vin,
+    this.esn = '',
+this.tsn = '',
 this.vehicleYear = '',
 this.vehicleMake = '',
 this.vehicleModel = '',
@@ -105,6 +107,8 @@ String customerEmail;
   String equipment;
   String unitNumber;
   String vin;
+  String esn;
+String tsn;
 String vehicleYear;
 String vehicleMake;
 String vehicleModel;
@@ -178,6 +182,8 @@ Map<String, dynamic> toJson() {
     'equipment': equipment,
     'unitNumber': unitNumber,
     'vin': vin,
+    'esn': esn,
+'tsn': tsn,
 'vehicleYear': vehicleYear,
 'vehicleMake': vehicleMake,
 'vehicleModel': vehicleModel,
@@ -236,6 +242,8 @@ customerEmail: json['customerEmail'] ?? '',
     equipment: json['equipment'] ?? '',
     unitNumber: json['unitNumber'] ?? '',
     vin: json['vin'] ?? '',
+    esn: json['esn'] ?? '',
+tsn: json['tsn'] ?? '',
 vehicleYear: json['vehicleYear'] ?? '',
 vehicleMake: json['vehicleMake'] ?? '',
 vehicleModel: json['vehicleModel'] ?? '',

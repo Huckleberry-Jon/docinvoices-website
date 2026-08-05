@@ -282,11 +282,31 @@ if (profile.logoPath.trim().isNotEmpty) {
   ].where((row) => row.value.trim().isNotEmpty).toList();
 
   final equipmentRows = [
-    _InfoRow('Equipment', job.equipment),
-    _InfoRow('Unit Number', job.unitNumber),
-    _InfoRow('VIN / Serial', job.vin),
-    _InfoRow('Mileage', job.mileage),
-  ].where((row) => row.value.trim().isNotEmpty).toList();
+  _InfoRow(
+    'Equipment',
+    job.equipment.isNotEmpty
+        ? job.equipment
+        : [
+            job.vehicleYear,
+            job.vehicleMake,
+            job.vehicleModel,
+          ]
+              .where((e) => e.trim().isNotEmpty)
+              .join(' '),
+  ),
+  _InfoRow('Unit Number', job.unitNumber),
+  _InfoRow('VIN / Serial', job.vin),
+  _InfoRow(
+    'Engine',
+    [
+      job.engineManufacturer,
+      job.engineModel,
+    ].where((e) => e.trim().isNotEmpty).join(' '),
+  ),
+  _InfoRow('ESN', job.esn),
+  _InfoRow('TSN', job.tsn),
+  _InfoRow('Mileage', job.mileage),
+].where((row) => row.value.trim().isNotEmpty).toList();
 
   final customerCard = _buildInfoCard(
     title: 'CUSTOMER',
