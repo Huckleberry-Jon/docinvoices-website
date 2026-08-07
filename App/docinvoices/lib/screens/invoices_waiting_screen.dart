@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../services/job_repository.dart';
 import 'customer_invoice_screen.dart';
 
-class InvoicesWaitingScreen extends StatelessWidget {
+class InvoicesWaitingScreen extends StatefulWidget {
   const InvoicesWaitingScreen({
     super.key,
     required this.languageCode,
@@ -12,12 +12,18 @@ class InvoicesWaitingScreen extends StatelessWidget {
   final String languageCode;
 
   @override
-  Widget build(BuildContext context) {
-    final bool isSpanish = languageCode == 'es';
+  State<InvoicesWaitingScreen> createState() =>
+      _InvoicesWaitingScreenState();
+}
 
-    final waitingInvoices = JobRepository.instance.activeJobs
-        .where((job) => job.balanceDue > 0)
-        .toList();
+class _InvoicesWaitingScreenState
+    extends State<InvoicesWaitingScreen> {
+  bool get isSpanish => widget.languageCode == 'es';
+
+  @override
+  Widget build(BuildContext context) {
+    final waitingInvoices =
+        JobRepository.instance.invoicesWaiting;
 
     return Scaffold(
       appBar: AppBar(
@@ -33,9 +39,7 @@ class InvoicesWaitingScreen extends StatelessWidget {
                 isSpanish
                     ? 'No hay facturas pendientes.'
                     : 'No invoices waiting.',
-                style: const TextStyle(
-                  fontSize: 18,
-                ),
+                style: const TextStyle(fontSize: 18),
               ),
             )
           : ListView.builder(
@@ -53,7 +57,14 @@ class InvoicesWaitingScreen extends StatelessWidget {
                     crossAxisAlignment:
                         CrossAxisAlignment.start,
                     children: [
-                      Text(job.equipment),
+                      if (job.invoiceNumber.trim().isNotEmpty)
+                        Text(
+                          isSpanish
+                              ? 'Factura #${job.invoiceNumber}'
+                              : 'Invoice #${job.invoiceNumber}',
+                        ),
+                      if (job.equipment.trim().isNotEmpty)
+                        Text(job.equipment),
                       const SizedBox(height: 4),
                       Text(
                         isSpanish
@@ -67,21 +78,23 @@ class InvoicesWaitingScreen extends StatelessWidget {
                     ],
                   ),
                   isThreeLine: true,
-                  trailing: const Icon(
-                    Icons.chevron_right,
-                  ),
-                  onTap: () {
-                    Navigator.push(
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () async {
+                    await Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) =>
                             CustomerInvoiceScreen(
                           languageCode:
-                              languageCode,
+                              widget.languageCode,
                           job: job,
                         ),
                       ),
                     );
+
+                    if (mounted) {
+                      setState(() {});
+                    }
                   },
                 );
               },

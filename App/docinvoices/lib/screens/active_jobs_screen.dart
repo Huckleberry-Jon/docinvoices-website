@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/job_repository.dart';
 import 'review_work_screen.dart';
+import 'customer_invoice_screen.dart';
 class ActiveJobsScreen extends StatelessWidget {
   
  const ActiveJobsScreen({
@@ -54,13 +55,25 @@ final String languageCode;
             isThreeLine: true,
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
+  final opensAsInvoice =
+      job.invoiceNumber.trim().isNotEmpty ||
+      job.jobStatus == 'Invoice Ready' ||
+      job.jobStatus == 'Invoiced' ||
+      job.jobStatus == 'Sent' ||
+      job.jobStatus == 'Partially Paid';
+
   Navigator.push(
     context,
     MaterialPageRoute(
-      builder: (context) => ReviewWorkScreen(
-        languageCode: languageCode,
-        job: job,
-      ),
+      builder: (context) => opensAsInvoice
+          ? CustomerInvoiceScreen(
+              languageCode: languageCode,
+              job: job,
+            )
+          : ReviewWorkScreen(
+              languageCode: languageCode,
+              job: job,
+            ),
     ),
   );
 },

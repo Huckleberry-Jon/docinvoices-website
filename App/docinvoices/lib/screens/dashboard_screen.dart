@@ -14,6 +14,7 @@ import 'business_profile_screen.dart';
 import 'customer_screen.dart';
 import 'receipt_capture_screen.dart';
 import 'customer_picker_screen.dart';
+import 'payments_history_screen.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
@@ -466,12 +467,12 @@ ListTile(
 ),
         ListTile(
   leading: const Icon(
-    Icons.description_outlined,
+    Icons.receipt_long_outlined,
   ),
   title: Text(
     isSpanish
-        ? 'Estimados pendientes'
-        : 'Estimates Waiting',
+        ? 'Facturas pendientes'
+        : 'Invoices Waiting',
   ),
   onTap: () {
     Navigator.pop(context);
@@ -479,7 +480,7 @@ ListTile(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => EstimatesScreen(
+        builder: (_) => InvoicesWaitingScreen(
           languageCode: widget.languageCode,
         ),
       ),
@@ -936,9 +937,9 @@ Row(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => InvoicesScreen(
-          languageCode: widget.languageCode,
-        ),
+       builder: (_) => PaymentsHistoryScreen(
+  languageCode: widget.languageCode,
+),
       ),
     );
   },
@@ -1016,9 +1017,9 @@ Row(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => InvoicesScreen(
-          languageCode: languageCode,
-        ),
+       builder: (_) => InvoicesWaitingScreen(
+  languageCode: languageCode,
+),
       ),
     );
   },

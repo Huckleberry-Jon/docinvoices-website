@@ -4,7 +4,7 @@ import '../models/part_item.dart';
 import '../models/job.dart';
 import 'customer_invoice_screen.dart';
 import '../models/operation.dart';
-
+import 'package:path_provider/path_provider.dart';
 import 'scheduled_jobs_screen.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:image_picker/image_picker.dart';
@@ -46,30 +46,118 @@ void initState() {
  final List<PartItem> partItems = [];
  final ImagePicker _imagePicker = ImagePicker();
 
-Future<void> _takeBeforePhoto() async {
-  final XFile? photo = await _imagePicker.pickImage(
-    source: ImageSource.camera,
-    imageQuality: 80,
+Future<ImageSource?> _choosePhotoSource() {
+  return showModalBottomSheet<ImageSource>(
+    context: context,
+    builder: (sheetContext) {
+      return SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(
+                Icons.camera_alt_outlined,
+              ),
+              title: Text(
+                isSpanish
+                    ? 'Tomar foto'
+                    : 'Take Photo',
+              ),
+              onTap: () {
+                Navigator.pop(
+                  sheetContext,
+                  ImageSource.camera,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(
+                Icons.photo_library_outlined,
+              ),
+              title: Text(
+                isSpanish
+                    ? 'Elegir de la biblioteca'
+                    : 'Choose from Photo Library',
+              ),
+              onTap: () {
+                Navigator.pop(
+                  sheetContext,
+                  ImageSource.gallery,
+                );
+              },
+            ),
+          ],
+        ),
+      );
+    },
   );
-
-  if (photo == null) return;
-
-  setState(() {
-    widget.job.beforePhotoPaths.add(photo.path);
-  });
 }
 
-Future<void> _takeAfterPhoto() async {
-  final XFile? photo = await _imagePicker.pickImage(
-    source: ImageSource.camera,
+Future<void> _addJobPhoto({
+  required bool isBefore,
+}) async {
+  final source = await _choosePhotoSource();
+
+  if (source == null) {
+    return;
+  }
+
+  final photo = await _imagePicker.pickImage(
+    source: source,
     imageQuality: 80,
   );
 
-  if (photo == null) return;
+  if (photo == null) {
+    return;
+  }
+
+  final appDirectory =
+      await getApplicationDocumentsDirectory();
+
+  final photoDirectory = Directory(
+    '${appDirectory.path}/job_photos',
+  );
+
+  if (!await photoDirectory.exists()) {
+    await photoDirectory.create(recursive: true);
+  }
+
+  final lastSlash = photo.path.lastIndexOf('/');
+  final lastDot = photo.path.lastIndexOf('.');
+
+  final extension =
+      lastDot > lastSlash ? photo.path.substring(lastDot) : '.jpg';
+
+  final photoType = isBefore ? 'before' : 'after';
+
+  final savedPath =
+      '${photoDirectory.path}/'
+      '${photoType}_${DateTime.now().microsecondsSinceEpoch}'
+      '$extension';
+
+  await File(photo.path).copy(savedPath);
+
+  if (!mounted) {
+    return;
+  }
 
   setState(() {
-    widget.job.afterPhotoPaths.add(photo.path);
+    if (isBefore) {
+      widget.job.beforePhotoPaths.add(savedPath);
+    } else {
+      widget.job.afterPhotoPaths.add(savedPath);
+    }
   });
+
+  JobRepository.instance.updateJob(widget.job);
+  await JobRepository.instance.save();
+}
+
+Future<void> _takeBeforePhoto() {
+  return _addJobPhoto(isBefore: true);
+}
+
+Future<void> _takeAfterPhoto() {
+  return _addJobPhoto(isBefore: false);
 }
  double salesTaxRate = 0.0825;
  double get taxablePartsTotal {
@@ -257,7 +345,19 @@ final quantityController = TextEditingController();
 final unitPriceController = TextEditingController();
 
  bool taxable = true;
+double selectedMarkup = 30;
 
+double tierForCost(double cost) {
+  if (cost >= 1500) {
+    return 10;
+  }
+
+  if (cost >= 500) {
+    return 20;
+  }
+
+  return 30;
+}
   showDialog(
     context: context,
     builder: (dialogContext) {
@@ -313,22 +413,94 @@ hintText: isSpanish
       const SizedBox(height: 16),
      TextField(
   controller: unitPriceController,
-  keyboardType: const TextInputType.numberWithOptions(
+  keyboardType:
+      const TextInputType.numberWithOptions(
     decimal: true,
   ),
-        decoration: InputDecoration(
-          labelText: isSpanish ? 'Precio unitario' : 'Unit Price',
-hintText: isSpanish
-    ? 'Ejemplo: 35.99'
-    : 'Example: 35.99',
-          prefixText: '\$',
-          border: OutlineInputBorder(),
-        ),
-      ),
-    ],
+  onChanged: (value) {
+    final cost =
+        double.tryParse(value.trim()) ?? 0;
+
+    setDialogState(() {
+      selectedMarkup = tierForCost(cost);
+    });
+  },
+  decoration: InputDecoration(
+    labelText: isSpanish
+        ? 'Costo por unidad'
+        : 'Unit Cost',
+    hintText: isSpanish
+        ? 'Ejemplo: 35.99'
+        : 'Example: 35.99',
+    prefixText: '\$',
+    border: const OutlineInputBorder(),
   ),
 ),
+],
+      ),
+    ),
         actions: [
+          const SizedBox(height: 18),
+Align(
+  alignment: Alignment.centerLeft,
+  child: Text(
+    isSpanish
+        ? 'Margen de pieza'
+        : 'Parts Markup',
+    style: const TextStyle(
+      fontWeight: FontWeight.bold,
+    ),
+  ),
+),
+const SizedBox(height: 8),
+Wrap(
+  spacing: 8,
+  runSpacing: 8,
+  children: [
+    for (final markup
+        in [10.0, 20.0, 30.0, 0.0])
+      ChoiceChip(
+        label: Text(
+          markup == 0
+              ? (isSpanish
+                  ? 'Sin margen'
+                  : 'No Markup')
+              : '${markup.toStringAsFixed(0)}%',
+        ),
+        selected: selectedMarkup == markup,
+        onSelected: (_) {
+          setDialogState(() {
+            selectedMarkup = markup;
+          });
+        },
+      ),
+  ],
+),
+const SizedBox(height: 12),
+Builder(
+  builder: (_) {
+    final cost = double.tryParse(
+          unitPriceController.text.trim(),
+        ) ??
+        0;
+
+    final customerPrice =
+        cost * (1 + selectedMarkup / 100);
+
+    return Text(
+      isSpanish
+          ? 'Precio al cliente: '
+              '\$${customerPrice.toStringAsFixed(2)}'
+          : 'Customer Price: '
+              '\$${customerPrice.toStringAsFixed(2)}',
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.bold,
+        color: Colors.blue,
+      ),
+    );
+  },
+),
   TextButton(
     onPressed: () => Navigator.pop(dialogContext),
     child: Text(
@@ -340,31 +512,34 @@ hintText: isSpanish
       final description = descriptionController.text.trim();
   final quantity =
       double.tryParse(quantityController.text.trim());
-  final unitPrice =
-      double.tryParse(unitPriceController.text.trim());
+  final unitCost =
+    double.tryParse(unitPriceController.text.trim());
 
   if (description.isEmpty ||
       quantity == null ||
-      unitPrice == null) {
+      unitCost == null) {
     ScaffoldMessenger.of(context).showSnackBar(
        SnackBar(
         content: Text(
           isSpanish
-    ? 'Ingrese una descripción, la cantidad y el precio unitario.'
-    : 'Enter a description, quantity, and unit price.',
+    ? 'Ingrese una descripción, la cantidad y el costo unitario.'
+    : 'Enter a description, quantity, and unit cost.',
         ),
       ),
     );
     return;
   }
-
+final customerPrice =
+    unitCost * (1 + selectedMarkup / 100);
   setState(() {
   final newPart = PartItem(
-    description: description,
-    quantity: quantity,
-    unitPrice: unitPrice,
-    taxable: taxable,
-  );
+  description: description,
+  quantity: quantity,
+  unitCost: unitCost,
+  markupPercent: selectedMarkup,
+  unitPrice: customerPrice,
+  taxable: taxable,
+);
 
   if (widget.job.operations.isEmpty) {
     widget.job.operations.add(
@@ -828,7 +1003,8 @@ _detailRow(
                                       ),
                                       SizedBox(height: 5),
                                       Text(
-                                        widget.job.transcription.isEmpty
+                                        widget.job.transcription.trim().isEmpty &&
+    widget.job.operations.isEmpty
                                         ? (isSpanish
     ? 'No hay detalles del servicio'
     : 'No service details')
@@ -855,20 +1031,39 @@ _detailRow(
                           ),
                         ),
                         if (showServiceDetails) ...[
-                          const Divider(
-                            color: Colors.white12,
-                            height: 30,
-                          ),
-                          _serviceItem(
-  widget.job.transcription.isEmpty
-      ? (isSpanish
-    ? 'No se ingresaron detalles del trabajo.'
-    : 'No work details entered.')
-      : widget.job.transcription,
+  const Divider(
+    color: Colors.white12,
+    height: 30,
+  ),
 
-                          ),
-                        ],
-                      ],
+  if (widget.job.operations.isNotEmpty)
+    ...widget.job.operations.map(
+      (operation) => _serviceItem(
+        [
+          operation.title,
+          operation.repairDescription,
+          operation.notes,
+        ]
+            .map((value) => value.toString().trim())
+            .where((value) => value.isNotEmpty)
+            .join('\n\n'),
+      ),
+    ),
+
+  if (widget.job.transcription.trim().isNotEmpty)
+    _serviceItem(
+      widget.job.transcription.trim(),
+    ),
+
+  if (widget.job.operations.isEmpty &&
+      widget.job.transcription.trim().isEmpty)
+    _serviceItem(
+      isSpanish
+          ? 'No se ingresaron detalles del trabajo.'
+          : 'No work details entered.',
+    ),
+],
+                      ]
                     ),
                   ),
 

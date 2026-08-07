@@ -4,7 +4,7 @@ import '../models/job.dart';
 import 'dashboard_screen.dart';
 import 'package:printing/printing.dart';
 import '../services/pdf_service.dart';
-import 'package:url_launcher/url_launcher.dart';
+
 class PaymentReceivedScreen extends StatefulWidget {
   const PaymentReceivedScreen({
     super.key,
@@ -43,6 +43,18 @@ String get paymentMethod {
 
 String get paymentReference {
   return latestPayment?.reference ?? '';
+}
+Future<void> _shareReceiptPdf() async {
+  final bytes = await PdfService.generateInvoice(
+    widget.job,
+  );
+
+  await Printing.sharePdf(
+    bytes: bytes,
+    filename: widget.job.invoiceNumber.trim().isEmpty
+        ? 'Receipt.pdf'
+        : 'Receipt-${widget.job.invoiceNumber}.pdf',
+  );
 }
   bool get isSpanish => widget.languageCode == 'es';
   int selectedRating = 0;
@@ -436,7 +448,7 @@ _detailRow(
                             ),
                             SizedBox(width: 11),
                             Text(
-                              isSpanish ? 'Recibo entregado' : 'Receipt Delivered',
+                              isSpanish ? 'Enviar recibo' : 'Send Receipt',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 22,
@@ -455,18 +467,7 @@ _detailRow(
       ? 'Prepare el recibo para enviarlo por correo electrónico.'
       : 'Prepare the receipt for email delivery.',
   color: Colors.blue,
-  onTap: () async {
-  final Uri email = Uri(
-    scheme: 'mailto',
-    queryParameters: {
-      'subject': widget.job.invoiceNumber.isEmpty
-          ? 'Invoice'
-          : 'Invoice ${widget.job.invoiceNumber}',
-    },
-  );
-
-  await launchUrl(email);
-},
+  onTap: _shareReceiptPdf,
 ),
                        _deliveryRow(
   icon: Icons.sms_outlined,
@@ -477,18 +478,7 @@ _detailRow(
       ? 'Prepare el recibo para enviarlo por mensaje de texto.'
       : 'Prepare the receipt for text delivery.',
   color: Colors.greenAccent,
-  onTap: () async {
-  final Uri sms = Uri(
-    scheme: 'sms',
-    queryParameters: {
-      'body': widget.job.invoiceNumber.isEmpty
-          ? 'Your invoice is ready.'
-          : 'Your invoice ${widget.job.invoiceNumber} is ready.',
-    },
-  );
-
-  await launchUrl(sms);
-},
+  onTap: _shareReceiptPdf,
 ),
                         _deliveryRow(
   icon: Icons.picture_as_pdf_outlined,

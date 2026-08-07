@@ -11,6 +11,7 @@ import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/business_profile_repository.dart';
 import 'notifications_screen.dart';
+import '../services/job_repository.dart';
 class CustomerInvoiceScreen extends StatefulWidget {
   const CustomerInvoiceScreen({
     super.key,
@@ -121,7 +122,49 @@ void dispose() {
   paymentAmountController.dispose();
   super.dispose();
 }
-  void _completePayment() {
+Future<void> _shareInvoicePdf() async {
+  if (widget.job.invoiceNumber.trim().isEmpty) {
+    widget.job.invoiceNumber =
+        JobRepository.instance.nextInvoiceNumber();
+  }
+
+  widget.job.estimatedTotal =
+      widget.invoiceTotal.toStringAsFixed(2);
+
+  if (!widget.job.isPaidInFull) {
+    widget.job.jobStatus = 'Invoiced';
+  }
+
+  JobRepository.instance.updateJob(widget.job);
+  await JobRepository.instance.save();
+
+  final bytes = await PdfService.generateInvoice(
+    widget.job,
+  );
+
+  final shared = await Printing.sharePdf(
+    bytes: bytes,
+    filename:
+        'Invoice-${widget.job.invoiceNumber}.pdf',
+  );
+
+  if (shared && !widget.job.isPaidInFull) {
+    widget.job.jobStatus = 'Sent';
+    JobRepository.instance.updateJob(widget.job);
+    await JobRepository.instance.save();
+  }
+
+  if (!mounted) {
+    return;
+  }
+
+  _showMessage(
+    isSpanish
+        ? 'La factura se guardó y está lista para compartir.'
+        : 'Invoice saved and ready to share.',
+  );
+}
+  Future<void> _completePayment() async {
   final String paymentDetail =
     paymentDetailController.text.trim();
 
@@ -201,6 +244,9 @@ if (selectedPaymentMethod == null) {
     );
     return;
   }
+widget.job.estimatedTotal =
+    widget.invoiceTotal.toStringAsFixed(2);
+
 widget.job.payments.add(
   Payment(
     method: selectedPaymentMethod!,
@@ -208,6 +254,17 @@ widget.job.payments.add(
     reference: paymentDetailController.text.trim(),
   ),
 );
+
+widget.job.jobStatus = widget.job.isPaidInFull
+    ? 'Paid'
+    : 'Partially Paid';
+
+JobRepository.instance.updateJob(widget.job);
+await JobRepository.instance.save();
+
+if (!mounted) {
+  return;
+}
   Navigator.push(
     context,
     MaterialPageRoute(
@@ -893,7 +950,8 @@ if (widget.tsn.isNotEmpty)
     height: 30,
   ),
 
-  if (widget.job.operations.isEmpty)
+  if (widget.job.operations.isEmpty &&
+    widget.job.transcription.trim().isEmpty)
     Text(
       isSpanish
           ? 'No se agregaron servicios.'
@@ -904,10 +962,27 @@ if (widget.tsn.isNotEmpty)
     )
   else
     ...widget.job.operations.map(
-      (operation) => _serviceItem(
-        operation.title,
-      ),
+  (operation) => _serviceItem(
+    [
+      operation.title,
+      operation.repairDescription,
+      operation.notes,
+    ]
+        .map((value) => value.toString().trim())
+        .where((value) => value.isNotEmpty)
+        .join('\n\n'),
+  ),
+),
+],
+if (widget.job.transcription.trim().isNotEmpty) ...[
+  if (widget.job.operations.isNotEmpty)
+    const Divider(
+      color: Colors.white12,
+      height: 24,
     ),
+  _serviceItem(
+    widget.job.transcription.trim(),
+  ),
 ],
                       ],
                     ),
@@ -1307,81 +1382,21 @@ _priceRow(
       icon: Icons.email_outlined,
       label: isSpanish ? 'Correo' : 'Email',
       color: Colors.blue,
-      onTap: () async {
-        final email = Uri(
-  scheme: 'mailto',
-  path: widget.job.customerEmail,
-  queryParameters: {
-    'subject': widget.job.invoiceNumber.trim().isEmpty
-        ? (isSpanish ? 'Factura' : 'Invoice')
-        : (isSpanish
-            ? 'Factura ${widget.job.invoiceNumber}'
-            : 'Invoice ${widget.job.invoiceNumber}'),
-    'body': isSpanish
-        ? 'Su factura está lista.'
-        : 'Your invoice is ready.',
-  },
-);
-
-await launchUrl(email);
-      },
+      onTap: _shareInvoicePdf,
     ),
     const SizedBox(width: 10),
     _actionButton(
       icon: Icons.sms_outlined,
       label: isSpanish ? 'Texto' : 'Text',
       color: Colors.greenAccent,
-      onTap: () async {
-       final sms = Uri(
-  scheme: 'sms',
-  path: widget.job.customerPhone,
-  queryParameters: {
-    'body': widget.job.invoiceNumber.trim().isEmpty
-        ? (isSpanish
-            ? 'Su factura está lista.'
-            : 'Your invoice is ready.')
-        : (isSpanish
-            ? 'Su factura ${widget.job.invoiceNumber} está lista.'
-            : 'Your invoice ${widget.job.invoiceNumber} is ready.'),
-  },
-);
-
-await launchUrl(sms);
-      },
+     onTap: _shareInvoicePdf,
     ),
     const SizedBox(width: 10),
     _actionButton(
       icon: Icons.picture_as_pdf_outlined,
       label: 'PDF',
       color: Colors.redAccent,
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PdfPreviewScreen(
-              job: widget.job,
-            ),
-          ),
-        );
-      },
-    ),
-    const SizedBox(width: 10),
-    _actionButton(
-      icon: Icons.share_outlined,
-      label: isSpanish ? 'Compartir' : 'Share',
-      color: Colors.purpleAccent,
-      onTap: () async {
-        final bytes = await PdfService.generateInvoice(
-          widget.job,
-        );
-
-        await Printing.sharePdf(
-          bytes: bytes,
-          filename: widget.job.invoiceNumber.trim().isEmpty
-              ? 'Invoice.pdf'
-              : '${widget.job.invoiceNumber}.pdf',
-        );
-      },
+      onTap: _shareInvoicePdf,
     ),
   ],
 ),
