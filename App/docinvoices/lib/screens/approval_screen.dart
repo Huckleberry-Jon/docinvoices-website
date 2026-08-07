@@ -270,7 +270,47 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
     return selectedApprovalMethod != null &&
         selectedSendMethod != null;
   }
+Future<void> _saveEstimate() async {
+  final laborTotal = widget.job.operations.fold<double>(
+    0.0,
+    (sum, operation) => sum + operation.laborTotal,
+  );
 
+  final partsTotal = widget.job.operations.fold<double>(
+    0.0,
+    (sum, operation) => sum + operation.partsTotal,
+  );
+
+  final generalChargesTotal = widget.job.generalCharges.fold<double>(
+    0.0,
+    (sum, charge) => sum + charge.amount,
+  );
+
+  widget.job.estimatedTotal =
+      (laborTotal + partsTotal + generalChargesTotal).toStringAsFixed(2);
+  widget.job.notes = approvalNotesController.text.trim();
+  widget.job.jobStatus = 'Estimate';
+
+  JobRepository.instance.updateJob(widget.job);
+  await JobRepository.instance.save();
+
+  if (!mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        isSpanish
+            ? 'Estimado guardado correctamente.'
+            : 'Estimate saved successfully.',
+      ),
+    ),
+  );
+
+  Navigator.popUntil(
+    context,
+    (route) => route.isFirst,
+  );
+}
   Future<void> _continue() async {
   if (!_canContinue) {
     _showMessage(
@@ -289,7 +329,8 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   widget.job.notes = approvalNotesController.text.trim();
   widget.job.jobStatus = 'In Progress';
     JobRepository.instance.updateJob(widget.job);
-
+await JobRepository.instance.save();
+if (!mounted) return;
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -420,7 +461,8 @@ widget.job.approvalDate = DateTime.now();
 widget.job.notes = approvalNotesController.text.trim();
 widget.job.jobStatus = 'In Progress';
       JobRepository.instance.updateJob(widget.job);
-
+await JobRepository.instance.save();
+if (!mounted) return;
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
@@ -440,6 +482,7 @@ widget.job.approvalDate = DateTime.now();
 widget.job.notes = approvalNotesController.text.trim();
 widget.job.jobStatus = 'Awaiting Approval';
   JobRepository.instance.updateJob(widget.job);
+await JobRepository.instance.save();
 
   if (!mounted) return;
 
@@ -989,6 +1032,21 @@ if (widget.job.mileage.isNotEmpty)
                     ),
                   ),
                   const SizedBox(height: 22),
+                  SizedBox(
+  height: 62,
+  child: OutlinedButton.icon(
+    onPressed: _saveEstimate,
+    icon: const Icon(Icons.save_outlined),
+    label: Text(
+      isSpanish ? 'Guardar estimado' : 'Save Estimate',
+      style: const TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+),
+const SizedBox(height: 14),
                   SizedBox(
                     height: 62,
                     child: ElevatedButton.icon(

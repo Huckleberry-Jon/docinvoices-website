@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-
+import 'package:path_provider/path_provider.dart';
 import '../models/job.dart';
 import '../services/job_repository.dart';
 
@@ -47,13 +47,34 @@ class _ReceiptCaptureScreenState
     if (!mounted) return;
 
     if (photo == null) {
-      Navigator.pop(context);
-      return;
-    }
+  if (receiptPath == null) {
+    Navigator.pop(context);
+  }
+  return;
+}
 
-    setState(() {
-      receiptPath = photo.path;
-    });
+    final appDirectory =
+    await getApplicationDocumentsDirectory();
+
+final receiptDirectory = Directory(
+  '${appDirectory.path}/receipts',
+);
+
+if (!await receiptDirectory.exists()) {
+  await receiptDirectory.create(recursive: true);
+}
+
+final savedPath =
+    '${receiptDirectory.path}/receipt_'
+    '${DateTime.now().microsecondsSinceEpoch}.jpg';
+
+await File(photo.path).copy(savedPath);
+
+if (!mounted) return;
+
+setState(() {
+  receiptPath = savedPath;
+});
   }
 
   void _assignToWorkOrder() {
@@ -144,7 +165,7 @@ class _ReceiptCaptureScreenState
     );
   }
 
-  void _saveToJob(Job job) {
+  Future<void> _saveToJob(Job job) async {
     if (receiptPath == null) return;
 
     // Temporary Version 1 storage.
@@ -153,7 +174,9 @@ class _ReceiptCaptureScreenState
     job.receiptPhotoPaths.add(receiptPath!);
 
     JobRepository.instance.updateJob(job);
+await JobRepository.instance.save();
 
+if (!mounted) return;
     ScaffoldMessenger.of(context)
         .showSnackBar(
       SnackBar(
@@ -218,19 +241,18 @@ class _ReceiptCaptureScreenState
                 child: Column(
                   children: [
                     Expanded(
-                      child: ClipRRect(
-                        borderRadius:
-                            BorderRadius.circular(
-                          18,
-                        ),
-                        child: Image.file(
-                          File(receiptPath!),
-                          width:
-                              double.infinity,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                    ),
+  child: GestureDetector(
+    onTap: _takeReceiptPhoto,
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(18),
+      child: Image.file(
+        File(receiptPath!),
+        width: double.infinity,
+        fit: BoxFit.contain,
+      ),
+    ),
+  ),
+),
 
                     const SizedBox(height: 18),
 

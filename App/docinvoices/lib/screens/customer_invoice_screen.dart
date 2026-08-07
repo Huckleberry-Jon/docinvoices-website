@@ -122,6 +122,39 @@ void dispose() {
   paymentAmountController.dispose();
   super.dispose();
 }
+Future<void> _saveJob() async {
+  if (widget.job.invoiceNumber.trim().isEmpty) {
+    widget.job.invoiceNumber =
+        JobRepository.instance.nextInvoiceNumber();
+  }
+
+  widget.job.estimatedTotal =
+      widget.invoiceTotal.toStringAsFixed(2);
+
+  if (!widget.job.isPaidInFull) {
+    widget.job.jobStatus = 'Invoiced';
+  }
+
+  JobRepository.instance.updateJob(widget.job);
+  await JobRepository.instance.save();
+
+  if (!mounted) return;
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        isSpanish
+            ? 'Trabajo guardado correctamente.'
+            : 'Job saved successfully.',
+      ),
+    ),
+  );
+
+  Navigator.popUntil(
+    context,
+    (route) => route.isFirst,
+  );
+}
 Future<void> _shareInvoicePdf() async {
   if (widget.job.invoiceNumber.trim().isEmpty) {
     widget.job.invoiceNumber =
@@ -1502,7 +1535,31 @@ _card(
 ),
 
                   const SizedBox(height: 20),
-
+SizedBox(
+  height: 62,
+  child: OutlinedButton.icon(
+    onPressed: _saveJob,
+    icon: const Icon(Icons.save_outlined),
+    label: Text(
+      isSpanish ? 'Guardar trabajo' : 'Save Job',
+      style: const TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    style: OutlinedButton.styleFrom(
+      foregroundColor: Colors.orange,
+      side: const BorderSide(
+        color: Colors.orange,
+        width: 2,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+  ),
+),
+const SizedBox(height: 14),
 SizedBox(
   height: 76,
   child: ElevatedButton(
