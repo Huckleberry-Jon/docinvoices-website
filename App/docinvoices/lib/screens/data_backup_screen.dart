@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../services/customer_repository.dart';
 import '../services/job_repository.dart';
+import '../services/customer_unit_repository.dart';
 class DataBackupScreen extends StatefulWidget {
   
   const DataBackupScreen({
@@ -269,6 +270,128 @@ final extension =
     );
   }
 }
+Future<void> _importUnits() async {
+  try {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+      withData: true,
+    );
+
+    if (result == null || result.files.isEmpty) {
+      return;
+    }
+
+    final selectedFile = result.files.single;
+
+    String csvText;
+
+    if (selectedFile.bytes != null) {
+      csvText = String.fromCharCodes(
+        selectedFile.bytes!,
+      );
+    } else if (selectedFile.path != null) {
+      csvText = await File(
+        selectedFile.path!,
+      ).readAsString();
+    } else {
+      throw const FormatException(
+        'Could not read the selected unit file.',
+      );
+    }
+
+    if (!mounted) return;
+
+    final bool? replaceExisting =
+        await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text(
+            isSpanish
+                ? 'Importar unidades'
+                : 'Import Units',
+          ),
+          content: Text(
+            isSpanish
+                ? '¿Desea reemplazar todas las unidades actuales? Seleccione Combinar para conservar las unidades existentes.'
+                : 'Replace all current units? Choose Merge to keep the existing units.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                );
+              },
+              child: Text(
+                isSpanish ? 'Cancelar' : 'Cancel',
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  false,
+                );
+              },
+              child: Text(
+                isSpanish ? 'Combinar' : 'Merge',
+              ),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(
+                  dialogContext,
+                  true,
+                );
+              },
+              child: Text(
+                isSpanish ? 'Reemplazar' : 'Replace',
+              ),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (replaceExisting == null) {
+      return;
+    }
+
+    final importedCount =
+        await CustomerUnitRepository.importUnitsCsv(
+      csvText,
+      replaceExisting: replaceExisting,
+    );
+
+    if (!mounted) return;
+
+    setState(() {});
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? '$importedCount unidades importadas.'
+              : '$importedCount units imported.',
+        ),
+      ),
+    );
+  } catch (error) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? 'No se pudieron importar las unidades: $error'
+              : 'Could not import units: $error',
+        ),
+      ),
+    );
+  }
+}
 Future<void> _importBackup() async {
   try {
     final result = await FilePicker.platform.pickFiles(
@@ -511,7 +634,16 @@ if (extension == 'csv') {
 ),
 
 const SizedBox(height: 12),
-
+Text(
+  isSpanish
+      ? 'Para mejores resultados, importe primero los clientes y después las unidades.'
+      : 'For best results, import Customers first, then Units.',
+  style: const TextStyle(
+    color: Colors.white70,
+    fontSize: 14,
+  ),
+),
+const SizedBox(height: 12),
 Card(
   child: ListTile(
     leading: const Icon(
@@ -533,7 +665,29 @@ Card(
     onTap: _importCustomers,
   ),
 ),
+const SizedBox(height: 12),
 
+Card(
+  child: ListTile(
+    leading: const Icon(
+      Icons.local_shipping_outlined,
+    ),
+    title: Text(
+      isSpanish
+          ? 'Importar unidades'
+          : 'Import Units',
+    ),
+    subtitle: Text(
+      isSpanish
+          ? 'Importe unidades y equipos desde un archivo CSV.'
+          : 'Import units and equipment from a CSV file.',
+    ),
+    trailing: const Icon(
+      Icons.chevron_right,
+    ),
+    onTap: _importUnits,
+  ),
+),
 const SizedBox(height: 24),
 
 Text(

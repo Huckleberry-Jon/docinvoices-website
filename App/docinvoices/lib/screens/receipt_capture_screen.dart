@@ -194,6 +194,8 @@ class _ReceiptCaptureScreenState
 
   @override
   Widget build(BuildContext context) {
+    final bool hasActiveJobs =
+    JobRepository.instance.activeJobs.isNotEmpty;
     return Scaffold(
       backgroundColor:
           const Color(0xFF050B14),
@@ -233,21 +235,24 @@ class _ReceiptCaptureScreenState
                     const SizedBox(height: 18),
 
                     SizedBox(
-                      width: double.infinity,
-                      child:
-                          FilledButton.icon(
-                        onPressed:
-                            _assignToWorkOrder,
-                        icon: const Icon(
-                          Icons.work_outline,
-                        ),
-                        label: Text(
-                          isSpanish
-                              ? 'Asignar a orden de trabajo'
-                              : 'Assign to Work Order',
-                        ),
-                      ),
-                    ),
+  width: double.infinity,
+  child: FilledButton.icon(
+    onPressed:
+        hasActiveJobs ? _assignToWorkOrder : null,
+    icon: const Icon(
+      Icons.work_outline,
+    ),
+    label: Text(
+      hasActiveJobs
+          ? (isSpanish
+              ? 'Asignar a orden de trabajo'
+              : 'Assign to Work Order')
+          : (isSpanish
+              ? 'No hay órdenes de trabajo activas'
+              : 'No Active Work Orders'),
+    ),
+  ),
+),
 
                     const SizedBox(height: 10),
 

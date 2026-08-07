@@ -8,6 +8,8 @@ import 'review_work_screen.dart';
 import '../models/operation.dart';
 import '../models/general_charge.dart';
 import 'customer_screen.dart';
+import '../models/customer_unit.dart';
+import '../services/customer_unit_repository.dart';
 class NewJobScreen extends StatefulWidget {
   const NewJobScreen({
     super.key,
@@ -24,6 +26,7 @@ class NewJobScreen extends StatefulWidget {
 
 class _NewJobScreenState extends State<NewJobScreen> {
   Customer? selectedCustomer;
+  CustomerUnit? selectedUnit;
   final TextEditingController customerController =
       TextEditingController();
 
@@ -342,7 +345,79 @@ job.tsn = tsnController.text.trim();
   ),
 );
 }
+Future<void> _selectUnit() async {
+  if (selectedCustomer == null) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          widget.languageCode == 'es'
+              ? 'Seleccione un cliente primero.'
+              : 'Select a customer first.',
+        ),
+      ),
+    );
+    return;
+  }
 
+  final customerUnits = CustomerUnitRepository.units
+      .where(
+        (unit) =>
+            unit.customerName.toLowerCase() ==
+            selectedCustomer!.name.toLowerCase(),
+      )
+      .toList();
+
+  if (customerUnits.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          widget.languageCode == 'es'
+              ? 'Este cliente no tiene unidades.'
+              : 'This customer has no imported units.',
+        ),
+      ),
+    );
+    return;
+  }
+
+  final CustomerUnit? unit =
+      await showModalBottomSheet<CustomerUnit>(
+    context: context,
+    builder: (context) {
+      return ListView.builder(
+        itemCount: customerUnits.length,
+        itemBuilder: (context, index) {
+          final item = customerUnits[index];
+
+          return ListTile(
+            leading: const Icon(Icons.local_shipping),
+            title: Text(item.unitNumber),
+            subtitle: Text(
+              '${item.year} ${item.make} ${item.model}',
+            ),
+            onTap: () {
+              Navigator.pop(context, item);
+            },
+          );
+        },
+      );
+    },
+  );
+
+  if (unit == null) return;
+
+  setState(() {
+    selectedUnit = unit;
+
+    unitController.text = unit.unitNumber;
+    vinController.text = unit.vin;
+    equipmentController.text =
+        '${unit.year} ${unit.make} ${unit.model}'.trim();
+    mileageController.text = unit.mileage;
+    esnController.text = unit.esn;
+    tsnController.text = unit.tsn;
+  });
+}
   @override
   Widget build(BuildContext context) {
     final bool isSpanish = widget.languageCode == 'es';
@@ -454,13 +529,22 @@ const SizedBox(height: 16),
             const SizedBox(height: 16),
 
             TextField(
-              controller: unitController,
-              decoration: InputDecoration(
-                labelText: isSpanish
-                    ? 'Unidad #'
-                    : 'Unit #',
-              ),
-            ),
+  controller: unitController,
+  decoration: InputDecoration(
+    labelText: isSpanish
+        ? 'Unidad #'
+        : 'Unit #',
+    suffixIcon: IconButton(
+      icon: const Icon(
+        Icons.local_shipping_outlined,
+      ),
+      tooltip: isSpanish
+          ? 'Seleccionar unidad'
+          : 'Select Unit',
+      onPressed: _selectUnit,
+    ),
+  ),
+),
             const SizedBox(height: 16),
 
             TextField(

@@ -13,6 +13,7 @@ import 'notifications_screen.dart';
 import 'business_profile_screen.dart';
 import 'customer_screen.dart';
 import 'receipt_capture_screen.dart';
+import 'customer_picker_screen.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
@@ -323,9 +324,9 @@ void _openReceiptCapture(
 ListTile(
           leading: const Icon(Icons.settings_outlined),
           title: Text(
-            isSpanish
-                ? 'Configuración'
-                : 'Settings',
+           isSpanish
+    ? 'Importar / Exportar Datos'
+    : 'Import / Export Data',
           ),
           onTap: () {
             Navigator.pop(context);
@@ -371,9 +372,9 @@ ListTile(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CustomerScreen(
-          languageCode: widget.languageCode,
-        ),
+        builder: (_) => CustomerPickerScreen(
+  languageCode: widget.languageCode,
+),
       ),
     );
   },
@@ -422,7 +423,7 @@ ListTile(
           },
         ),
 
-        ListTile(
+         ListTile(
           leading: const Icon(Icons.description_outlined),
           title: Text(
             isSpanish ? 'Cotizaciones' : 'Estimates',
@@ -442,25 +443,49 @@ ListTile(
         ),
 
         ListTile(
-          leading: const Icon(Icons.receipt_long_outlined),
-          title: Text(
-            isSpanish
-                ? 'Facturas pendientes'
-                : 'Invoices Waiting',
-          ),
-          onTap: () {
-            Navigator.pop(context);
+  leading: const Icon(
+    Icons.description_outlined,
+  ),
+  title: Text(
+    isSpanish
+        ? 'Estimados pendientes'
+        : 'Estimates Waiting',
+  ),
+  onTap: () {
+    Navigator.pop(context);
 
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => InvoicesWaitingScreen(
-                  languageCode: widget.languageCode,
-                ),
-              ),
-            );
-          },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EstimatesScreen(
+          languageCode: widget.languageCode,
         ),
+      ),
+    );
+  },
+),
+        ListTile(
+  leading: const Icon(
+    Icons.description_outlined,
+  ),
+  title: Text(
+    isSpanish
+        ? 'Estimados pendientes'
+        : 'Estimates Waiting',
+  ),
+  onTap: () {
+    Navigator.pop(context);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => EstimatesScreen(
+          languageCode: widget.languageCode,
+        ),
+      ),
+    );
+  },
+),
 
         ListTile(
           leading: const Icon(Icons.notifications_none),

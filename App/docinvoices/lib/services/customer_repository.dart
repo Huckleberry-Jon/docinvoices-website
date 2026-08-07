@@ -159,6 +159,7 @@ class CustomerRepository {
         'contact name',
         'full name',
         'display name',
+        
       ]);
 
       // Google Contacts often exports first/last name separately.
@@ -197,6 +198,8 @@ class CustomerRepository {
         'phone 1 - value',
         'phone 1 value',
         'primary phone',
+        'customer main phone',
+'customer secondary phone',
       ]);
 
       final email = valueFor([
@@ -215,28 +218,36 @@ class CustomerRepository {
         'address',
         'address 1',
         'address 1 - street',
+        'physical address line 1',
+'billing address line 1',
       ]);
 
       final city = valueFor([
-        'city',
-        'address 1 - city',
-      ]);
+  'city',
+  'address 1 - city',
+  'physical address city',
+  'billing address city',
+]);
 
       final state = valueFor([
-        'state',
-        'province',
-        'region',
-        'address 1 - region',
-      ]);
+  'state',
+  'province',
+  'region',
+  'address 1 - region',
+  'physical address state',
+  'billing address state',
+]);
 
-      final zip = valueFor([
-        'zip',
-        'zipcode',
-        'zip code',
-        'postal',
-        'postal code',
-        'address 1 - postal code',
-      ]);
+     final zip = valueFor([
+  'zip',
+  'zipcode',
+  'zip code',
+  'postal',
+  'postal code',
+  'address 1 - postal code',
+  'physical address zip/postal code',
+  'billing address zip/postal code',
+]);
 
       final notes = valueFor([
         'notes',
