@@ -32,11 +32,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
   ];
 
   final List<String> sendMethods = [
-    'Text Message',
-    'Email',
-    'Signature',
-    'Phone Approval',
-    'Print PDF',
+    'Customer Response',
   ];
 
   @override
@@ -72,7 +68,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
         return Icons.email_outlined;
       case 'Signature':
         return Icons.draw_outlined;
-      case 'Phone Approval':
+      case 'Customer Response':
         return Icons.phone_in_talk_outlined;
       case 'Print PDF':
         return Icons.picture_as_pdf_outlined;
@@ -317,19 +313,21 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
         return;
       }
 
-      final sms = Uri(
-        scheme: 'sms',
-        path: widget.job.customerPhone.trim(),
-        queryParameters: {
-          'body': widget.job.estimateNumber.trim().isEmpty
-              ? (isSpanish
-                  ? 'Su estimado está listo para aprobación.'
-                  : 'Your estimate is ready for approval.')
-              : (isSpanish
-                  ? 'Su estimado ${widget.job.estimateNumber} está listo para aprobación.'
-                  : 'Your estimate ${widget.job.estimateNumber} is ready for approval.'),
-        },
-      );
+      final message =
+    widget.job.estimateNumber.trim().isEmpty
+        ? (isSpanish
+            ? 'Su estimado está listo para revisión. Responda APROBADO para autorizar el trabajo o contáctenos si tiene alguna pregunta.'
+            : 'Your estimate is ready for review. Please reply APPROVED to authorize the work or contact us with any questions.')
+        : (isSpanish
+            ? 'Su estimado #${widget.job.estimateNumber} está listo para revisión. Responda APROBADO para autorizar el trabajo o contáctenos si tiene alguna pregunta.'
+            : 'Your estimate #${widget.job.estimateNumber} is ready for review. Please reply APPROVED to authorize the work or contact us with any questions.');
+
+final phone =
+    widget.job.customerPhone.trim();
+
+final sms = Uri.parse(
+  'sms:$phone?body=${Uri.encodeComponent(message)}',
+);
 
       final opened = await launchUrl(sms);
 
@@ -357,21 +355,21 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
         scheme: 'mailto',
         path: widget.job.customerEmail.trim(),
         queryParameters: {
-          'subject': widget.job.estimateNumber.trim().isEmpty
-              ? (isSpanish
-                  ? 'Estimado listo para aprobación'
-                  : 'Estimate Ready for Approval')
-              : (isSpanish
-                  ? 'Estimado ${widget.job.estimateNumber}'
-                  : 'Estimate ${widget.job.estimateNumber}'),
-          'body': widget.job.estimateNumber.trim().isEmpty
-              ? (isSpanish
-                  ? 'Su estimado está listo para revisión y aprobación.'
-                  : 'Your estimate is ready for review and approval.')
-              : (isSpanish
-                  ? 'Su estimado ${widget.job.estimateNumber} está listo para revisión y aprobación.'
-                  : 'Your estimate ${widget.job.estimateNumber} is ready for review and approval.'),
-        },
+  'subject': widget.job.estimateNumber.trim().isEmpty
+      ? (isSpanish
+          ? 'Estimado listo para revisión'
+          : 'Estimate Ready for Review')
+      : (isSpanish
+          ? 'Estimado #${widget.job.estimateNumber}'
+          : 'Estimate #${widget.job.estimateNumber}'),
+  'body': widget.job.estimateNumber.trim().isEmpty
+      ? (isSpanish
+          ? 'Su estimado está listo para revisión.\n\nResponda APROBADO para autorizar el trabajo o contáctenos si tiene alguna pregunta.'
+          : 'Your estimate is ready for review.\n\nPlease reply APPROVED to authorize the work or contact us with any questions.')
+      : (isSpanish
+          ? 'Su estimado #${widget.job.estimateNumber} está listo para revisión.\n\nResponda APROBADO para autorizar el trabajo o contáctenos si tiene alguna pregunta.'
+          : 'Your estimate #${widget.job.estimateNumber} is ready for review.\n\nPlease reply APPROVED to authorize the work or contact us with any questions.'),
+},
       );
 
       final opened = await launchUrl(email);
@@ -405,7 +403,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
       );
       return;
 
-    case 'Phone Approval':
+    case 'Customer Response':
       if (approvalNotesController.text.trim().isEmpty) {
         _showMessage(
           isSpanish
@@ -416,7 +414,7 @@ class _ApprovalScreenState extends State<ApprovalScreen> {
       }
 
       widget.job.approvalStatus = 'Approved';
-widget.job.approvalMethod = 'Phone Approval';
+widget.job.approvalMethod = 'Customer Response';
 widget.job.approvalRequestedBy = 'Customer';
 widget.job.approvalDate = DateTime.now();
 widget.job.notes = approvalNotesController.text.trim();
@@ -688,12 +686,14 @@ if (widget.job.mileage.isNotEmpty)
       label: isSpanish ? 'Piezas' : 'Parts',
       amount: partsTotal,
     ),
-    _approvalPriceRow(
-      label: isSpanish
-          ? 'Cargos adicionales'
-          : 'Other Charges',
-      amount: generalChargesTotal,
-    ),
+    ...widget.job.generalCharges.map(
+  (charge) => _approvalPriceRow(
+    label: charge.description.trim().isEmpty
+        ? (isSpanish ? 'Cargo' : 'Charge')
+        : charge.description,
+    amount: charge.amount,
+  ),
+),
     const Divider(
       color: Colors.white24,
       height: 28,
@@ -781,40 +781,40 @@ if (widget.job.mileage.isNotEmpty)
                     ),
                     const SizedBox(height: 14),
                     ...sendMethods.map((method) {
-                      final bool selected =
-                          selectedSendMethod == method;
+  final bool selected =
+      selectedSendMethod == method;
 
-                      return _selectionCard(
-                        title: method,
-                        subtitle: method == 'Text Message'
-    ? (isSpanish
-        ? 'Envíe un enlace seguro de aprobación por mensaje de texto.'
-        : 'Send a secure approval link by text.')
-    : method == 'Email'
+  return _selectionCard(
+    title: method,
+    subtitle: method == 'Text Message'
         ? (isSpanish
-            ? 'Envíe un enlace seguro de aprobación por correo electrónico.'
-            : 'Send a secure approval link by email.')
-        : method == 'Signature'
+            ? 'Abra Mensajes con una solicitud de aprobación lista para enviar.'
+            : 'Open Messages with a pre-filled approval request.')
+        : method == 'Email'
             ? (isSpanish
-                ? 'Haga que el cliente firme directamente en este dispositivo.'
-                : 'Have the customer sign directly on this device.')
-            : method == 'Phone Approval'
+                ? 'Abra su aplicación de correo con una solicitud de aprobación lista para enviar.'
+                : 'Open your email app with a pre-filled approval request.')
+            : method == 'Signature'
                 ? (isSpanish
-                    ? 'Registre la aprobación verbal y las notas de aprobación.'
-                    : 'Record verbal approval and approval notes.')
-                : (isSpanish
-                    ? 'Cree un PDF de aprobación para imprimir.'
-                    : 'Create a printable approval PDF.'),
-                        icon: _sendIcon(method),
-                        selected: selected,
-                        accentColor: Colors.greenAccent,
-                        onTap: () {
-                          setState(() {
-                            selectedSendMethod = method;
-                          });
-                        },
-                      );
-                    }),
+                    ? 'Haga que el cliente firme directamente en este dispositivo.'
+                    : 'Have the customer sign directly on this device.')
+                : method == 'Customer Response'
+                    ? (isSpanish
+                        ? 'Registre una aprobación recibida por texto, correo electrónico o teléfono.'
+                        : 'Record approval received by text, email, or phone.')
+                    : (isSpanish
+                        ? 'Cree un PDF de aprobación para imprimir.'
+                        : 'Create a printable approval PDF.'),
+    icon: _sendIcon(method),
+    selected: selected,
+    accentColor: Colors.greenAccent,
+    onTap: () {
+      setState(() {
+        selectedSendMethod = method;
+      });
+    },
+  );
+}),
                   ],
                   const SizedBox(height: 18),
                   Container(

@@ -143,7 +143,7 @@ Future<void> _importCustomers() async {
   try {
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['json'],
+      allowedExtensions: ['json', 'csv'],
       withData: true,
     );
 
@@ -152,7 +152,8 @@ Future<void> _importCustomers() async {
     }
 
     final selectedFile = result.files.single;
-
+final extension =
+    selectedFile.extension?.toLowerCase() ?? '';
     String jsonText;
 
     if (selectedFile.bytes != null) {
@@ -226,10 +227,17 @@ Future<void> _importCustomers() async {
       return;
     }
 
-    await CustomerRepository.importCustomers(
-      jsonText,
-      replaceExisting: replaceExisting,
-    );
+    if (extension == 'csv') {
+  await CustomerRepository.importCustomersCsv(
+    jsonText,
+    replaceExisting: replaceExisting,
+  );
+} else {
+  await CustomerRepository.importCustomers(
+    jsonText,
+    replaceExisting: replaceExisting,
+  );
+}
 
     final customerCount =
         CustomerRepository.customers.length;

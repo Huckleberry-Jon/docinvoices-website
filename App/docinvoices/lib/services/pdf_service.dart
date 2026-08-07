@@ -5,6 +5,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:flutter/foundation.dart';
 import '../models/job.dart';
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 class PdfService {
   static Future<Uint8List> generateInvoice(Job job) async {
     final pdf = pw.Document();
@@ -15,10 +16,21 @@ final profile =
 Uint8List? logoBytes;
 
 if (profile.logoPath.trim().isNotEmpty) {
-  final logoFile = File(profile.logoPath);
+  final directory =
+      await getApplicationDocumentsDirectory();
 
-  debugPrint('PDF logo path: ${profile.logoPath}');
-  debugPrint('PDF logo exists: ${await logoFile.exists()}');
+  final fileName = profile.logoPath.contains('/')
+      ? Uri.file(profile.logoPath).pathSegments.last
+      : profile.logoPath;
+
+  final logoFile = File(
+    '${directory.path}/$fileName',
+  );
+
+  debugPrint('PDF logo path: ${logoFile.path}');
+  debugPrint(
+    'PDF logo exists: ${await logoFile.exists()}',
+  );
 
   if (await logoFile.exists()) {
     logoBytes = await logoFile.readAsBytes();
@@ -66,12 +78,13 @@ if (profile.logoPath.trim().isNotEmpty) {
             ],
             pw.SizedBox(height: 20),
             _buildTotals(
-              laborTotal: laborTotal,
-              partsTotal: partsTotal,
-              generalChargesTotal: generalChargesTotal,
-              discountAmount: job.discountAmount,
-              total: total,
-            ),
+  job: job,
+  laborTotal: laborTotal,
+  partsTotal: partsTotal,
+  generalChargesTotal: generalChargesTotal,
+  discountAmount: job.discountAmount,
+  total: total,
+),
             pw.SizedBox(height: 28),
             _buildFooter(),
           ];
@@ -126,17 +139,34 @@ if (profile.logoPath.trim().isNotEmpty) {
                     ),
                   ),
                   child: logoBytes == null
-    ? pw.Text(
-        'LOGO',
-        style: pw.TextStyle(
-          color: PdfColors.orange800,
-          fontSize: 11,
-          fontWeight: pw.FontWeight.bold,
-        ),
+    ? pw.Column(
+        mainAxisAlignment: pw.MainAxisAlignment.center,
+        children: [
+          pw.Text(
+            'LOGO NOT LOADED',
+            textAlign: pw.TextAlign.center,
+            style: pw.TextStyle(
+              color: PdfColors.red700,
+              fontSize: 7,
+              fontWeight: pw.FontWeight.bold,
+            ),
+          ),
+          pw.SizedBox(height: 3),
+          pw.Text(
+            profile.logoPath.trim().isEmpty
+                ? 'PATH EMPTY'
+                : 'PATH SET',
+            textAlign: pw.TextAlign.center,
+            style: const pw.TextStyle(
+              color: PdfColors.grey700,
+              fontSize: 6,
+            ),
+          ),
+        ],
       )
     : pw.Image(
         pw.MemoryImage(logoBytes),
-        fit: pw.BoxFit.cover,
+        fit: pw.BoxFit.contain,
       ),
                 ),
                 pw.SizedBox(width: 16),
@@ -621,7 +651,7 @@ if (profile.logoPath.trim().isNotEmpty) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
       children: [
-        _buildSectionTitle('ADDITIONAL CHARGES'),
+        _buildSectionTitle('SERVICE CHARGES'),
         pw.SizedBox(height: 10),
         pw.Container(
           padding: const pw.EdgeInsets.all(14),
@@ -698,7 +728,8 @@ if (profile.logoPath.trim().isNotEmpty) {
     );
   }
 
-  static pw.Widget _buildTotals({
+ static pw.Widget _buildTotals({
+  required Job job,
   required double laborTotal,
   required double partsTotal,
   required double generalChargesTotal,
@@ -763,10 +794,14 @@ if (profile.logoPath.trim().isNotEmpty) {
           children: [
             _buildLightTotalLine('Labor', laborTotal),
             _buildLightTotalLine('Parts', partsTotal),
-            _buildLightTotalLine(
-              'Additional Charges',
-              generalChargesTotal,
-            ),
+            ...job.generalCharges.map(
+  (charge) => _buildLightTotalLine(
+    charge.description.trim().isEmpty
+        ? 'Charge'
+        : charge.description,
+    charge.amount,
+  ),
+),
             if (discountAmount > 0)
               _buildLightTotalLine(
                 'Discount',

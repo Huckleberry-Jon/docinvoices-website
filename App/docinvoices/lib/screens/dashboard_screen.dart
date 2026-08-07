@@ -12,6 +12,7 @@ import 'invoices_waiting_screen.dart';
 import 'notifications_screen.dart';
 import 'business_profile_screen.dart';
 import 'customer_screen.dart';
+import 'receipt_capture_screen.dart';
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({
     super.key,
@@ -30,7 +31,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String get languageCode => widget.languageCode;
   
   bool? get isSpanish => languageCode == 'es';
-
+void _openReceiptCapture(
+  BuildContext context,
+) {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) =>
+          ReceiptCaptureScreen(
+        languageCode: languageCode,
+      ),
+    ),
+  );
+}
   void _openCreate(BuildContext context) {
     Navigator.push(
       context,
@@ -703,54 +716,86 @@ Row(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                               Padding(
-                                padding: EdgeInsets.fromLTRB(
-                                  22,
-                                  22,
-                                  22,
-                                  14,
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.hub_outlined,
-                                      color: Colors.orange,
-                                      size: 37,
-                                    ),
-                                    SizedBox(width: 14),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                          isSpanish ? 'Flujo de trabajo'
-                                                     : 'Choose what you\'d like to do.',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 28,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                               isSpanish ? 'Todo lo que necesita para completar el trabajo.'
-    : 'Everything you need to get the job done.',
-                                            style: TextStyle(
-                                              color: Colors.white60,
-                                              fontSize: 15,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const Divider(
-                                color: Colors.white12,
-                                height: 1,
-                              ),
+                               InkWell(
+  borderRadius: BorderRadius.circular(20),
+  onTap: () => _openReceiptCapture(context),
+  child: Container(
+    margin: const EdgeInsets.fromLTRB(
+      16,
+      16,
+      16,
+      14,
+    ),
+    padding: const EdgeInsets.all(18),
+    decoration: BoxDecoration(
+      color: Colors.orange.withValues(
+        alpha: 0.10,
+      ),
+      borderRadius:
+          BorderRadius.circular(20),
+      border: Border.all(
+        color: Colors.orange.withValues(
+          alpha: 0.55,
+        ),
+      ),
+    ),
+    child: Row(
+      children: [
+        Container(
+          width: 58,
+          height: 58,
+          decoration: BoxDecoration(
+            borderRadius:
+                BorderRadius.circular(16),
+            color: Colors.orange.withValues(
+              alpha: 0.18,
+            ),
+          ),
+          child: const Icon(
+            Icons.receipt_long_outlined,
+            color: Colors.orange,
+            size: 32,
+          ),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment:
+                CrossAxisAlignment.start,
+            children: [
+              Text(
+                isSpanish
+                    ? 'Escanear recibo'
+                    : 'Scan Receipt',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 22,
+                  fontWeight:
+                      FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isSpanish
+                    ? 'Tome una foto y asígnela a un trabajo.'
+                    : 'Take a photo and assign it to a job.',
+                style: const TextStyle(
+                  color: Colors.white60,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Icon(
+          Icons.camera_alt_outlined,
+          color: Colors.orange,
+          size: 30,
+        ),
+      ],
+    ),
+  ),
+),
                               _workflowItem(
                                 context: context,
                                 title: isSpanish?'Nueva Orden de Servicio'

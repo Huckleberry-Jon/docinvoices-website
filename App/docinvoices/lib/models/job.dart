@@ -53,11 +53,14 @@ this.notes = '',
 List<Payment>? payments,
 List<String>? beforePhotoPaths,
 List<String>? afterPhotoPaths,
-})  : payments = payments ?? <Payment>[],
+List<String>? receiptPhotoPaths,
+}) : payments = payments ?? <Payment>[],
       beforePhotoPaths =
-          beforePhotoPaths ?? <String>[],
-      afterPhotoPaths =
-          afterPhotoPaths ?? <String>[];
+    beforePhotoPaths ?? [],
+afterPhotoPaths =
+    afterPhotoPaths ?? [],
+receiptPhotoPaths =
+    receiptPhotoPaths ?? [];
 
   factory Job.createEstimate({
     required String location,
@@ -152,8 +155,10 @@ bool reminderEnabled;
   final List<Operation> operations;
   final List<Payment> payments;
   final List<GeneralCharge> generalCharges;
-  final List<String> beforePhotoPaths;
-final List<String> afterPhotoPaths;
+  final List beforePhotoPaths;
+final List afterPhotoPaths;
+final List receiptPhotoPaths;
+
   String location;
 
 double get totalPaid {
@@ -227,7 +232,8 @@ Map<String, dynamic> toJson() {
     'generalCharges':
         generalCharges.map((item) => item.toJson()).toList(),
     'beforePhotoPaths': beforePhotoPaths,
-    'afterPhotoPaths': afterPhotoPaths,
+'afterPhotoPaths': afterPhotoPaths,
+'receiptPhotoPaths': receiptPhotoPaths,
   };
 }
 
@@ -321,13 +327,19 @@ notes: json['notes'] ?? '',
             )
             .toList(),
     beforePhotoPaths:
-        (json['beforePhotoPaths'] as List? ?? [])
-            .map((item) => item.toString())
-            .toList(),
-    afterPhotoPaths:
-        (json['afterPhotoPaths'] as List? ?? [])
-            .map((item) => item.toString())
-            .toList(),
-  );
+    (json['beforePhotoPaths'] as List? ?? [])
+        .map((item) => item.toString())
+        .toList(),
+
+afterPhotoPaths:
+    (json['afterPhotoPaths'] as List? ?? [])
+        .map((item) => item.toString())
+        .toList(),
+
+receiptPhotoPaths:
+    (json['receiptPhotoPaths'] as List? ?? [])
+        .map((item) => item.toString())
+        .toList(),
+);
 }
 }
