@@ -26,7 +26,7 @@ class _OperationDetailsScreenState
   late final TextEditingController complaintController;
   late final TextEditingController repairController;
   late stt.SpeechToText speech;
-
+late final TextEditingController notesController;
   bool speechAvailable = false;
   bool isListening = false;
   String repairBeforeListening = '';
@@ -44,7 +44,9 @@ class _OperationDetailsScreenState
     repairController = TextEditingController(
       text: widget.operation.repairDescription,
     );
-
+notesController = TextEditingController(
+  text: widget.operation.notes,
+);
     _initializeSpeech();
   }
 
@@ -409,6 +411,7 @@ void _showMessage(String message) {
     descriptionController.dispose();
     quantityController.dispose();
     unitPriceController.dispose();
+    notesController.dispose();
   }
 
   Future<void> _removeLabor(int index) async {
@@ -954,16 +957,20 @@ TextField(
                       ],
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      widget.operation.notes.trim().isEmpty
-                          ? 'No notes yet.'
-                          : widget.operation.notes,
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 16,
-                        height: 1.4,
-                      ),
-                    ),
+                    TextField(
+  controller: notesController,
+  minLines: 3,
+  maxLines: 6,
+  textCapitalization: TextCapitalization.sentences,
+  decoration: InputDecoration(
+    labelText: widget.languageCode == 'es'
+        ? 'Notas'
+        : 'Notes',
+    hintText: widget.languageCode == 'es'
+        ? 'Agregue notas internas'
+        : 'Add internal notes',
+  ),
+),
                   ],
                 ),
               ),
@@ -1001,7 +1008,8 @@ TextField(
 
   widget.operation.repairDescription =
       repairController.text.trim();
-
+widget.operation.notes =
+    notesController.text.trim();
   Navigator.pop(context);
 },
                   icon: const Icon(

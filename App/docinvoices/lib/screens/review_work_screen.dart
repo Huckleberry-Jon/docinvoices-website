@@ -6,6 +6,7 @@ import 'operation_details_screen.dart';
 import 'new_job_screen.dart';
 import 'schedule_job_screen.dart';
 import '../services/job_repository.dart';
+import 'dart:io';
 class ReviewWorkScreen extends StatefulWidget {
   const ReviewWorkScreen({
     super.key,
@@ -293,6 +294,7 @@ Future<void> _addOperation() async {
       child: child,
     );
   }
+
   Widget _operationCard(Operation operation) {
   return InkWell(
     onTap: () async {
@@ -595,6 +597,59 @@ Align(
                       ],
                     ),
                   ),         
+                  const SizedBox(height: 16),
+
+if (widget.job.receiptPhotoPaths.isNotEmpty)
+  _card(
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _sectionHeader(
+          context: context,
+          icon: Icons.receipt_long_outlined,
+          title: isSpanish ? 'Recibos' : 'Receipts',
+          color: Colors.orange,
+          onEdit: null,
+        ),
+
+        const SizedBox(height: 12),
+
+        Wrap(
+          spacing: 10,
+          runSpacing: 10,
+          children: widget.job.receiptPhotoPaths.map(
+            (path) {
+              return GestureDetector(
+  onTap: () {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.black,
+        child: InteractiveViewer(
+          child: Image.file(
+            File(path),
+            fit: BoxFit.contain,
+          ),
+        ),
+      ),
+    );
+  },
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(12),
+    child: Image.file(
+      File(path),
+      width: 110,
+      height: 110,
+      fit: BoxFit.cover,
+    ),
+  ),
+);
+            },
+          ).toList(),
+        ),
+      ],
+    ),
+  ),
                   const SizedBox(height: 16),
                   _card(
   child: Column(

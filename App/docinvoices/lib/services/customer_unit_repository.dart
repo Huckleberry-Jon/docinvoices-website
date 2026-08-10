@@ -152,13 +152,14 @@ static Future<int> importUnitsCsv(
   'unit external id',
 ]);
 
-    final vin = valueFor([
-      'vin',
-      'serial # / vin',
-      'serial/vin',
-      'serial number',
-      'serial #',
-    ]);
+   final vin = valueFor([
+  'vin',
+  'serial # / vin',
+  'serial/vin',
+  'serial number',
+  'serial #',
+  'serial # / serial# / vin',
+]);
 
     final year = valueFor([
       'year',
