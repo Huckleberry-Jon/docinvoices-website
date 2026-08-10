@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import '../models/customer.dart';
 import '../services/customer_repository.dart';
 import 'customer_screen.dart';
-
+import 'customer_units_screen.dart';
 class CustomerPickerScreen extends StatefulWidget {
   const CustomerPickerScreen({
-    super.key,
-    required this.languageCode,
-  });
-
+  super.key,
+  required this.languageCode,
+  this.openUnitsOnTap = false,
+});
+final bool openUnitsOnTap;
   final String languageCode;
 
   @override
@@ -83,8 +84,20 @@ class _CustomerPickerScreenState extends State<CustomerPickerScreen> {
       : Text(customer.company),
 
   onTap: () {
+  if (widget.openUnitsOnTap) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CustomerUnitsScreen(
+          languageCode: widget.languageCode,
+          customer: customer,
+        ),
+      ),
+    );
+  } else {
     Navigator.pop(context, customer);
-  },
+  }
+},
 
   trailing: Row(
   mainAxisSize: MainAxisSize.min,

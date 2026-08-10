@@ -37,45 +37,61 @@ class _ReceiptCaptureScreenState
     });
   }
 
-  Future<void> _takeReceiptPhoto() async {
-    final XFile? photo =
-        await _imagePicker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 85,
+ Future<void> _pickReceiptImage(
+  ImageSource source,
+) async {
+  final XFile? image = await _imagePicker.pickImage(
+    source: source,
+    imageQuality: 85,
+  );
+
+  if (!mounted) return;
+
+  if (image == null) {
+    if (receiptPath == null &&
+        source == ImageSource.camera) {
+      Navigator.pop(context);
+    }
+    return;
+  }
+
+  final appDirectory =
+      await getApplicationDocumentsDirectory();
+
+  final receiptDirectory = Directory(
+    '${appDirectory.path}/receipts',
+  );
+
+  if (!await receiptDirectory.exists()) {
+    await receiptDirectory.create(
+      recursive: true,
     );
-
-    if (!mounted) return;
-
-    if (photo == null) {
-  if (receiptPath == null) {
-    Navigator.pop(context);
   }
-  return;
+
+  final savedPath =
+      '${receiptDirectory.path}/receipt_'
+      '${DateTime.now().microsecondsSinceEpoch}.jpg';
+
+  await File(image.path).copy(savedPath);
+
+  if (!mounted) return;
+
+  setState(() {
+    receiptPath = savedPath;
+  });
 }
 
-    final appDirectory =
-    await getApplicationDocumentsDirectory();
-
-final receiptDirectory = Directory(
-  '${appDirectory.path}/receipts',
-);
-
-if (!await receiptDirectory.exists()) {
-  await receiptDirectory.create(recursive: true);
+Future<void> _takeReceiptPhoto() async {
+  await _pickReceiptImage(
+    ImageSource.camera,
+  );
 }
 
-final savedPath =
-    '${receiptDirectory.path}/receipt_'
-    '${DateTime.now().microsecondsSinceEpoch}.jpg';
-
-await File(photo.path).copy(savedPath);
-
-if (!mounted) return;
-
-setState(() {
-  receiptPath = savedPath;
-});
-  }
+Future<void> _chooseReceiptFromLibrary() async {
+  await _pickReceiptImage(
+    ImageSource.gallery,
+  );
+}
 
   void _assignToWorkOrder() {
     final activeJobs =
@@ -326,6 +342,17 @@ if (!mounted) return;
                             : 'Retake Photo',
                       ),
                     ),
+                    TextButton.icon(
+  onPressed: _chooseReceiptFromLibrary,
+  icon: const Icon(
+    Icons.photo_library_outlined,
+  ),
+  label: Text(
+    isSpanish
+        ? 'Elegir de fotos'
+        : 'Choose From Library',
+  ),
+),
                   ],
                 ),
               ),

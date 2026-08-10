@@ -11,6 +11,8 @@ class BusinessProfile {
     this.zip = '',
     this.taxRate = 0.0,
     this.logoPath = '',
+  
+    this.partsMarkupPercent = 10.0,
   });
 
   String businessName;
@@ -26,7 +28,7 @@ class BusinessProfile {
 
   double taxRate;
   String logoPath;
-
+  double partsMarkupPercent;
   String get fullAddress {
     return [
       street,

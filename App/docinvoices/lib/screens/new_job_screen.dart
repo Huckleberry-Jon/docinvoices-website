@@ -138,7 +138,69 @@ tsnController.dispose();
   super.dispose();
 }
   
-  void _startVoiceCapture() {
+  Future<void> _startVoiceCapture() async {
+    Future<void> _saveCustomerUnit() async {
+  final String customerName = customerController.text.trim();
+  final String unitNumber = unitController.text.trim();
+  final String vin = vinController.text.trim();
+  final String esn = esnController.text.trim();
+  final String tsn = tsnController.text.trim();
+  final String mileage = mileageController.text.trim();
+
+  final bool hasUnitData =
+      unitNumber.isNotEmpty ||
+      vin.isNotEmpty ||
+      esn.isNotEmpty ||
+      tsn.isNotEmpty;
+
+  if (!hasUnitData || customerName.isEmpty) {
+    return;
+  }
+
+  final existingUnits = CustomerUnitRepository.units;
+
+  final CustomerUnit? existingUnit =
+      existingUnits.cast<CustomerUnit?>().firstWhere(
+    (unit) {
+      if (unit == null) return false;
+
+      final sameCustomer =
+          unit.customerName.trim().toLowerCase() ==
+              customerName.toLowerCase();
+
+      final sameVin =
+          vin.isNotEmpty &&
+          unit.vin.trim().toLowerCase() ==
+              vin.toLowerCase();
+
+      final sameUnitNumber =
+          unitNumber.isNotEmpty &&
+          unit.unitNumber.trim().toLowerCase() ==
+              unitNumber.toLowerCase();
+
+      return sameCustomer && (sameVin || sameUnitNumber);
+    },
+    orElse: () => null,
+  );
+
+  final CustomerUnit updatedUnit = CustomerUnit(
+    customerName: customerName,
+    unitNumber: unitNumber,
+    vin: vin,
+    mileage: mileage,
+    esn: esn,
+    tsn: tsn,
+  );
+
+  if (existingUnit == null) {
+    await CustomerUnitRepository.addUnit(updatedUnit);
+  } else {
+    await CustomerUnitRepository.updateUnit(
+      existingUnit,
+      updatedUnit,
+    );
+  }
+}
   final String customerName = customerController.text.trim();
   
 
@@ -249,7 +311,9 @@ return;
 }
 
 // NEW JOB MODE: create the job and continue to Voice Capture.
+await _saveCustomerUnit();
 final Job job = Job.createEstimate(
+
   customerName: customerController.text.trim(),
    customerPhone: customerPhoneController.text.trim(),
   customerEmail: customerEmailController.text.trim(),

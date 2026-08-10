@@ -9,9 +9,9 @@ class BusinessProfileScreen extends StatefulWidget {
     super.key,
     required this.languageCode,
   });
-
+  
   final String languageCode;
-
+  
   @override
   State<BusinessProfileScreen> createState() =>
       _BusinessProfileScreenState();
@@ -39,8 +39,10 @@ void initState() {
   if (profile.taxRate > 0) {
     taxRateController.text =
         profile.taxRate.toStringAsFixed(2);
+        
   }
-
+   selectedPartsMarkup =
+    profile.partsMarkupPercent;
   _loadSavedLogo(profile.logoPath);
   
 }
@@ -58,7 +60,7 @@ void initState() {
 
   final ImagePicker _imagePicker = ImagePicker();
   final taglineController = TextEditingController();
-
+double selectedPartsMarkup = 10.0;
   String? logoPath;
 
   bool get isSpanish => widget.languageCode == 'es';
@@ -167,7 +169,7 @@ Future<void> _loadSavedLogo(
 
   profile.taxRate =
       double.tryParse(taxRateController.text.trim()) ?? 0.0;
-
+      profile.partsMarkupPercent = selectedPartsMarkup;
   profile.logoPath = logoPath == null
     ? ''
     : File(logoPath!).uri.pathSegments.last;
@@ -457,6 +459,7 @@ if (!mounted) return;
                               const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
+                          
                           decoration: InputDecoration(
                             labelText: isSpanish
                                 ? 'Tasa de impuesto'
@@ -464,6 +467,34 @@ if (!mounted) return;
                             suffixText: '%',
                           ),
                         ),
+                         const SizedBox(height: 18),
+
+Text(
+  isSpanish
+      ? 'Margen de piezas'
+      : 'Parts Markup',
+  style: const TextStyle(
+    color: Colors.white,
+    fontWeight: FontWeight.w600,
+  ),
+),
+
+const SizedBox(height: 10),
+
+Wrap(
+  spacing: 10,
+  children: [10.0, 20.0, 30.0].map((value) {
+    return ChoiceChip(
+      label: Text('${value.toInt()}%'),
+      selected: selectedPartsMarkup == value,
+      onSelected: (_) {
+        setState(() {
+          selectedPartsMarkup = value;
+        });
+      },
+    );
+  }).toList(),
+),
                       ],
                     ),
                   ),

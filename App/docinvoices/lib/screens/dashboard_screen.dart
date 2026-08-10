@@ -373,8 +373,9 @@ ListTile(
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => CustomerPickerScreen(
+       builder: (_) => CustomerPickerScreen(
   languageCode: widget.languageCode,
+  openUnitsOnTap: true,
 ),
       ),
     );

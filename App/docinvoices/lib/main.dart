@@ -5,6 +5,7 @@ import 'screens/splash_screen.dart';
 import 'services/business_profile_repository.dart';
 import 'services/customer_repository.dart';
 import 'services/job_repository.dart';
+import 'services/customer_unit_repository.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -12,6 +13,7 @@ Future<void> main() async {
 await CustomerRepository.loadCustomers();
 await JobRepository.instance.load();
   runApp(const DocInvoicesApp());
+  await CustomerUnitRepository.loadUnits();
 }
 
 class DocInvoicesApp extends StatelessWidget {

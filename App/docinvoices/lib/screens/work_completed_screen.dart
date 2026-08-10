@@ -345,7 +345,8 @@ final quantityController = TextEditingController();
 final unitPriceController = TextEditingController();
 
  bool taxable = true;
-double selectedMarkup = 30;
+double selectedMarkup =
+    BusinessProfileRepository.instance.profile.partsMarkupPercent;
 
 double tierForCost(double cost) {
   if (cost >= 1500) {
@@ -1384,11 +1385,11 @@ else ...[
     amount: '\$${jobPartsTotal.toStringAsFixed(2)}',
     
   ),
-  _priceRow(
-  label: isSpanish
-      ? 'Cargos adicionales'
-      : 'Other Charges',
-  amount: '\$${generalChargesTotal.toStringAsFixed(2)}',
+  ...widget.job.generalCharges.map(
+  (charge) => _priceRow(
+    label: charge.description,
+    amount: '\$${charge.amount.toStringAsFixed(2)}',
+  ),
 ),
 ],
 _priceRow(

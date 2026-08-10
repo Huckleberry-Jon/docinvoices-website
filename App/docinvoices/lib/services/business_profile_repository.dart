@@ -42,6 +42,9 @@ class BusinessProfileRepository {
     profile.taxRate =
         prefs.getDouble('taxRate') ?? 0.0;
 
+        profile.partsMarkupPercent =
+    prefs.getDouble('partsMarkupPercent') ?? 10.0;
+
     profile.logoPath =
         prefs.getString('logoPath') ?? '';
   }
@@ -99,6 +102,10 @@ class BusinessProfileRepository {
       profile.taxRate,
     );
 
+    await prefs.setDouble(
+       'partsMarkupPercent',
+       profile.partsMarkupPercent,
+);
     await prefs.setString(
       'logoPath',
       profile.logoPath,

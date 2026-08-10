@@ -13,13 +13,14 @@ class CustomerScreen extends StatefulWidget {
   final Customer? customer;
 
   @override
-  State<CustomerScreen> createState() =>
-      _CustomerScreenState();
+  State<CustomerScreen> createState() => _CustomerScreenState();
 }
-    class _CustomerScreenState extends State<CustomerScreen> {
+
+class _CustomerScreenState extends State<CustomerScreen> {
   bool get isEditing => widget.customer != null;
 
   final _formKey = GlobalKey<FormState>();
+
   final nameController = TextEditingController();
   final companyController = TextEditingController();
   final phoneController = TextEditingController();
@@ -32,28 +33,28 @@ class CustomerScreen extends StatefulWidget {
 
   final notesController = TextEditingController();
 
-bool isSpanishCustomer = false;
-@override
-void initState() {
-  super.initState();
+  bool isSpanishCustomer = false;
 
-  if (widget.customer != null) {
-    final customer = widget.customer!;
+  @override
+  void initState() {
+    super.initState();
 
-    nameController.text = customer.name;
-    companyController.text = customer.company;
-    phoneController.text = customer.phone;
-    emailController.text = customer.email;
-    streetController.text = customer.street;
-    cityController.text = customer.city;
-    stateController.text = customer.state;
-    zipController.text = customer.zip;
-    notesController.text = customer.notes;
+    final customer = widget.customer;
+    if (customer != null) {
+      nameController.text = customer.name;
+      companyController.text = customer.company;
+      phoneController.text = customer.phone;
+      emailController.text = customer.email;
+      streetController.text = customer.street;
+      cityController.text = customer.city;
+      stateController.text = customer.state;
+      zipController.text = customer.zip;
+      notesController.text = customer.notes;
 
-    isSpanishCustomer =
-        customer.preferredLanguage == 'es';
+      isSpanishCustomer = customer.preferredLanguage == 'es';
+    }
   }
-}
+
   @override
   void dispose() {
     nameController.dispose();
@@ -66,10 +67,9 @@ void initState() {
     zipController.dispose();
     notesController.dispose();
     super.dispose();
-    
   }
 
- Future<void> _saveCustomer() async {
+  Future<void> _saveCustomer() async {
     if (!_formKey.currentState!.validate()) return;
 
     final customer = Customer(
@@ -84,114 +84,106 @@ void initState() {
       notes: notesController.text.trim(),
       preferredLanguage: isSpanishCustomer ? 'es' : 'en',
     );
-if (isEditing) {
-  await CustomerRepository.updateCustomer(
-    widget.customer!,
-    customer,
-  );
-} else {
-  await CustomerRepository.addCustomer(customer);
-}
 
-if (!mounted) return;
+    if (isEditing) {
+      await CustomerRepository.updateCustomer(
+        widget.customer!,
+        customer,
+      );
+    } else {
+      await CustomerRepository.addCustomer(customer);
+    }
 
-Navigator.pop(context, customer);
+    if (!mounted) return;
+    Navigator.pop(context, customer);
   }
 
   @override
-Widget build(BuildContext context) {
-  final bool isSpanish =
-      widget.languageCode == 'es';
+  Widget build(BuildContext context) {
+    final bool isSpanish = widget.languageCode == 'es';
 
-  return Scaffold(
-    appBar: AppBar(
-     title: Text(
-  isEditing
-      ? (isSpanish ? 'Editar cliente' : 'Edit Customer')
-      : (isSpanish ? 'Nuevo cliente' : 'New Customer'),
-),
-    ),
-    body: Form(
-      key: _formKey,
-      child: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            isSpanish
-                ? 'Información del cliente'
-                : 'Customer Information',
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          isEditing
+              ? (isSpanish ? 'Editar cliente' : 'Edit Customer')
+              : (isSpanish ? 'Nuevo cliente' : 'New Customer'),
+        ),
+      ),
+      body: Form(
+        key: _formKey,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Text(
+              isSpanish ? 'Información del cliente' : 'Customer Information',
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
 
-          const SizedBox(height: 16),
+            const SizedBox(height: 16),
 
-          TextFormField(
-            controller: nameController,
-            decoration: InputDecoration(
-              labelText: isSpanish
-                  ? 'Nombre del cliente *'
-                  : 'Customer Name *',
+            TextFormField(
+              controller: nameController,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Nombre del cliente *' : 'Customer Name *',
+              ),
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
+                  return isSpanish
+                      ? 'Se requiere el nombre del cliente'
+                      : 'Customer name is required';
+                }
+                return null;
+              },
             ),
-            validator: (value) {
-              if (value == null ||
-                  value.trim().isEmpty) {
-                return isSpanish
-                    ? 'Se requiere el nombre del cliente'
-                    : 'Customer name is required';
-              }
-              return null;
-            },
-          ),
 
-          TextFormField(
-            controller: companyController,
-            decoration: InputDecoration(
-              labelText: isSpanish
-                  ? 'Empresa'
-                  : 'Company',
+            TextFormField(
+              controller: companyController,
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Empresa' : 'Company',
+              ),
             ),
-          ),
 
-          TextFormField(
-            controller: phoneController,
-            decoration: InputDecoration(
-              labelText: isSpanish
-                  ? 'Teléfono'
-                  : 'Phone',
+            TextFormField(
+              controller: phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Teléfono' : 'Phone',
+              ),
             ),
-          ),
 
-          TextFormField(
-            controller: emailController,
-            decoration: InputDecoration(
-              labelText: isSpanish
-                  ? 'Correo electrónico'
-                  : 'Email',
+            TextFormField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Correo electrónico' : 'Email',
+              ),
             ),
-          ),
-const SizedBox(height: 16),
 
-SwitchListTile(
-  contentPadding: EdgeInsets.zero,
-  title: const Text('Preferred Language'),
-  subtitle: Text(
-    isSpanishCustomer ? 'Español' : 'English',
-  ),
-  value: isSpanishCustomer,
-  onChanged: (value) {
-    setState(() {
-      isSpanishCustomer = value;
-    });
-  },
-),
+            const SizedBox(height: 16),
+
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: Text(isSpanish ? 'Idioma preferido' : 'Preferred Language'),
+              subtitle: Text(isSpanishCustomer ? 'Español' : 'English'),
+              value: isSpanishCustomer,
+              onChanged: (value) {
+                setState(() {
+                  isSpanishCustomer = value;
+                });
+              },
+            ),
+
             const SizedBox(height: 24),
 
-            const Text(
-              'Address',
-              style: TextStyle(
+            Text(
+              isSpanish ? 'Dirección' : 'Address',
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -201,29 +193,33 @@ SwitchListTile(
 
             TextFormField(
               controller: streetController,
-              decoration: const InputDecoration(
-                labelText: 'Street',
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Calle' : 'Street',
               ),
             ),
 
             TextFormField(
               controller: cityController,
-              decoration: const InputDecoration(
-                labelText: 'City',
+              textCapitalization: TextCapitalization.words,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Ciudad' : 'City',
               ),
             ),
 
             TextFormField(
               controller: stateController,
-              decoration: const InputDecoration(
-                labelText: 'State',
+              textCapitalization: TextCapitalization.characters,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Estado' : 'State',
               ),
             ),
 
             TextFormField(
               controller: zipController,
-              decoration: const InputDecoration(
-                labelText: 'ZIP Code',
+              keyboardType: TextInputType.number,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Código postal' : 'ZIP Code',
               ),
             ),
 
@@ -231,8 +227,9 @@ SwitchListTile(
 
             TextFormField(
               controller: notesController,
-              decoration: const InputDecoration(
-                labelText: 'Customer Notes',
+              textCapitalization: TextCapitalization.sentences,
+              decoration: InputDecoration(
+                labelText: isSpanish ? 'Notas del cliente' : 'Customer Notes',
               ),
               maxLines: 4,
             ),
@@ -244,9 +241,7 @@ SwitchListTile(
                 Expanded(
                   child: OutlinedButton(
                     onPressed: () => Navigator.pop(context),
-                    child: Text(
-  isSpanish ? 'Cancelar' : 'Cancel',
-),
+                    child: Text(isSpanish ? 'Cancelar' : 'Cancel'),
                   ),
                 ),
 
@@ -256,10 +251,10 @@ SwitchListTile(
                   child: ElevatedButton(
                     onPressed: _saveCustomer,
                     child: Text(
-  isEditing
-      ? (isSpanish ? 'Guardar cambios' : 'Save Changes')
-      : (isSpanish ? 'Guardar cliente' : 'Save Customer'),
-),
+                      isEditing
+                          ? (isSpanish ? 'Guardar cambios' : 'Save Changes')
+                          : (isSpanish ? 'Guardar cliente' : 'Save Customer'),
+                    ),
                   ),
                 ),
               ],

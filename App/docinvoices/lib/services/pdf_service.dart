@@ -126,49 +126,17 @@ if (profile.logoPath.trim().isNotEmpty) {
             child: pw.Row(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Container(
-                  width: 68,
-                  height: 68,
-                  alignment: pw.Alignment.center,
-                  decoration: pw.BoxDecoration(
-                    color: PdfColors.orange50,
-                    borderRadius: pw.BorderRadius.circular(12),
-                    border: pw.Border.all(
-                      color: PdfColors.orange300,
-                      width: 1,
-                    ),
-                  ),
-                  child: logoBytes == null
-    ? pw.Column(
-        mainAxisAlignment: pw.MainAxisAlignment.center,
-        children: [
-          pw.Text(
-            'LOGO NOT LOADED',
-            textAlign: pw.TextAlign.center,
-            style: pw.TextStyle(
-              color: PdfColors.red700,
-              fontSize: 7,
-              fontWeight: pw.FontWeight.bold,
-            ),
-          ),
-          pw.SizedBox(height: 3),
-          pw.Text(
-            profile.logoPath.trim().isEmpty
-                ? 'PATH EMPTY'
-                : 'PATH SET',
-            textAlign: pw.TextAlign.center,
-            style: const pw.TextStyle(
-              color: PdfColors.grey700,
-              fontSize: 6,
-            ),
-          ),
-        ],
-      )
-    : pw.Image(
-        pw.MemoryImage(logoBytes),
-        fit: pw.BoxFit.contain,
-      ),
-                ),
+               pw.Container(
+  width: 68,
+  height: 68,
+  alignment: pw.Alignment.center,
+  child: logoBytes == null
+      ? pw.SizedBox()
+      : pw.Image(
+          pw.MemoryImage(logoBytes),
+          fit: pw.BoxFit.contain,
+        ),
+),
                 pw.SizedBox(width: 16),
                 pw.Expanded(
                   child: pw.Column(
