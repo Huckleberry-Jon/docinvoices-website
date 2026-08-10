@@ -1,28 +1,78 @@
 import 'package:flutter/material.dart';
+
+import '../models/job.dart';
 import '../services/job_repository.dart';
 import 'review_work_screen.dart';
-class ScheduledJobsScreen extends StatelessWidget {
+
+class ScheduledJobsScreen extends StatefulWidget {
   const ScheduledJobsScreen({
     super.key,
     required this.languageCode,
-    
   });
 
   final String languageCode;
-  
+
+  @override
+  State<ScheduledJobsScreen> createState() =>
+      _ScheduledJobsScreenState();
+}
+
+class _ScheduledJobsScreenState
+    extends State<ScheduledJobsScreen> {
+  DateTime selectedDate = DateTime.now();
+
+  bool get isSpanish =>
+      widget.languageCode == 'es';
+
+  bool _sameDay(
+    DateTime a,
+    DateTime b,
+  ) {
+    return a.year == b.year &&
+        a.month == b.month &&
+        a.day == b.day;
+  }
+
+  List<Job> get scheduledJobs {
+    final jobs = JobRepository.instance.jobs
+        .where(
+          (job) => job.scheduledDateTime != null,
+        )
+        .toList();
+
+    jobs.sort(
+      (a, b) => a.scheduledDateTime!.compareTo(
+        b.scheduledDateTime!,
+      ),
+    );
+
+    return jobs;
+  }
+
+  List<Job> get selectedDayJobs {
+    return scheduledJobs
+        .where(
+          (job) => _sameDay(
+            job.scheduledDateTime!.toLocal(),
+            selectedDate,
+          ),
+        )
+        .toList();
+  }
+
+  String _formatTime(
+    BuildContext context,
+    DateTime date,
+  ) {
+    return TimeOfDay.fromDateTime(
+      date.toLocal(),
+    ).format(context);
+  }
 
   @override
   Widget build(BuildContext context) {
-    final isSpanish = languageCode == 'es';
-
-    final scheduledJobs = JobRepository.instance.jobs
-        .where((job) => job.scheduledDateTime != null)
-        .toList()
-      ..sort(
-        (a, b) => a.scheduledDateTime!.compareTo(
-          b.scheduledDateTime!,
-        ),
-      );
+    final jobs = scheduledJobs;
+    final dayJobs = selectedDayJobs;
 
     return Scaffold(
       appBar: AppBar(
@@ -32,45 +82,116 @@ class ScheduledJobsScreen extends StatelessWidget {
               : 'Scheduled Jobs',
         ),
       ),
-      body: scheduledJobs.isEmpty
-          ? Center(
-              child: Text(
-                isSpanish
-                    ? 'No hay trabajos programados.'
-                    : 'No scheduled jobs yet.',
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            child: CalendarDatePicker(
+              initialDate: selectedDate,
+              firstDate: DateTime(
+                DateTime.now().year - 1,
+              ),
+              lastDate: DateTime(
+                DateTime.now().year + 3,
+              ),
+              onDateChanged: (date) {
+                setState(() {
+                  selectedDate = date;
+                });
+              },
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          Text(
+            isSpanish
+                ? 'Trabajos para '
+                    '${selectedDate.month}/'
+                    '${selectedDate.day}/'
+                    '${selectedDate.year}'
+                : 'Jobs for '
+                    '${selectedDate.month}/'
+                    '${selectedDate.day}/'
+                    '${selectedDate.year}',
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+
+          const SizedBox(height: 10),
+
+          if (jobs.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 32,
+              ),
+              child: Center(
+                child: Text(
+                  isSpanish
+                      ? 'No hay trabajos programados.'
+                      : 'No scheduled jobs yet.',
+                ),
               ),
             )
-          : ListView.separated(
-              padding: const EdgeInsets.all(16),
-              itemCount: scheduledJobs.length,
-              separatorBuilder: (_, __) =>
-                  const SizedBox(height: 12),
-               itemBuilder: (context, index) {
-                final job = scheduledJobs[index];
-                final scheduledDate = job.scheduledDateTime!;
+          else if (dayJobs.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: 32,
+              ),
+              child: Center(
+                child: Text(
+                  isSpanish
+                      ? 'No hay trabajos para este día.'
+                      : 'No jobs scheduled for this day.',
+                ),
+              ),
+            )
+          else
+            ...dayJobs.map(
+              (job) {
+                final scheduledDate =
+                    job.scheduledDateTime!;
 
                 return Card(
                   child: ListTile(
                     leading: const Icon(
                       Icons.calendar_month_outlined,
                     ),
-                    title: Text(job.customerName),
-                    subtitle: Text(
-                      '${job.equipment}\n'
-                      '${scheduledDate.toLocal()}',
+                    title: Text(
+                      job.customerName,
                     ),
-                    isThreeLine: true,
+                    subtitle: Text(
+                      [
+                        if (job.equipment
+                            .trim()
+                            .isNotEmpty)
+                          job.equipment,
+                        if (job.unitNumber
+                            .trim()
+                            .isNotEmpty)
+                          'Unit ${job.unitNumber}',
+                        _formatTime(
+                          context,
+                          scheduledDate,
+                        ),
+                      ].join(' • '),
+                    ),
                     trailing: job.reminderEnabled
                         ? const Icon(
-                            Icons.notifications_active_outlined,
+                            Icons
+                                .notifications_active_outlined,
                           )
                         : null,
                     onTap: () {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => ReviewWorkScreen(
-                            languageCode: languageCode,
+                          builder: (_) =>
+                              ReviewWorkScreen(
+                            languageCode:
+                                widget.languageCode,
                             job: job,
                           ),
                         ),
@@ -80,6 +201,8 @@ class ScheduledJobsScreen extends StatelessWidget {
                 );
               },
             ),
+        ],
+      ),
     );
   }
 }

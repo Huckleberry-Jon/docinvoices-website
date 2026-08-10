@@ -58,53 +58,58 @@ class ReportsScreen extends StatelessWidget {
   }
 
   Widget _reportCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required VoidCallback onTap,
-  }) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 26,
-                child: Icon(
-                  icon,
-                  size: 28,
-                ),
+  required IconData icon,
+  required String title,
+  required String value,
+  required VoidCallback onTap,
+}) {
+  return Card(
+    margin: EdgeInsets.zero,
+    clipBehavior: Clip.antiAlias,
+    child: InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 10,
+        ),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 19,
+              child: Icon(
+                icon,
+                size: 20,
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Text(
-                value,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                title,
                 style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(width: 8),
-              const Icon(
-                Icons.chevron_right,
+            ),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
               ),
-            ],
-          ),
+            ),
+            const SizedBox(width: 4),
+            const Icon(
+              Icons.chevron_right,
+              size: 20,
+            ),
+          ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {

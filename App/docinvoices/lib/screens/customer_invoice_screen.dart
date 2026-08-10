@@ -12,6 +12,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../services/business_profile_repository.dart';
 import 'notifications_screen.dart';
 import '../services/job_repository.dart';
+import 'package:path_provider/path_provider.dart';
 class CustomerInvoiceScreen extends StatefulWidget {
   const CustomerInvoiceScreen({
     super.key,
@@ -86,7 +87,8 @@ class _CustomerInvoiceScreenState
     extends State<CustomerInvoiceScreen> {
       String? selectedPaymentMethod;
       final paymentAmountController = TextEditingController();
-      
+      String? resolvedLogoPath;
+
   bool get isSpanish => widget.languageCode == 'es';
   bool showServiceDetails = false;
   
@@ -94,6 +96,32 @@ class _CustomerInvoiceScreenState
   ScaffoldMessenger.of(context).showSnackBar(
     SnackBar(content: Text(message)),
   );
+}
+Future<void> _loadLogo() async {
+  final profile =
+      BusinessProfileRepository.instance.profile;
+
+  if (profile.logoPath.trim().isEmpty) {
+    return;
+  }
+
+  final directory =
+      await getApplicationDocumentsDirectory();
+
+  final fileName = profile.logoPath.contains('/')
+      ? Uri.file(profile.logoPath).pathSegments.last
+      : profile.logoPath;
+
+  final fullPath =
+      '${directory.path}/$fileName';
+
+  if (await File(fullPath).exists()) {
+    if (!mounted) return;
+
+    setState(() {
+      resolvedLogoPath = fullPath;
+    });
+  }
 }
   Job get job => widget.job;
 
@@ -110,7 +138,7 @@ final paymentDetailController = TextEditingController();
 @override
 void initState() {
   super.initState();
-
+ _loadLogo();
   paymentAmountController.text =
       widget.job.balanceDue > 0
           ? widget.job.balanceDue.toStringAsFixed(2)
@@ -659,16 +687,16 @@ Widget _paymentSummaryRow({
           ),
         ),
         clipBehavior: Clip.antiAlias,
-        child: profile.logoPath.trim().isEmpty
-            ? const Icon(
-                Icons.business_outlined,
-                color: Colors.white54,
-                size: 38,
-              )
-            : Image.file(
-                File(profile.logoPath),
-                fit: BoxFit.cover,
-              ),
+       child: resolvedLogoPath == null
+    ? const Icon(
+        Icons.business_outlined,
+        color: Colors.white54,
+        size: 38,
+      )
+    : Image.file(
+        File(resolvedLogoPath!),
+        fit: BoxFit.contain,
+      ),
       ),
       const SizedBox(width: 16),
       Expanded(

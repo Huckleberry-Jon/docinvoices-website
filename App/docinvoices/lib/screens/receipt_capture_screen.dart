@@ -48,12 +48,8 @@ class _ReceiptCaptureScreenState
   if (!mounted) return;
 
   if (image == null) {
-    if (receiptPath == null &&
-        source == ImageSource.camera) {
-      Navigator.pop(context);
-    }
-    return;
-  }
+  return;
+}
 
   final appDirectory =
       await getApplicationDocumentsDirectory();
@@ -246,11 +242,55 @@ if (!mounted) return;
         ),
       ),
       body: receiptPath == null
-          ? const Center(
-              child:
-                  CircularProgressIndicator(),
-            )
-          : SafeArea(
+    ? SafeArea(
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.receipt_long_outlined,
+                  size: 72,
+                  color: Colors.white54,
+                ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  width: double.infinity,
+                  child: FilledButton.icon(
+                    onPressed: _takeReceiptPhoto,
+                    icon: const Icon(
+                      Icons.camera_alt_outlined,
+                    ),
+                    label: Text(
+                      isSpanish
+                          ? 'Tomar foto'
+                          : 'Take Photo',
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  child: OutlinedButton.icon(
+                    onPressed:
+                        _chooseReceiptFromLibrary,
+                    icon: const Icon(
+                      Icons.photo_library_outlined,
+                    ),
+                    label: Text(
+                      isSpanish
+                          ? 'Elegir de fotos'
+                          : 'Choose From Library',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      )
+    : SafeArea(
               child: Padding(
                 padding:
                     const EdgeInsets.all(20),
