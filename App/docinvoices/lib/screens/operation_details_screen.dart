@@ -27,6 +27,7 @@ class _OperationDetailsScreenState
   late final TextEditingController repairController;
   late stt.SpeechToText speech;
 late final TextEditingController notesController;
+late final TextEditingController recommendationController;
   bool speechAvailable = false;
   bool isListening = false;
   String repairBeforeListening = '';
@@ -46,7 +47,13 @@ late final TextEditingController notesController;
     );
 notesController = TextEditingController(
   text: widget.operation.notes,
+  
 );
+    recommendationController = TextEditingController(
+      text: widget.operation.recommendation,
+    );
+    widget.operation.recommendation =
+    recommendationController.text.trim();
     _initializeSpeech();
   }
 
@@ -280,6 +287,9 @@ void _showMessage(String message) {
     rateController.dispose();
   }
 
+
+
+
   Future<void> _showAddPartDialog() async {
     final descriptionController = TextEditingController();
     final quantityController = TextEditingController(
@@ -412,6 +422,7 @@ void _showMessage(String message) {
     quantityController.dispose();
     unitPriceController.dispose();
     notesController.dispose();
+    recommendationController.dispose();
   }
 
   Future<void> _removeLabor(int index) async {
@@ -969,6 +980,22 @@ TextField(
     hintText: widget.languageCode == 'es'
         ? 'Agregue notas internas'
         : 'Add internal notes',
+  ),
+),
+const SizedBox(height: 20),
+
+TextField(
+  controller: recommendationController,
+  minLines: 3,
+  maxLines: 6,
+  textCapitalization: TextCapitalization.sentences,
+  decoration: InputDecoration(
+    labelText: widget.languageCode == 'es'
+        ? 'Reparación recomendada'
+        : 'Recommended Repair',
+    hintText: widget.languageCode == 'es'
+        ? 'Agregue la reparación recomendada'
+        : 'Add recommended repair',
   ),
 ),
                   ],

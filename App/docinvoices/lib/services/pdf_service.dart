@@ -36,6 +36,39 @@ if (profile.logoPath.trim().isNotEmpty) {
     logoBytes = await logoFile.readAsBytes();
   }
 }
+final directory =
+    await getApplicationDocumentsDirectory();
+
+final List<Uint8List> beforePhotoBytes = [];
+final List<Uint8List> afterPhotoBytes = [];
+
+for (final path in job.beforePhotoPaths) {
+  final fileName = path.contains('/')
+      ? Uri.file(path).pathSegments.last
+      : path;
+
+  final file = File('${directory.path}/$fileName');
+
+  if (await file.exists()) {
+    beforePhotoBytes.add(
+      await file.readAsBytes(),
+    );
+  }
+}
+
+for (final path in job.afterPhotoPaths) {
+  final fileName = path.contains('/')
+      ? Uri.file(path).pathSegments.last
+      : path;
+
+  final file = File('${directory.path}/$fileName');
+
+  if (await file.exists()) {
+    afterPhotoBytes.add(
+      await file.readAsBytes(),
+    );
+  }
+}
     final laborTotal = job.operations.fold<double>(
       0,
       (sum, operation) => sum + operation.laborTotal,
@@ -72,10 +105,23 @@ if (profile.logoPath.trim().isNotEmpty) {
               pw.SizedBox(height: 20),
               _buildGeneralCharges(job),
             ],
-            if (job.notes.trim().isNotEmpty) ...[
-              pw.SizedBox(height: 20),
-              _buildNotes(job),
-            ],
+            if (beforePhotoBytes.isNotEmpty ||
+    afterPhotoBytes.isNotEmpty) ...[
+  pw.SizedBox(height: 20),
+  _buildJobPhotos(
+    beforePhotos: beforePhotoBytes,
+    afterPhotos: afterPhotoBytes,
+  ),
+],
+            if (job.operations.any(
+  (operation) =>
+      operation.repairDescription.trim().isNotEmpty ||
+      operation.notes.trim().isNotEmpty,
+)) ...[
+  pw.SizedBox(height: 20),
+  _buildNotes(job),
+],
+
             pw.SizedBox(height: 20),
             _buildTotals(
   job: job,
@@ -439,11 +485,13 @@ if (profile.logoPath.trim().isNotEmpty) {
                     ),
                   ),
                 ),
+                
                 if (operation.labor.isNotEmpty)
                   _buildLaborTable(operation.labor),
                 if (operation.parts.isNotEmpty)
                   _buildPartsTable(operation.parts),
                 if (operation.notes.trim().isNotEmpty)
+                
                   pw.Container(
                     width: double.infinity,
                     padding: const pw.EdgeInsets.all(12),
@@ -665,7 +713,124 @@ if (profile.logoPath.trim().isNotEmpty) {
       ],
     );
   }
+static pw.Widget _buildRecommendations(Job job) {
+  final recommendations = job.operations
+      .where(
+        (operation) =>
+            operation.recommendation.trim().isNotEmpty,
+      )
+      .toList();
 
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      _buildSectionTitle('RECOMMENDED REPAIRS'),
+      pw.SizedBox(height: 10),
+      ...recommendations.map(
+        (operation) => pw.Container(
+          width: double.infinity,
+          margin: const pw.EdgeInsets.only(bottom: 10),
+          padding: const pw.EdgeInsets.all(16),
+          decoration: pw.BoxDecoration(
+            color: PdfColors.blue50,
+            borderRadius: pw.BorderRadius.circular(12),
+            border: pw.Border.all(
+              color: PdfColors.blue200,
+              width: 0.7,
+            ),
+          ),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                operation.title,
+                style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: PdfColors.grey900,
+                ),
+              ),
+              pw.SizedBox(height: 4),
+              pw.Text(
+                operation.recommendation,
+                style: const pw.TextStyle(
+                  fontSize: 10,
+                  color: PdfColors.grey800,
+                  lineSpacing: 3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    ],
+  );
+}
+
+static pw.Widget _buildJobPhotos({
+  required List<Uint8List> beforePhotos,
+  required List<Uint8List> afterPhotos,
+}) {
+  pw.Widget photoColumn(
+    String title,
+    List<Uint8List> photos,
+  ) {
+    return pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Text(
+          title,
+          style: pw.TextStyle(
+            fontSize: 10,
+            fontWeight: pw.FontWeight.bold,
+            color: PdfColors.grey800,
+          ),
+        ),
+        pw.SizedBox(height: 8),
+        ...photos.map(
+          (bytes) => pw.Padding(
+            padding: const pw.EdgeInsets.only(bottom: 10),
+            child: pw.Container(
+              width: double.infinity,
+              height: 180,
+              decoration: pw.BoxDecoration(
+                borderRadius: pw.BorderRadius.circular(10),
+                border: pw.Border.all(
+                  color: PdfColors.grey300,
+                  width: 0.7,
+                ),
+              ),
+              child: pw.ClipRRect(
+                horizontalRadius: 10,
+                verticalRadius: 10,
+                child: pw.Image(
+                  pw.MemoryImage(bytes),
+                  fit: pw.BoxFit.cover,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  return pw.Column(
+    crossAxisAlignment: pw.CrossAxisAlignment.start,
+    children: [
+      _buildSectionTitle('JOB PHOTOS'),
+      pw.SizedBox(height: 10),
+
+      if (beforePhotos.isNotEmpty)
+        photoColumn('Before', beforePhotos),
+
+      if (afterPhotos.isNotEmpty) ...[
+        pw.SizedBox(height: 12),
+        photoColumn('After', afterPhotos),
+      ],
+    ],
+  );
+}
   static pw.Widget _buildNotes(Job job) {
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -683,15 +848,69 @@ if (profile.logoPath.trim().isNotEmpty) {
               width: 0.7,
             ),
           ),
-          child: pw.Text(
-            job.notes,
-            style: const pw.TextStyle(
-              color: PdfColors.grey800,
-              fontSize: 10,
-              lineSpacing: 3,
-            ),
+          child: pw.Column(
+  crossAxisAlignment: pw.CrossAxisAlignment.start,
+  children: job.operations
+      .where(
+        (operation) =>
+            operation.repairDescription.trim().isNotEmpty ||
+            operation.notes.trim().isNotEmpty,
+      )
+      .map(
+        (operation) => pw.Padding(
+          padding: const pw.EdgeInsets.only(bottom: 10),
+          child: pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text(
+                operation.title,
+                style: pw.TextStyle(
+                  color: PdfColors.grey900,
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+              
+              if (job.operations.any(
+  (operation) =>
+      operation.recommendation.trim().isNotEmpty,
+)) ...[
+  pw.SizedBox(height: 20),
+  _buildRecommendations(job),
+],
+              if (operation.repairDescription.trim().isNotEmpty) ...[
+                
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  operation.repairDescription,
+                  style: const pw.TextStyle(
+                    color: PdfColors.grey800,
+                    fontSize: 10,
+                    lineSpacing: 3,
+                  ),
+                ),
+              ],
+              if (operation.notes.trim().isNotEmpty) ...[
+                pw.SizedBox(height: 4),
+                pw.Text(
+                  operation.notes,
+                  style: const pw.TextStyle(
+                    color: PdfColors.grey700,
+                    fontSize: 9,
+                    lineSpacing: 3,
+                  ),
+                ),
+              ],
+            ],
           ),
         ),
+      )
+      .toList(),
+),
+
+
+        ),
+        
       ],
     );
   }
@@ -770,6 +989,7 @@ if (profile.logoPath.trim().isNotEmpty) {
     charge.amount,
   ),
 ),
+
             if (discountAmount > 0)
               _buildLightTotalLine(
                 'Discount',

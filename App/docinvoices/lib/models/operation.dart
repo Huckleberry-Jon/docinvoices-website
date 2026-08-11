@@ -8,6 +8,7 @@ class Operation {
     required this.parts,
     this.notes = '',
     this.repairDescription = '',
+    this.recommendation = '',
   });
 
   String title;
@@ -15,6 +16,7 @@ class Operation {
   final List<PartItem> parts;
   String notes;
   String repairDescription;
+  String recommendation;
 
   double get laborTotal =>
       labor.fold(0.0, (sum, item) => sum + item.total);
@@ -29,6 +31,7 @@ class Operation {
       'title': title,
       'notes': notes,
       'repairDescription': repairDescription,
+      'recommendation': recommendation,
       'labor': labor.map((item) => item.toJson()).toList(),
       'parts': parts.map((item) => item.toJson()).toList(),
     };
@@ -42,6 +45,7 @@ class Operation {
       notes: json['notes'] ?? '',
       repairDescription:
           json['repairDescription'] ?? '',
+          recommendation: json['recommendation'] ?? '',
       labor: (json['labor'] as List? ?? [])
           .map(
             (item) => LaborItem.fromJson(
