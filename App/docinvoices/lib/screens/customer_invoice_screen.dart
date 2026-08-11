@@ -1184,8 +1184,8 @@ if (widget.job.transcription.trim().isNotEmpty) ...[
         : savedPath;
 
     final file = File(
-      '${snapshot.data!.path}/$fileName',
-    );
+  '${snapshot.data!.path}/job_photos/$fileName',
+);
 
     if (!file.existsSync()) {
       return const Center(
