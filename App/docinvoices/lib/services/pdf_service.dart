@@ -47,7 +47,9 @@ for (final path in job.beforePhotoPaths) {
       ? Uri.file(path).pathSegments.last
       : path;
 
-  final file = File('${directory.path}/$fileName');
+  final file = File(
+  '${directory.path}/job_photos/$fileName',
+);
 
   if (await file.exists()) {
     beforePhotoBytes.add(
@@ -61,7 +63,9 @@ for (final path in job.afterPhotoPaths) {
       ? Uri.file(path).pathSegments.last
       : path;
 
-  final file = File('${directory.path}/$fileName');
+  final file = File(
+  '${directory.path}/job_photos/$fileName',
+);
 
   if (await file.exists()) {
     afterPhotoBytes.add(
