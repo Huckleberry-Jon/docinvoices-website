@@ -5,7 +5,7 @@ import 'payment_received_screen.dart';
 import '../models/job.dart';
 import 'package:printing/printing.dart';
 import '../services/pdf_service.dart';
-import 'pdf_preview_screen.dart';
+
 import '../models/payment.dart';
 import 'dart:io';
 import 'package:url_launcher/url_launcher.dart';
@@ -1168,13 +1168,44 @@ if (widget.job.transcription.trim().isNotEmpty) ...[
                   ),
                   itemCount: allPhotoPaths.length,
                   itemBuilder: (context, index) {
-                    return ClipRRect(
-                      borderRadius: BorderRadius.circular(14),
-                      child: Image.file(
-                        File(allPhotoPaths[index]),
-                        fit: BoxFit.cover,
-                      ),
-                    );
+                    return FutureBuilder<Directory>(
+  future: getApplicationDocumentsDirectory(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    final savedPath = allPhotoPaths[index];
+
+    final fileName = savedPath.contains('/')
+        ? Uri.file(savedPath).pathSegments.last
+        : savedPath;
+
+    final file = File(
+      '${snapshot.data!.path}/$fileName',
+    );
+
+    if (!file.existsSync()) {
+      return const Center(
+        child: Icon(
+          Icons.broken_image_outlined,
+          color: Colors.white54,
+          size: 42,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: Image.file(
+        file,
+        fit: BoxFit.cover,
+      ),
+    );
+  },
+);
                   },
                 ),
               ),
