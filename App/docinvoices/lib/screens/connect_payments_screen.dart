@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-import 'dashboard_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'subscription_screen.dart';
 
 class ConnectPaymentsScreen extends StatefulWidget {
   const ConnectPaymentsScreen({
@@ -74,16 +76,30 @@ class _ConnectPaymentsScreenState extends State<ConnectPaymentsScreen> {
     );
   }
 
-  void _continueToDashboard() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => DashboardScreen(
-  languageCode: widget.languageCode,
-),
+ Future<void> _continueToSubscription() async {
+  final prefs = await SharedPreferences.getInstance();
+
+  await prefs.setBool(
+    'setupComplete',
+    true,
+  );
+
+  await prefs.setString(
+    'languageCode',
+    widget.languageCode,
+  );
+
+  if (!mounted) return;
+
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (_) => SubscriptionScreen(
+        languageCode: widget.languageCode,
       ),
-    );
-  }
+    ),
+  );
+}
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +162,7 @@ SizedBox(
   height: 60,
   child: ElevatedButton(
     onPressed:
-        selectedPayment == null ? null : _continueToDashboard,
+    selectedPayment == null ? null : _continueToSubscription,
     child: Text(
       isSpanish ? 'Continuar' : 'Continue',
       style: const TextStyle(fontSize: 20),

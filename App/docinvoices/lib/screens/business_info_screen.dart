@@ -179,10 +179,7 @@ TextFormField(
   await BusinessProfileRepository.instance.save();
   final prefs = await SharedPreferences.getInstance();
 
-await prefs.setBool(
-  'setupComplete',
-  true,
-);
+
 
 await prefs.setString(
   'languageCode',

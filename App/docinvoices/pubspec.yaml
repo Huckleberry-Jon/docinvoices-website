@@ -2,7 +2,7 @@ name: docinvoices
 description: DocInvoices
 publish_to: 'none'
 
-version: 1.0.0+28
+version: 1.0.0+29
 
 environment:
   sdk: ">=3.0.0 <4.0.0"
@@ -22,7 +22,7 @@ dependencies:
   shared_preferences: ^2.5.5
   path_provider: ^2.1.6
   http: ^1.2.2
-  
+  in_app_purchase: ^3.2.3
 dev_dependencies:
   flutter_test:
     sdk: flutter

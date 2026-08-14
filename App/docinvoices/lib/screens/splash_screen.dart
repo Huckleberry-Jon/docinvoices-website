@@ -1,11 +1,11 @@
 import 'dart:async';
-
+import 'dashboard_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'dashboard_screen.dart';
-import 'language_screen.dart';
 
+import 'language_screen.dart';
+import 'subscription_screen.dart';
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -20,7 +20,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
     Timer(const Duration(seconds: 2), () async {
       final prefs = await SharedPreferences.getInstance();
-
+final bool subscriptionActive =
+    prefs.getBool('subscriptionActive') ?? false;
       final bool setupComplete =
           prefs.getBool('setupComplete') ?? false;
 
@@ -32,11 +33,15 @@ class _SplashScreenState extends State<SplashScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => setupComplete
-              ? DashboardScreen(
-                  languageCode: languageCode,
-                )
-              : const LanguageScreen(),
+         builder: (_) => !setupComplete
+    ? const LanguageScreen()
+    : subscriptionActive
+        ? DashboardScreen(
+            languageCode: languageCode,
+          )
+        : SubscriptionScreen(
+            languageCode: languageCode,
+          ),
         ),
       );
     });
