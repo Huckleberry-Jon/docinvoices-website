@@ -68,7 +68,155 @@ class _ScheduledJobsScreenState
       date.toLocal(),
     ).format(context);
   }
+Future<void> _addTaskForSelectedDate() async {
+  final titleController = TextEditingController();
+  final notesController = TextEditingController();
 
+  TimeOfDay selectedTime = TimeOfDay.now();
+
+  final result = await showDialog<bool>(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (context, setDialogState) {
+          return AlertDialog(
+            title: Text(
+              isSpanish
+                  ? 'Agregar tarea'
+                  : 'Add Task',
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: titleController,
+                  decoration: InputDecoration(
+                    labelText: isSpanish
+                        ? 'Tarea'
+                        : 'Task',
+                    hintText: isSpanish
+                        ? 'Ej. Recoger piezas'
+                        : 'Example: Pick up parts',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: notesController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: isSpanish
+                        ? 'Notas'
+                        : 'Notes',
+                  ),
+                ),
+                const SizedBox(height: 12),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(
+                    Icons.access_time,
+                  ),
+                  title: Text(
+                    selectedTime.format(context),
+                  ),
+                  onTap: () async {
+                    final picked = await showTimePicker(
+                      context: context,
+                      initialTime: selectedTime,
+                    );
+
+                    if (picked != null) {
+                      setDialogState(() {
+                        selectedTime = picked;
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(
+                    dialogContext,
+                    false,
+                  );
+                },
+                child: Text(
+                  isSpanish
+                      ? 'Cancelar'
+                      : 'Cancel',
+                ),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(
+                    dialogContext,
+                    true,
+                  );
+                },
+                child: Text(
+                  isSpanish
+                      ? 'Guardar'
+                      : 'Save',
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  if (result != true) return;
+
+  final title = titleController.text.trim();
+
+  if (title.isEmpty) return;
+
+  final scheduledDateTime = DateTime(
+    selectedDate.year,
+    selectedDate.month,
+    selectedDate.day,
+    selectedTime.hour,
+    selectedTime.minute,
+  );
+
+  final task = Job(
+    location: '',
+    customerPhone: '',
+    customerEmail: '',
+    customerName: title,
+    equipment: 'TASK',
+    unitNumber: '',
+    vin: '',
+    transcription: '',
+    mileage: '',
+    poNumber: '',
+    completedDate: '',
+    estimatedTotal: '0.00',
+    laborHours: 0,
+    laborRate: 0,
+    partsCost: 0,
+    markupPercent: 0,
+    taxLabor: false,
+    taxParts: false,
+    isTaxExempt: false,
+    discountAmount: 0,
+    operations: [],
+    generalCharges: [],
+    jobStatus: 'Task',
+notes: notesController.text.trim(),
+scheduledDateTime: scheduledDateTime,
+reminderDateTime: scheduledDateTime,
+reminderEnabled: true,
+  );
+
+ JobRepository.instance.addJob(task);
+
+  if (!mounted) return;
+
+  setState(() {});
+}
   @override
   Widget build(BuildContext context) {
     final jobs = scheduledJobs;
@@ -103,7 +251,22 @@ class _ScheduledJobsScreenState
           ),
 
           const SizedBox(height: 16),
+SizedBox(
+  width: double.infinity,
+  child: FilledButton.icon(
+    onPressed: _addTaskForSelectedDate,
+    icon: const Icon(
+      Icons.add_task,
+    ),
+    label: Text(
+      isSpanish
+          ? 'Agregar tarea para este día'
+          : 'Add Task for This Day',
+    ),
+  ),
+),
 
+const SizedBox(height: 16),
           Text(
             isSpanish
                 ? 'Trabajos para '
@@ -155,50 +318,110 @@ class _ScheduledJobsScreenState
                     job.scheduledDateTime!;
 
                 return Card(
-                  child: ListTile(
-                    leading: const Icon(
-                      Icons.calendar_month_outlined,
-                    ),
-                    title: Text(
-                      job.customerName,
-                    ),
-                    subtitle: Text(
-                      [
-                        if (job.equipment
-                            .trim()
-                            .isNotEmpty)
-                          job.equipment,
-                        if (job.unitNumber
-                            .trim()
-                            .isNotEmpty)
-                          'Unit ${job.unitNumber}',
-                        _formatTime(
-                          context,
-                          scheduledDate,
-                        ),
-                      ].join(' • '),
-                    ),
-                    trailing: job.reminderEnabled
-                        ? const Icon(
-                            Icons
-                                .notifications_active_outlined,
-                          )
-                        : null,
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              ReviewWorkScreen(
-                            languageCode:
-                                widget.languageCode,
-                            job: job,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                );
+  child: ListTile(
+    leading: Icon(
+      job.jobStatus == 'Task'
+          ? Icons.fact_check_outlined
+          : Icons.calendar_month_outlined,
+    ),
+    title: Text(
+      job.jobStatus == 'Task'
+          ? job.customerName
+          : job.customerName,
+    ),
+    subtitle: Text(
+      job.jobStatus == 'Task'
+          ? [
+              if (job.notes.trim().isNotEmpty)
+                job.notes,
+              _formatTime(
+                context,
+                scheduledDate,
+              ),
+            ].join(' • ')
+          : [
+              if (job.equipment
+                  .trim()
+                  .isNotEmpty)
+                job.equipment,
+              if (job.unitNumber
+                  .trim()
+                  .isNotEmpty)
+                'Unit ${job.unitNumber}',
+              _formatTime(
+                context,
+                scheduledDate,
+              ),
+            ].join(' • '),
+    ),
+    trailing: job.reminderEnabled
+        ? const Icon(
+            Icons.notifications_active_outlined,
+          )
+        : null,
+    onTap: job.jobStatus == 'Task'
+        ? null
+        : () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) =>
+                    ReviewWorkScreen(
+                  languageCode:
+                      widget.languageCode,
+                  job: job,
+                ),
+              ),
+            );
+          },
+          onLongPress: job.jobStatus == 'Task'
+    ? () async {
+        final shouldDelete = await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(
+              isSpanish
+                  ? 'Completar tarea'
+                  : 'Complete Task',
+            ),
+            content: Text(
+              isSpanish
+                  ? '¿Marcar esta tarea como completada y eliminarla?'
+                  : 'Mark this task complete and remove it?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext, false);
+                },
+                child: Text(
+                  isSpanish ? 'Cancelar' : 'Cancel',
+                ),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(dialogContext, true);
+                },
+                child: Text(
+                  isSpanish ? 'Completar' : 'Complete',
+                ),
+              ),
+            ],
+          ),
+        );
+
+        if (shouldDelete != true) return;
+
+        JobRepository.instance.jobs.remove(job);
+        await JobRepository.instance.save();
+
+        if (!mounted) return;
+
+        setState(() {});
+      }
+    : null,
+  ),
+);
               },
             ),
         ],

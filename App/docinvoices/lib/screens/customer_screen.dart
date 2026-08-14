@@ -73,7 +73,8 @@ class _CustomerScreenState extends State<CustomerScreen> {
     if (!_formKey.currentState!.validate()) return;
 
     final customer = Customer(
-      name: nameController.text.trim(),
+  id: widget.customer?.id,
+  name: nameController.text.trim(),
       company: companyController.text.trim(),
       phone: phoneController.text.trim(),
       email: emailController.text.trim(),

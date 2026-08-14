@@ -1,7 +1,8 @@
 import 'dart:convert';
+import '../models/customer.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../services/customer_repository.dart';
 import '../models/customer_unit.dart';
 
 class CustomerUnitRepository {
@@ -140,7 +141,17 @@ static Future<int> importUnitsCsv(
       'company',
       'company name',
     ]);
+Customer? matchedCustomer;
 
+for (final customer in CustomerRepository.customers) {
+  final searchName = customerName.trim().toLowerCase();
+
+  if (customer.name.trim().toLowerCase() == searchName ||
+      customer.company.trim().toLowerCase() == searchName) {
+    matchedCustomer = customer;
+    break;
+  }
+}
     final unitNumber = valueFor([
   'number',
   'unit',
@@ -206,7 +217,8 @@ static Future<int> importUnitsCsv(
 
     importedUnits.add(
       CustomerUnit(
-        customerName: customerName,
+  customerId: matchedCustomer?.id ?? '',
+  customerName: customerName,
         unitNumber: unitNumber,
         vin: vin,
         year: year,

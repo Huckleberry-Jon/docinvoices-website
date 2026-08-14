@@ -1,5 +1,6 @@
 class CustomerUnit {
   CustomerUnit({
+    this.customerId = '',
     required this.customerName,
     this.unitNumber = '',
     this.vin = '',
@@ -12,6 +13,7 @@ class CustomerUnit {
     this.notes = '',
   });
 
+  String customerId;
   String customerName;
   String unitNumber;
   String vin;
@@ -25,6 +27,7 @@ class CustomerUnit {
 
   Map<String, dynamic> toJson() {
     return {
+      'customerId': customerId,
       'customerName': customerName,
       'unitNumber': unitNumber,
       'vin': vin,
@@ -38,10 +41,9 @@ class CustomerUnit {
     };
   }
 
-  factory CustomerUnit.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory CustomerUnit.fromJson(Map<String, dynamic> json) {
     return CustomerUnit(
+      customerId: json['customerId'] ?? '',
       customerName: json['customerName'] ?? '',
       unitNumber: json['unitNumber'] ?? '',
       vin: json['vin'] ?? '',

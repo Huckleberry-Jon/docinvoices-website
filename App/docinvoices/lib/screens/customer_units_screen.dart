@@ -24,15 +24,21 @@ class _CustomerUnitsScreenState
   bool get isSpanish => widget.languageCode == 'es';
 
   List<CustomerUnit> get customerUnits {
-    return CustomerUnitRepository.units
-        .where(
-          (unit) =>
-              unit.customerName.trim().toLowerCase() ==
-              widget.customer.name.trim().toLowerCase(),
-        )
-        .toList();
-  }
+    final customerName =
+        widget.customer.name.trim().toLowerCase();
 
+    return CustomerUnitRepository.units.where((unit) {
+      final unitCustomerName =
+          unit.customerName.trim().toLowerCase();
+
+      if (unit.customerId.isNotEmpty) {
+        return unit.customerId == widget.customer.id;
+      }
+
+      return unitCustomerName == customerName;
+    }).toList();
+  }
+  
   @override
   Widget build(BuildContext context) {
     final units = customerUnits;

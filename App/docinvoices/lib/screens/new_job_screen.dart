@@ -156,7 +156,7 @@ tsnController.dispose();
   if (!hasUnitData || customerName.isEmpty) {
     return;
   }
-
+final selectedCustomerForUnit = selectedCustomer;
   final existingUnits = CustomerUnitRepository.units;
 
   final CustomerUnit? existingUnit =
@@ -165,8 +165,12 @@ tsnController.dispose();
       if (unit == null) return false;
 
       final sameCustomer =
-          unit.customerName.trim().toLowerCase() ==
-              customerName.toLowerCase();
+    (unit.customerId.isNotEmpty &&
+        selectedCustomerForUnit != null &&
+        unit.customerId == selectedCustomerForUnit.id) ||
+    (unit.customerId.isEmpty &&
+        unit.customerName.trim().toLowerCase() ==
+            customerName.trim().toLowerCase());
 
       final sameVin =
           vin.isNotEmpty &&
@@ -184,13 +188,14 @@ tsnController.dispose();
   );
 
   final CustomerUnit updatedUnit = CustomerUnit(
-    customerName: customerName,
-    unitNumber: unitNumber,
-    vin: vin,
-    mileage: mileage,
-    esn: esn,
-    tsn: tsn,
-  );
+  customerId: selectedCustomerForUnit?.id ?? '',
+  customerName: customerName,
+  unitNumber: unitNumber,
+  vin: vin,
+  mileage: mileage,
+  esn: esn,
+  tsn: tsn,
+);
 
   if (existingUnit == null) {
     await CustomerUnitRepository.addUnit(updatedUnit);
@@ -423,13 +428,16 @@ Future<void> _selectUnit() async {
     return;
   }
 
-  final customerUnits = CustomerUnitRepository.units
-      .where(
-        (unit) =>
-            unit.customerName.toLowerCase() ==
-            selectedCustomer!.name.toLowerCase(),
-      )
-      .toList();
+  final customerForUnits = selectedCustomer!;
+
+final customerUnits = CustomerUnitRepository.units.where((unit) {
+  if (unit.customerId.isNotEmpty) {
+    return unit.customerId == customerForUnits.id;
+  }
+
+  return unit.customerName.trim().toLowerCase() ==
+      customerForUnits.name.trim().toLowerCase();
+}).toList();
 
   if (customerUnits.isEmpty) {
     ScaffoldMessenger.of(context).showSnackBar(

@@ -202,8 +202,122 @@ if (!mounted) return;
 
     Navigator.pop(context);
   }
+Future<void> _viewSavedReceipts() async {
+  final appDirectory =
+      await getApplicationDocumentsDirectory();
+
+  final receiptDirectory = Directory(
+    '${appDirectory.path}/receipts',
+  );
+
+  if (!await receiptDirectory.exists()) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? 'No hay recibos guardados.'
+              : 'No saved receipts.',
+        ),
+      ),
+    );
+    return;
+  }
+
+  final receipts = receiptDirectory
+      .listSync()
+      .whereType<File>()
+      .where(
+        (file) =>
+            file.path.toLowerCase().endsWith('.jpg') ||
+            file.path.toLowerCase().endsWith('.jpeg') ||
+            file.path.toLowerCase().endsWith('.png'),
+      )
+      .toList()
+    ..sort(
+      (a, b) =>
+          b.lastModifiedSync().compareTo(a.lastModifiedSync()),
+    );
+
+  if (receipts.isEmpty) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          isSpanish
+              ? 'No hay recibos guardados.'
+              : 'No saved receipts.',
+        ),
+      ),
+    );
+    return;
+  }
+
+  if (!mounted) return;
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => Scaffold(
+        backgroundColor: const Color(0xFF050B14),
+        appBar: AppBar(
+          title: Text(
+            isSpanish
+                ? 'Recibos guardados'
+                : 'Saved Receipts',
+          ),
+        ),
+        body: GridView.builder(
+          padding: const EdgeInsets.all(12),
+          gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+          ),
+          itemCount: receipts.length,
+          itemBuilder: (context, index) {
+            final receipt = receipts[index];
+
+            return GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      backgroundColor: Colors.black,
+                      appBar: AppBar(),
+                      body: Center(
+                        child: InteractiveViewer(
+                          child: Image.file(
+                            receipt,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(
+                  receipt,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
 
   void _addToInventory() {
+    
     ScaffoldMessenger.of(context).showSnackBar(
   SnackBar(
     content: Text(
@@ -331,7 +445,20 @@ if (!mounted) return;
     ),
   ),
 ),
-
+SizedBox(
+  width: double.infinity,
+  child: OutlinedButton.icon(
+    onPressed: _viewSavedReceipts,
+    icon: const Icon(
+      Icons.receipt_long_outlined,
+    ),
+    label: Text(
+      isSpanish
+          ? 'Ver recibos guardados'
+          : 'View Saved Receipts',
+    ),
+  ),
+),
                     const SizedBox(height: 10),
 
                     SizedBox(

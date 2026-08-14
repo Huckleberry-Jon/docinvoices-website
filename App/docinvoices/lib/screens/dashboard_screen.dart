@@ -497,17 +497,16 @@ ListTile(
                 : 'Notifications',
           ),
           onTap: () {
-            Navigator.pop(context);
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (_) => ScheduledJobsScreen(
+        languageCode: widget.languageCode,
+      ),
+    ),
+  );
+},
 
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (_) => NotificationsScreen(
-                  languageCode: widget.languageCode,
-                ),
-              ),
-            );
-          },
         ),
 
         const Divider(),

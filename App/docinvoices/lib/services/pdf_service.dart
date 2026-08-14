@@ -96,48 +96,58 @@ for (final path in job.afterPhotoPaths) {
         pageFormat: PdfPageFormat.letter,
         margin: const pw.EdgeInsets.all(32),
         build: (context) {
-          return [
-            _buildHeader(
-  job,
-  logoBytes,
-),
-            pw.SizedBox(height: 20),
-            _buildCustomerAndEquipment(job),
-            pw.SizedBox(height: 20),
-            _buildOperations(job),
-            if (job.generalCharges.isNotEmpty) ...[
-              pw.SizedBox(height: 20),
-              _buildGeneralCharges(job),
-            ],
-            if (beforePhotoBytes.isNotEmpty ||
-    afterPhotoBytes.isNotEmpty) ...[
-  pw.SizedBox(height: 20),
-  _buildJobPhotos(
-    beforePhotos: beforePhotoBytes,
-    afterPhotos: afterPhotoBytes,
+         return [
+  _buildHeader(
+    job,
+    logoBytes,
   ),
-],
-            if (job.operations.any(
-  (operation) =>
-      operation.repairDescription.trim().isNotEmpty ||
-      operation.notes.trim().isNotEmpty,
-)) ...[
-  pw.SizedBox(height: 20),
-  _buildNotes(job),
-],
 
-            pw.SizedBox(height: 20),
-            _buildTotals(
-  job: job,
-  laborTotal: laborTotal,
-  partsTotal: partsTotal,
-  generalChargesTotal: generalChargesTotal,
-  discountAmount: job.discountAmount,
-  total: total,
-),
-            pw.SizedBox(height: 28),
-            _buildFooter(),
-          ];
+  pw.SizedBox(height: 20),
+
+  _buildCustomerAndEquipment(job),
+
+  pw.SizedBox(height: 20),
+
+  _buildOperations(job),
+
+  if (job.generalCharges.isNotEmpty) ...[
+    pw.SizedBox(height: 20),
+    _buildGeneralCharges(job),
+  ],
+
+
+  if (job.operations.any(
+    (operation) =>
+        operation.recommendation.trim().isNotEmpty,
+  )) ...[
+    pw.SizedBox(height: 20),
+    _buildRecommendations(job),
+  ],
+
+  pw.SizedBox(height: 20),
+
+  _buildTotals(
+    job: job,
+    laborTotal: laborTotal,
+    partsTotal: partsTotal,
+    generalChargesTotal: generalChargesTotal,
+    discountAmount: job.discountAmount,
+    total: total,
+  ),
+
+  if (beforePhotoBytes.isNotEmpty ||
+      afterPhotoBytes.isNotEmpty) ...[
+    pw.SizedBox(height: 28),
+    _buildJobPhotos(
+      beforePhotos: beforePhotoBytes,
+      afterPhotos: afterPhotoBytes,
+    ),
+  ],
+
+  pw.SizedBox(height: 28),
+
+  _buildFooter(),
+];
         },
       ),
     );
@@ -928,48 +938,8 @@ static pw.Widget _buildJobPhotos({
   required double total,
 }) {
   return pw.Row(
-    crossAxisAlignment: pw.CrossAxisAlignment.end,
+    mainAxisAlignment: pw.MainAxisAlignment.end,
     children: [
-      pw.Expanded(
-        child: pw.Container(
-          padding: const pw.EdgeInsets.all(16),
-          decoration: pw.BoxDecoration(
-            color: PdfColors.orange50,
-            borderRadius: pw.BorderRadius.circular(12),
-            border: pw.Border.all(
-              color: PdfColors.orange200,
-              width: 0.8,
-            ),
-          ),
-          child: pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text(
-                'Customer Approval',
-                style: pw.TextStyle(
-                  color: PdfColors.orange800,
-                  fontSize: 10,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-              pw.SizedBox(height: 28),
-              pw.Container(
-                height: 1,
-                color: PdfColors.grey500,
-              ),
-              pw.SizedBox(height: 5),
-              pw.Text(
-                'Signature',
-                style: const pw.TextStyle(
-                  color: PdfColors.grey600,
-                  fontSize: 8,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      pw.SizedBox(width: 18),
       pw.Container(
         width: 230,
         padding: const pw.EdgeInsets.all(18),
@@ -985,20 +955,22 @@ static pw.Widget _buildJobPhotos({
           children: [
             _buildLightTotalLine('Labor', laborTotal),
             _buildLightTotalLine('Parts', partsTotal),
+
             ...job.generalCharges.map(
-  (charge) => _buildLightTotalLine(
-    charge.description.trim().isEmpty
-        ? 'Charge'
-        : charge.description,
-    charge.amount,
-  ),
-),
+              (charge) => _buildLightTotalLine(
+                charge.description.trim().isEmpty
+                    ? 'Charge'
+                    : charge.description,
+                charge.amount,
+              ),
+            ),
 
             if (discountAmount > 0)
               _buildLightTotalLine(
                 'Discount',
                 -discountAmount,
               ),
+
             pw.Padding(
               padding: const pw.EdgeInsets.symmetric(vertical: 10),
               child: pw.Container(
@@ -1006,6 +978,7 @@ static pw.Widget _buildJobPhotos({
                 color: PdfColors.grey300,
               ),
             ),
+
             pw.Row(
               mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
               children: [
